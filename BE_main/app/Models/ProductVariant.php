@@ -11,6 +11,7 @@ class ProductVariant extends Model
     use HasFactory;
 
     protected $fillable = [
+        'product_id',
         'color',
         'storage',
         'ram',
@@ -23,25 +24,37 @@ class ProductVariant extends Model
         'description',
     ];
 
-    public function products()
+    protected function casts(): array
+    {
+        return [
+            'import_price' => 'decimal:2',
+            'price' => 'decimal:2',
+            'sale_price' => 'decimal:2',
+            'quantity' => 'integer',
+        ];
+    }
+
+    public function product()
     {
         return $this->belongsTo(Product::class);
     }
 
-    public function products_variant_images()
+    public function images()
     {
         return $this->hasMany(ProductVariantImage::class);
     }
 
-    public function cart_items()
+    public function cartItems()
     {
         return $this->hasMany(CartItem::class);
     }
-    public function order_items()
+
+    public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
-    public function stock_logs()
+
+    public function stockLogs()
     {
         return $this->hasMany(StockLog::class);
     }

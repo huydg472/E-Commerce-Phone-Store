@@ -15,11 +15,11 @@ class Brand extends Model
         'slug',
         'logo_url',
         'description',
-        'status'
+        'status',
     ];
 
     public function products()
     {
-        $this->hasMany(Product::class);
+        return $this->hasMany(Product::class);
     }
 }

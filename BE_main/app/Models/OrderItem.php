@@ -9,6 +9,7 @@ class OrderItem extends Model
 {
     /** @use HasFactory<\Database\Factories\OrderItemFactory> */
     use HasFactory;
+
     protected $fillable = [
         'order_id',
         'product_variant_id',
@@ -17,13 +18,24 @@ class OrderItem extends Model
         'sku',
         'unit_price',
         'quantity',
-        'total_price'
+        'total_price',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'unit_price' => 'decimal:2',
+            'quantity' => 'integer',
+            'total_price' => 'decimal:2',
+        ];
+    }
+
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
-    public function product_variant()
+
+    public function productVariant()
     {
         return $this->belongsTo(ProductVariant::class);
     }

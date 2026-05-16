@@ -7,15 +7,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('product_variants', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->foreignId('product_id')
+                ->constrained('products')
+                ->cascadeOnDelete();
+
             $table->string('color', 100);
             $table->string('storage', 50);
             $table->string('ram', 50);
@@ -25,8 +25,9 @@ return new class extends Migration
             $table->decimal('sale_price', 12, 2)->nullable();
             $table->integer('quantity')->default(0);
             $table->string('status', 20)->default('active');
-            $table->text('description')->nullable();
+            $table->text('description')->nullable();          
             $table->timestamps();
+
             $table->unique(['product_id', 'color', 'storage', 'ram']);
         });
 
@@ -57,9 +58,6 @@ return new class extends Migration
         ");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('product_variants');

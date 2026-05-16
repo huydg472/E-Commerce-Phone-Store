@@ -13,13 +13,12 @@ class Category extends Model
     protected $fillable = [
         'name',
         'slug',
-        'logo_url',
         'description',
-        'status'
+        'status',
     ];
 
     public function products()
     {
-        $this->hasMany(Product::class);
+        return $this->hasMany(Product::class);
     }
 }

@@ -7,23 +7,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('stock_logs', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('product_variant_id')->constrained('product_variants')->restrictOnDelete();
-            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('order_id')->nullable()->constrained('orders')->nullOnDelete();
+            $table->foreignId('product_variant_id')
+                ->constrained('product_variants')
+                ->restrictOnDelete();
+
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            $table->foreignId('order_id')
+                ->nullable()
+                ->constrained('orders')
+                ->nullOnDelete();
+
             $table->string('type', 30);
             $table->integer('quantity_before');
             $table->integer('quantity_change');
             $table->integer('quantity_after');
             $table->text('note')->nullable();
+
             $table->timestamp('created_at')->useCurrent();
+
             $table->index(['product_variant_id', 'created_at']);
             $table->index('type');
         });
@@ -31,7 +41,11 @@ return new class extends Migration
         DB::statement("
             ALTER TABLE stock_logs
             ADD CONSTRAINT stock_logs_quantity_check
-            CHECK (quantity_before >= 0 AND quantity_after >= 0 AND quantity_after = quantity_before + quantity_change)
+            CHECK (
+                quantity_before >= 0
+                AND quantity_after >= 0
+                AND quantity_after = quantity_before + quantity_change
+            )
         ");
 
         DB::statement("
@@ -41,9 +55,6 @@ return new class extends Migration
         ");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('stock_logs');

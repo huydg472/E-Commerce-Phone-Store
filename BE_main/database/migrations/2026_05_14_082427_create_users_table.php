@@ -12,7 +12,10 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('role_id')->constrained('roles')->restrictOnDelete();
+            $table->foreignId('role_id')
+                ->constrained('roles')
+                ->restrictOnDelete();
+
             $table->string('name', 150);
             $table->string('email', 225)->unique();
             $table->string('phone', 20)->unique();
@@ -22,6 +25,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            
             $table->softDeletes();
         });
 

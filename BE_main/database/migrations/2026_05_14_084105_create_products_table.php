@@ -7,15 +7,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('brand_id')->constrained('brands')->restrictOnDelete();
-            $table->foreignId('category_id')->constrained('categories')->restrictOnDelete();
+
+            $table->foreignId('brand_id')
+                ->constrained('brands')
+                ->restrictOnDelete();
+
+            $table->foreignId('category_id')
+                ->constrained('categories')
+                ->restrictOnDelete();
+
             $table->string('name', 150)->unique();
             $table->string('slug', 180)->unique();
             $table->string('thumbnail_url', 500)->nullable();
@@ -33,9 +37,6 @@ return new class extends Migration
         ");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('products');

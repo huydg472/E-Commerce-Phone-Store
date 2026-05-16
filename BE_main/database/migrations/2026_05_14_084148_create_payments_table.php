@@ -7,14 +7,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->constrained('orders')->cascadeOnDelete();
+
+            $table->foreignId('order_id')
+                ->constrained('orders')
+                ->cascadeOnDelete();
+
             $table->string('payment_method', 50);
             $table->string('payment_status', 30)->default('pending');
             $table->decimal('amount', 12, 2);
@@ -22,6 +23,7 @@ return new class extends Migration
             $table->timestamp('paid_at')->nullable();
             $table->text('note')->nullable();
             $table->timestamps();
+
             $table->unique('order_id');
         });
 
@@ -44,9 +46,6 @@ return new class extends Migration
         ");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('payments');

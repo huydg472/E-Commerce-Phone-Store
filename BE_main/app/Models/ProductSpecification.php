@@ -11,13 +11,21 @@ class ProductSpecification extends Model
     use HasFactory;
 
     protected $fillable = [
+        'product_id',
         'spec_name',
         'spec_value',
         'sort_order',
     ];
 
-    public function products()
+    protected function casts(): array
     {
-        $this->belongsTo(Product::class);
+        return [
+            'sort_order' => 'integer',
+        ];
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 }

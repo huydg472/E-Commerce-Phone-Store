@@ -7,19 +7,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('product_specifications', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
+            $table->foreignId('product_id')
+                ->constrained('products')
+                ->cascadeOnDelete();
+
             $table->string('spec_name', 150);
             $table->text('spec_value')->nullable();
-            $table->integer('sort_order')->default(0);
+            $table->integer('sort_order')->default(0);     
             $table->timestamps();
+
             $table->unique(['product_id', 'spec_name']);
         });
 
@@ -30,9 +31,6 @@ return new class extends Migration
         ");
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('product_specifications');

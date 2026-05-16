@@ -11,32 +11,41 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
+        'brand_id',
+        'category_id',
         'name',
         'slug',
         'thumbnail_url',
         'short_description',
         'description',
-        "is_featured",
-        'status'
+        'is_featured',
+        'status',
     ];
 
-    public function brands()
+    protected function casts(): array
     {
-        $this->belongsTo(Brand::class);
+        return [
+            'is_featured' => 'boolean',
+        ];
     }
 
-    public function categories()
+    public function brand()
     {
-        $this->belongsTo(Category::class);
+        return $this->belongsTo(Brand::class);
     }
 
-    public function product_variants()
+    public function category()
     {
-        $this->hasMany(ProductVariant::class);
+        return $this->belongsTo(Category::class);
     }
 
-    public function product_specification()
+    public function productVariants()
     {
-        $this->hasMany(ProductSpecification::class);
+        return $this->hasMany(ProductVariant::class);
+    }
+
+    public function productSpecifications()
+    {
+        return $this->hasMany(ProductSpecification::class);
     }
 }
