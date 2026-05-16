@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProductImage;
-use App\Http\Requests\StoreProductImageRequest;
-use App\Http\Requests\UpdateProductImageRequest;
+use App\Models\ProductVariantImage;
+use App\Http\Requests\StoreProductVariantImageRequest;
+use App\Http\Requests\UpdateProductVariantImageRequest;
 
-class ProductImageController extends Controller
+class ProductVariantImageController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -27,7 +27,7 @@ class ProductImageController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreProductImageRequest $request)
+    public function store(StoreProductVariantImageRequest $request)
     {
         //
     }
@@ -35,7 +35,7 @@ class ProductImageController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(ProductImage $productImage)
+    public function show(ProductVariantImage $productVariantImage)
     {
         //
     }
@@ -43,7 +43,7 @@ class ProductImageController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(ProductImage $productImage)
+    public function edit(ProductVariantImage $productVariantImage)
     {
         //
     }
@@ -51,7 +51,7 @@ class ProductImageController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateProductImageRequest $request, ProductImage $productImage)
+    public function update(UpdateProductVariantImageRequest $request, ProductVariantImage $productVariantImage)
     {
         //
     }
@@ -59,7 +59,7 @@ class ProductImageController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ProductImage $productImage)
+    public function destroy(ProductVariantImage $productVariantImage)
     {
         //
     }

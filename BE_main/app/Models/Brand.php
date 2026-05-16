@@ -9,4 +9,17 @@ class Brand extends Model
 {
     /** @use HasFactory<\Database\Factories\BrandFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'slug',
+        'logo_url',
+        'description',
+        'status'
+    ];
+
+    public function products()
+    {
+        $this->hasMany(Product::class);
+    }
 }

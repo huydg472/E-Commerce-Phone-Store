@@ -12,7 +12,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('product_images', function (Blueprint $table) {
+        Schema::create('product_variant_images', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
             $table->string('image_url', 500);
@@ -23,8 +23,8 @@ return new class extends Migration
         });
 
         DB::statement("
-            ALTER TABLE product_images
-            ADD CONSTRAINT product_images_sort_order_check
+            ALTER TABLE product_variant_images
+            ADD CONSTRAINT product_variant_images_sort_order_check
             CHECK (sort_order >= 0)
         ");
     }
@@ -34,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_images');
+        Schema::dropIfExists('product_variant_images');
     }
 };

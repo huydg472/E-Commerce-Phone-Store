@@ -25,9 +25,7 @@ return new class extends Migration
             $table->decimal('sale_price', 12, 2)->nullable();
             $table->integer('quantity')->default(0);
             $table->string('status', 20)->default('active');
-            $table->string('spec_name', 150)->nullable();
             $table->text('description')->nullable();
-            $table->integer('sort_order')->default(0);
             $table->timestamps();
             $table->unique(['product_id', 'color', 'storage', 'ram']);
         });
