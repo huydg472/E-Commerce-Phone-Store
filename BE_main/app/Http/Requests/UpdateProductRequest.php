@@ -48,7 +48,7 @@ class UpdateProductRequest extends FormRequest
             'short_description' => ['nullable', 'string'],
             'description' => ['nullable', 'string'],
             'is_featured' => ['sometimes', 'boolean'],
-            'status' => ['sometimes', 'string', 'in:active,inactive,draft'],
+            'status' => ['sometimes', 'string', 'in:active,inactive'],
         ];
     }
 

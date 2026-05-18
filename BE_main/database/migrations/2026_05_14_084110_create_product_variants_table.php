@@ -25,7 +25,7 @@ return new class extends Migration
             $table->decimal('sale_price', 12, 2)->nullable();
             $table->integer('quantity')->default(0);
             $table->string('status', 20)->default('active');
-            $table->text('description')->nullable();          
+            $table->text('description')->nullable();
             $table->timestamps();
 
             $table->unique(['product_id', 'color', 'storage', 'ram']);
@@ -54,7 +54,7 @@ return new class extends Migration
         DB::statement("
             ALTER TABLE product_variants
             ADD CONSTRAINT product_variants_status_check
-            CHECK (status IN ('active', 'inactive', 'out_of_stock'))
+            CHECK (status IN ('active', 'inactive'))
         ");
     }
 

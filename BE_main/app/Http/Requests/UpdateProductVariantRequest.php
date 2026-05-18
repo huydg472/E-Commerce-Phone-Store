@@ -47,7 +47,7 @@ class UpdateProductVariantRequest extends FormRequest
             'price' => ['sometimes', 'required', 'numeric', 'min:0'],
             'sale_price' => ['nullable', 'numeric', 'min:0', 'lte:price'],
             'quantity' => ['sometimes', 'integer', 'min:0'],
-            'status' => ['sometimes', 'string', 'in:active,inactive,out_of_stock'],
+            'status' => ['sometimes', 'string', 'in:active,inactive'],
             'description' => ['nullable', 'string'],
         ];
     }

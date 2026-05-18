@@ -33,7 +33,7 @@ return new class extends Migration
         DB::statement("
             ALTER TABLE products
             ADD CONSTRAINT products_status_check
-            CHECK (status IN ('active', 'inactive', 'draft'))
+            CHECK (status IN ('active', 'inactive'))
         ");
     }
 
