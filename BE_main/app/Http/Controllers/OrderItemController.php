@@ -17,14 +17,6 @@ class OrderItemController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreOrderItemRequest $request)
@@ -36,14 +28,6 @@ class OrderItemController extends Controller
      * Display the specified resource.
      */
     public function show(OrderItem $orderItem)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(OrderItem $orderItem)
     {
         //
     }

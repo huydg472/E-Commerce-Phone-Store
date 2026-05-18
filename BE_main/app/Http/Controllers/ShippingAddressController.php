@@ -17,14 +17,6 @@ class ShippingAddressController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreShippingAddressRequest $request)
@@ -36,14 +28,6 @@ class ShippingAddressController extends Controller
      * Display the specified resource.
      */
     public function show(ShippingAddress $shippingAddress)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ShippingAddress $shippingAddress)
     {
         //
     }
