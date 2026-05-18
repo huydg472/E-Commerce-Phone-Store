@@ -2,13 +2,31 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Category;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class CategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void {}
+    public function run(): void
+    {
+        $categories = [
+            ['name' => 'Điện thoại', 'description' => 'Các dòng điện thoại thông minh'],
+            ['name' => 'Phụ kiện', 'description' => 'Ốp lưng, sạc, cáp và phụ kiện điện thoại'],
+            ['name' => 'Máy tính bảng', 'description' => 'Các dòng tablet phổ biến'],
+            ['name' => 'Đồng hồ thông minh', 'description' => 'Smartwatch và vòng đeo tay thông minh'],
+        ];
+
+        foreach ($categories as $category) {
+            Category::updateOrCreate(
+                ['name' => $category['name']],
+                [
+                    'name' => $category['name'],
+                    'slug' => Str::slug($category['name']),
+                    'description' => $category['description'],
+                    'status' => 'active',
+                ]
+            );
+        }
+    }
 }

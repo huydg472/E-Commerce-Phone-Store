@@ -2,44 +2,34 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
-/**
- * @extends Factory<User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
-
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
+        $roleId = Role::where('name', 'customer')->value('id')
+            ?? Role::query()->value('id')
+            ?? Role::create([
+                'name' => 'customer',
+                'display_name' => 'Khách hàng',
+                'description' => 'Người dùng mua hàng trên website',
+                'status' => 'active',
+            ])->id;
+
         return [
+            'role_id' => $roleId,
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'phone' => '09' . fake()->unique()->numerify('########'),
+            'username' => fake()->unique()->userName(),
+            'password' => Hash::make('password'),
+            'status' => 'active',
             'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
-    }
-
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
     }
 }
