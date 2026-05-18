@@ -2,28 +2,45 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateOrderRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'order_status' => [
+                'required',
+                'string',
+                'in:pending,confirmed,processing,shipping,completed,cancelled',
+            ],
+
+            'note' => [
+                'nullable',
+                'string',
+            ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'required' => ':attribute không được để trống.',
+            'string' => ':attribute phải là chuỗi ký tự.',
+            'in' => ':attribute không hợp lệ.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'order_status' => 'Trạng thái đơn hàng',
+            'note' => 'Ghi chú',
         ];
     }
 }

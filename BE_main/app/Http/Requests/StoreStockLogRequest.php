@@ -2,28 +2,59 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreStockLogRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
+            'order_id' => ['nullable', 'integer', 'exists:orders,id'],
+            'type' => ['required', 'string', 'in:import,sale,cancel_order,return,adjustment'],
+            'quantity_change' => ['required', 'integer', 'not_in:0'],
+            'note' => ['nullable', 'string'],
         ];
     }
+
+
+    public function messages(): array
+    {
+        return [
+            'required' => ':attribute không được để trống.',
+            'string' => ':attribute phải là chuỗi ký tự.',
+            'integer' => ':attribute phải là số nguyên.',
+            'numeric' => ':attribute phải là số.',
+            'boolean' => ':attribute phải là true hoặc false.',
+            'array' => ':attribute phải là một danh sách.',
+            'date' => ':attribute phải là ngày hợp lệ.',
+            'url' => ':attribute phải là đường dẫn hợp lệ.',
+            'email' => ':attribute phải là email hợp lệ.',
+            'max' => ':attribute không được vượt quá :max ký tự.',
+            'min' => ':attribute phải có giá trị tối thiểu là :min.',
+            'unique' => ':attribute đã tồn tại.',
+            'exists' => ':attribute không tồn tại trong hệ thống.',
+            'in' => ':attribute không hợp lệ.',
+            'confirmed' => ':attribute xác nhận không khớp.',
+            'not_in' => ':attribute không được bằng :values.',
+            'lte' => ':attribute phải nhỏ hơn hoặc bằng :value.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'product_variant_id' => 'Biến thể sản phẩm',
+            'order_id' => 'Đơn hàng',
+            'type' => 'Loại thay đổi kho',
+            'quantity_change' => 'Số lượng thay đổi',
+            'note' => 'Ghi chú',
+        ];
+    }
+
 }
