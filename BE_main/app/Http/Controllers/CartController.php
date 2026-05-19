@@ -5,15 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
+use Illuminate\Http\JsonResponse;
 
 class CartController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $carts = Cart::latest()->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy dữ liệu thành công',
+            'data' => $carts,
+        ], 200);
     }
 
     /**
@@ -27,9 +34,13 @@ class CartController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Cart $cart)
+    public function show(Cart $cart): JsonResponse
     {
-        //
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy chi tiết dữ liệu thành công',
+            'data' => $cart,
+        ], 200);
     }
 
     /**

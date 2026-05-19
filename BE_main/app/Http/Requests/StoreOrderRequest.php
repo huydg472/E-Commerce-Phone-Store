@@ -18,7 +18,6 @@ class StoreOrderRequest extends FormRequest
             'receiver_name' => ['required', 'string', 'max:150'],
             'receiver_phone' => ['required', 'string', 'max:20'],
             'shipping_address_text' => ['required', 'string'],
-            'payment_method' => ['required', 'string', 'in:cod,bank_transfer,vnpay,momo'],
             'shipping_fee' => ['sometimes', 'numeric', 'min:0'],
             'discount_amount' => ['sometimes', 'numeric', 'min:0'],
             'note' => ['nullable', 'string'],
@@ -56,11 +55,9 @@ class StoreOrderRequest extends FormRequest
             'receiver_name' => 'Tên người nhận',
             'receiver_phone' => 'Số điện thoại người nhận',
             'shipping_address_text' => 'Địa chỉ giao hàng',
-            'payment_method' => 'Phương thức thanh toán',
             'shipping_fee' => 'Phí vận chuyển',
             'discount_amount' => 'Số tiền giảm giá',
             'note' => 'Ghi chú',
         ];
     }
-
 }

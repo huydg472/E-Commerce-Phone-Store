@@ -5,15 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Permission;
 use App\Http\Requests\StorePermissionRequest;
 use App\Http\Requests\UpdatePermissionRequest;
+use Illuminate\Http\JsonResponse;
 
 class PermissionController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $permissions = Permission::latest()->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy dữ liệu thành công',
+            'data' => $permissions
+        ], 200);
     }
 
     /**
@@ -21,7 +28,13 @@ class PermissionController extends Controller
      */
     public function store(StorePermissionRequest $request)
     {
-        //
+        $permission = Permission::create($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tạo dữ liệu thành công',
+            'data' => $permission
+        ], 201);
     }
 
     /**
@@ -29,7 +42,11 @@ class PermissionController extends Controller
      */
     public function show(Permission $permission)
     {
-        //
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy chi tiết dữ liệu thành công',
+            'data' => $permission
+        ], 200);
     }
 
     /**
@@ -37,7 +54,13 @@ class PermissionController extends Controller
      */
     public function update(UpdatePermissionRequest $request, Permission $permission)
     {
-        //
+        $permission->update($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật dữ liệu thành công',
+            'data' => $permission
+        ], 200);
     }
 
     /**
