@@ -13,7 +13,10 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        $user = User::all();
+        return response()->json([
+            'data' => $user,
+        ]);
     }
 
     /**
@@ -21,7 +24,22 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        //
+        $user = User::create([
+            'role_id' => $request->role_id,
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'username' => $request->username,
+            'password' => $request->password,
+            'status' => $request->status,
+            'email_verified_at' => $request->email_verified_at,
+            'remember_token' => $request->remember_token,
+            'delete_at' => $request->delete_at
+        ]);
+        return response()->json([
+            'message' => 'thêm thành công',
+            'data' => $user
+        ]);
     }
 
     /**
@@ -29,7 +47,9 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        //
+        return response()->json([
+            'data' => $user
+        ]);
     }
 
     /**
@@ -37,7 +57,22 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
-        //
+        $user->update([
+            'role_id' => $request->role_id,
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'username' => $request->username,
+            'password' => $request->password,
+            'status' => $request->status,
+            'email_verified_at' => $request->email_verified_at,
+            'remember_token' => $request->remember_token,
+            'delete_at' => $request->delete_at
+        ]);
+        return response()->json([
+            'message' => 'update thành công',
+            'data' => $user
+        ]);
     }
 
     /**
@@ -45,6 +80,10 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        //
+        $user->delete();
+        return response()->json([
+            'message' => 'xóa thành công',
+
+        ]);
     }
 }

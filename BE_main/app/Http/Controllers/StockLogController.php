@@ -13,7 +13,10 @@ class StockLogController extends Controller
      */
     public function index()
     {
-        //
+        $stockLog = StockLog::all();
+        return response()->json([
+            'data' => $stockLog
+        ]);
     }
 
     /**
@@ -21,7 +24,20 @@ class StockLogController extends Controller
      */
     public function store(StoreStockLogRequest $request)
     {
-        //
+        $stockLog = StockLog::create([
+            'product_variant_id' => $request->product_variant_id,
+            'user_id' => $request->user_id,
+            'order_id' => $request->order_id,
+            'type' => $request->type,
+            'quantity_before' => $request->quantity_before,
+            'quantity_change' => $request->quantity_change,
+            'quantity_after' => $request->quantity_after,
+            'note' => $request->note
+        ]);
+        return response()->json([
+            'message' => 'thêm thành công',
+            'data' => $stockLog
+        ]);
     }
 
     /**
@@ -29,7 +45,9 @@ class StockLogController extends Controller
      */
     public function show(StockLog $stockLog)
     {
-        //
+        return response()->json([
+            'data' => $stockLog
+        ]);
     }
 
     /**
@@ -37,7 +55,20 @@ class StockLogController extends Controller
      */
     public function update(UpdateStockLogRequest $request, StockLog $stockLog)
     {
-        //
+        $stockLog->update([
+            'product_variant_id' => $request->product_variant_id,
+            'user_id' => $request->user_id,
+            'order_id' => $request->order_id,
+            'type' => $request->type,
+            'quantity_before' => $request->quantity_before,
+            'quantity_change' => $request->quantity_change,
+            'quantity_after' => $request->quantity_after,
+            'note' => $request->note
+        ]);
+        return response()->json([
+            'message' => 'update thành công',
+            'data' => $stockLog
+        ]);
     }
 
     /**
@@ -45,6 +76,10 @@ class StockLogController extends Controller
      */
     public function destroy(StockLog $stockLog)
     {
-        //
+        $stockLog->delete();
+        return response()->json([
+            'message' => 'xóa thành công',
+
+        ]);
     }
 }

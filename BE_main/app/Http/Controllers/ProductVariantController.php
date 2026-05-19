@@ -13,7 +13,11 @@ class ProductVariantController extends Controller
      */
     public function index()
     {
-        //
+        $productVariant = ProductVariant::all();
+        return response()->json([
+            'status' => true,
+            'data' => $productVariant
+        ]);
     }
 
     /**
@@ -21,7 +25,23 @@ class ProductVariantController extends Controller
      */
     public function store(StoreProductVariantRequest $request)
     {
-        //
+        $productVariant = ProductVariant::create([
+            'product_id' => $request->product_id,
+            'color' => $request->color,
+            'storage' => $request->storage,
+            'ram' => $request->ram,
+            'sku' => $request->sku,
+            'import_price' => $request->import_price,
+            'price' => $request->price,
+            'sale_price' => $request->sale_price,
+            'quantity' => $request->quantity,
+            'status' => $request->status,
+            'description' => $request->description
+        ]);
+        return response()->json([
+            'message' => 'thêm thành công',
+            'data' => $productVariant
+        ]);
     }
 
     /**
@@ -29,7 +49,10 @@ class ProductVariantController extends Controller
      */
     public function show(ProductVariant $productVariant)
     {
-        //
+        return response()->json([
+            'status' => true,
+            'data' => $productVariant
+        ]);
     }
 
     /**
@@ -37,7 +60,23 @@ class ProductVariantController extends Controller
      */
     public function update(UpdateProductVariantRequest $request, ProductVariant $productVariant)
     {
-        //
+        $productVariant->updated([
+            'product_id' => $request->product_id,
+            'color' => $request->color,
+            'storage' => $request->storage,
+            'ram' => $request->ram,
+            'sku' => $request->sku,
+            'import_price' => $request->import_price,
+            'price' => $request->price,
+            'sale_price' => $request->sale_price,
+            'quantity' => $request->quantity,
+            'status' => $request->status,
+            'description' => $request->description
+        ]);
+        return response()->json([
+            'message' => 'update thành công',
+            'data' => $productVariant
+        ]);
     }
 
     /**
@@ -45,6 +84,15 @@ class ProductVariantController extends Controller
      */
     public function destroy(ProductVariant $productVariant)
     {
-        //
+        try {
+            $productVariant->delete();
+            return response()->json([
+                'message' => 'xóa thành công'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'xóa thất bại'
+            ]);
+        }
     }
 }

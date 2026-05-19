@@ -13,7 +13,10 @@ class ShippingAddressController extends Controller
      */
     public function index()
     {
-        //
+        $shippingAddress = ShippingAddress::all();
+        return response()->json([
+            'data' => $shippingAddress
+        ]);
     }
 
     /**
@@ -21,7 +24,21 @@ class ShippingAddressController extends Controller
      */
     public function store(StoreShippingAddressRequest $request)
     {
-        //
+        $shippingAddress = ShippingAddress::create([
+            'user_id' => $request->user_id,
+            'receiver_name' => $request->receiver_name,
+            'receiver_phone' => $request->receiver_phone,
+            'province' => $request->province,
+            'district' => $request->district,
+            'ward' => $request->ward,
+            'address_detail' => $request->address_detail,
+            'note' => $request->note,
+            'is_default' => $request->is_default
+        ]);
+        return response()->json([
+            'message' => 'thêm thành công',
+            'data' => $shippingAddress
+        ]);
     }
 
     /**
@@ -29,7 +46,9 @@ class ShippingAddressController extends Controller
      */
     public function show(ShippingAddress $shippingAddress)
     {
-        //
+        return response()->json([
+            'data' => $shippingAddress
+        ]);
     }
 
     /**
@@ -37,7 +56,21 @@ class ShippingAddressController extends Controller
      */
     public function update(UpdateShippingAddressRequest $request, ShippingAddress $shippingAddress)
     {
-        //
+        $shippingAddress->update([
+            'user_id' => $request->user_id,
+            'receiver_name' => $request->receiver_name,
+            'receiver_phone' => $request->receiver_phone,
+            'province' => $request->province,
+            'district' => $request->district,
+            'ward' => $request->ward,
+            'address_detail' => $request->address_detail,
+            'note' => $request->note,
+            'is_default' => $request->is_default
+        ]);
+        return response()->json([
+            'message' => 'update thành công',
+            'data' => $shippingAddress
+        ]);
     }
 
     /**
@@ -45,6 +78,9 @@ class ShippingAddressController extends Controller
      */
     public function destroy(ShippingAddress $shippingAddress)
     {
-        //
+        $shippingAddress->delete();
+        return response()->json([
+            'message' => 'xóa thành công'
+        ]);
     }
 }
