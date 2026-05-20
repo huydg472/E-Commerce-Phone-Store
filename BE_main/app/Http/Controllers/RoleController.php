@@ -13,7 +13,10 @@ class RoleController extends Controller
      */
     public function index()
     {
-        //
+        $role = Role::all();
+        return response()->json([
+            'data' => $role
+        ]);
     }
 
     /**
@@ -21,7 +24,16 @@ class RoleController extends Controller
      */
     public function store(StoreRoleRequest $request)
     {
-        //
+        $role = Role::create([
+            'name' => $request->name,
+            'display_name' => $request->display_name,
+            'description' => $request->dessription,
+            'status' => $request->status
+        ]);
+        return response()->json([
+            'message' => 'thêm thành công',
+            'data' => $role
+        ]);
     }
 
     /**
@@ -29,7 +41,9 @@ class RoleController extends Controller
      */
     public function show(Role $role)
     {
-        //
+        return response()->json([
+            'data' => $role
+        ]);
     }
 
     /**
@@ -37,7 +51,16 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, Role $role)
     {
-        //
+        $role->update([
+            'name' => $request->name,
+            'display_name' => $request->display_name,
+            'description' => $request->dessription,
+            'status' => $request->status
+        ]);
+        return response()->json([
+            'message' => ' update thành công',
+            'data' => $role
+        ]);
     }
 
     /**
@@ -45,6 +68,9 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        //
+        $role->delete();
+        return response()->json([
+            'message' => 'xóa thành công',
+        ]);
     }
 }

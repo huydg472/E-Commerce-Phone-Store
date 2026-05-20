@@ -13,7 +13,10 @@ class ProductVariantImageController extends Controller
      */
     public function index()
     {
-        //
+        $productVariantImage = ProductVariantImage::all();
+        return response()->json([
+            'data' => $productVariantImage
+        ]);
     }
 
     /**
@@ -21,7 +24,16 @@ class ProductVariantImageController extends Controller
      */
     public function store(StoreProductVariantImageRequest $request)
     {
-        //
+        $productVariantImage = ProductVariantImage::create([
+            'product_variant_id' => $request->product_variant_id,
+            'image_url' => $request->image_url,
+            'alt_text' => $request->alt_text,
+            'short_order' => $request->short_order
+        ]);
+        return response()->json([
+            'message' => 'Thêm thành công',
+            'data' => $productVariantImage
+        ]);
     }
 
     /**
@@ -29,7 +41,9 @@ class ProductVariantImageController extends Controller
      */
     public function show(ProductVariantImage $productVariantImage)
     {
-        //
+        return response()->json([
+            'data' => $productVariantImage
+        ]);
     }
 
     /**
@@ -37,7 +51,16 @@ class ProductVariantImageController extends Controller
      */
     public function update(UpdateProductVariantImageRequest $request, ProductVariantImage $productVariantImage)
     {
-        //
+        $productVariantImage->update([
+            'product_variant_id' => $request->product_variant_id,
+            'image_url' => $request->image_url,
+            'alt_text' => $request->alt_text,
+            'short_order' => $request->short_order
+        ]);
+        return response()->json([
+            'message' => 'update thành công',
+            'data' => $productVariantImage
+        ]);
     }
 
     /**
@@ -45,6 +68,9 @@ class ProductVariantImageController extends Controller
      */
     public function destroy(ProductVariantImage $productVariantImage)
     {
-        //
+        $productVariantImage->delete();
+        return response()->json([
+            'message' => 'xóa thất bại'
+        ]);
     }
 }
