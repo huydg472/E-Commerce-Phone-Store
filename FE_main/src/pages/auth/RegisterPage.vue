@@ -1,5 +1,10 @@
-<script setup></script>
+<script setup>
+import RegisterForm from '@/components/auth/RegisterForm.vue';
 
-<template></template>
+</script>
+
+<template>
+    <RegisterForm />
+</template>
 
 <style scoped></style>
