@@ -1,0 +1,97 @@
+@import './reset.css';
+@import './variables.css';
+@import './admin.css';
+
+.container {
+  width: min(1200px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.page-section {
+  padding: 32px 0;
+}
+
+.page-title {
+  margin: 0 0 16px;
+  font-size: 28px;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn {
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  color: #fff;
+  background: var(--primary-color);
+}
+
+.btn-secondary {
+  color: #0f172a;
+  background: #e2e8f0;
+}
+
+.btn-danger {
+  color: #fff;
+  background: var(--danger-color);
+}
+
+.grid {
+  display: grid;
+  gap: 18px;
+}
+
+.grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
