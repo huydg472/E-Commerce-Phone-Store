@@ -3,37 +3,46 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
+
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Password;
-use Illuminate\Validation\ValidationException;
 
 class PasswordResetLinkController extends Controller
 {
     /**
-     * Handle an incoming password reset link request.
-     *
-     * @throws ValidationException
+     * Send reset password email
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
+        // validate email
         $request->validate([
-            'email' => ['required', 'email'],
+
+            'email' => 'required|email'
+
         ]);
-
-        // We will send the password reset link to this user. Once we have attempted
-        // to send the link, we will examine the response then see the message we
-        // need to show to the user. Finally, we'll send out a proper response.
+        // kiểm tra tồn tại trong DB 
+        // tạo token
+        // lưu lại token này vào DB
         $status = Password::sendResetLink(
-            $request->only('email')
-        );
 
-        if ($status != Password::RESET_LINK_SENT) {
-            throw ValidationException::withMessages([
-                'email' => [__($status)],
+            $request->only('email')
+
+        );
+        // kiểm tra gửi thành công trả về json
+        if ($status == Password::RESET_LINK_SENT) {
+
+            return response()->json([
+
+                'message' => __($status)
+
             ]);
         }
+        // nếu thất bại
+        return response()->json([
 
-        return response()->json(['status' => __($status)]);
+            'message' => __($status)
+
+        ], 400);
     }
 }
