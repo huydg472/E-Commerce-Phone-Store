@@ -1,43 +1,5 @@
-<script setup>
-defineProps({
-  form: {
-    type: Object,
-    required: true,
-  },
-  buttonText: {
-    type: String,
-    default: 'Lưu thương hiệu',
-  },
-})
+<script setup></script>
 
-defineEmits(['submit'])
-</script>
+<template></template>
 
-<template>
-  <form @submit.prevent="$emit('submit')">
-    <div class="form-group">
-      <label>Tên thương hiệu</label>
-      <input v-model="form.name" class="form-control" type="text">
-    </div>
-
-    <div class="form-group">
-      <label>Logo URL</label>
-      <input v-model="form.logo_url" class="form-control" type="text">
-    </div>
-
-    <div class="form-group">
-      <label>Mô tả</label>
-      <textarea v-model="form.description" class="form-control" />
-    </div>
-
-    <div class="form-group">
-      <label>Trạng thái</label>
-      <select v-model="form.status" class="form-control">
-        <option value="active">Hoạt động</option>
-        <option value="inactive">Ẩn</option>
-      </select>
-    </div>
-
-    <button class="btn btn-primary" type="submit">{{ buttonText }}</button>
-  </form>
-</template>
+<style scoped></style>

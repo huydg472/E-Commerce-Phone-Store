@@ -1,17 +1,5 @@
-<script setup>
-import { formatCurrency } from '@/utils/formatCurrency'
+<script setup></script>
 
-defineProps({
-  item: {
-    type: Object,
-    required: true,
-  },
-})
-</script>
+<template></template>
 
-<template>
-  <div class="order-item">
-    {{ item.product_name || item.product?.name }} -
-    {{ item.quantity }} x {{ formatCurrency(item.price || 0) }}
-  </div>
-</template>
+<style scoped></style>

@@ -1,14 +1,5 @@
-<script setup>
-defineProps({
-  status: {
-    type: String,
-    default: 'pending',
-  },
-})
-</script>
+<script setup></script>
 
-<template>
-  <span class="badge">
-    {{ status }}
-  </span>
-</template>
+<template></template>
+
+<style scoped></style>

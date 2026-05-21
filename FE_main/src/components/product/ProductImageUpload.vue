@@ -1,10 +1,5 @@
-<script setup>
-defineEmits(['change'])
-</script>
+<script setup></script>
 
-<template>
-  <div class="form-group">
-    <label>Upload ảnh</label>
-    <input type="file" accept="image/*" @change="$emit('change', $event.target.files[0])">
-  </div>
-</template>
+<template></template>
+
+<style scoped></style>

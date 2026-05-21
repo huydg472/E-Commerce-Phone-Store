@@ -1,18 +1,5 @@
-<script setup>
-import AdminSidebar from '@/components/layout/AdminSidebar.vue'
-import AdminHeader from '@/components/layout/AdminHeader.vue'
-</script>
+<script setup></script>
 
-<template>
-  <div class="admin-layout">
-    <AdminSidebar />
+<template></template>
 
-    <div class="admin-main">
-      <AdminHeader />
-
-      <main class="admin-content">
-        <router-view />
-      </main>
-    </div>
-  </div>
-</template>
+<style scoped></style>

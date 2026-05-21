@@ -1,12 +1,5 @@
-<script setup>
-defineProps({
-  status: {
-    type: String,
-    default: 'unpaid',
-  },
-})
-</script>
+<script setup></script>
 
-<template>
-  <span>{{ status }}</span>
-</template>
+<template></template>
+
+<style scoped></style>

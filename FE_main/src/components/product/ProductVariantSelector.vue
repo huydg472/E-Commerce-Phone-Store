@@ -1,28 +1,5 @@
-<script setup>
-defineProps({
-  variants: {
-    type: Array,
-    default: () => [],
-  },
-  modelValue: {
-    type: [String, Number],
-    default: '',
-  },
-})
+<script setup></script>
 
-defineEmits(['update:modelValue'])
-</script>
+<template></template>
 
-<template>
-  <div class="variant-selector">
-    <button
-      v-for="variant in variants"
-      :key="variant.id"
-      type="button"
-      :class="{ active: modelValue === variant.id }"
-      @click="$emit('update:modelValue', variant.id)"
-    >
-      {{ variant.color }} - {{ variant.ram }} - {{ variant.storage }}
-    </button>
-  </div>
-</template>
+<style scoped></style>

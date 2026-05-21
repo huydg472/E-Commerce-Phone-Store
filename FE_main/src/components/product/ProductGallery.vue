@@ -1,34 +1,5 @@
-<script setup>
-import { APP_CONFIG } from '@/constants/appConfig'
+<script setup></script>
 
-defineProps({
-  images: {
-    type: Array,
-    default: () => [],
-  },
-})
-</script>
+<template></template>
 
-<template>
-  <div class="product-gallery">
-    <img
-      v-if="!images.length"
-      :src="APP_CONFIG.defaultProductImage"
-      alt="Default product"
-    >
-
-    <img
-      v-for="image in images"
-      :key="image.id || image.url"
-      :src="image.url"
-      :alt="image.name || 'Product image'"
-    >
-  </div>
-</template>
-
-<style scoped>
-.product-gallery {
-  display: grid;
-  gap: 12px;
-}
-</style>
+<style scoped></style>

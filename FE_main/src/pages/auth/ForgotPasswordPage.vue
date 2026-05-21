@@ -1,14 +1,5 @@
-<script setup>
-import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm.vue'
+<script setup></script>
 
-function handleSubmit(form) {
-  console.log('forgot password form', form)
-}
-</script>
+<template></template>
 
-<template>
-  <section>
-    <h1>Quên mật khẩu</h1>
-    <ForgotPasswordForm @submit="handleSubmit" />
-  </section>
-</template>
+<style scoped></style>
