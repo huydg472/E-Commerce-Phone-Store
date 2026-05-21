@@ -3,66 +3,51 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 
 class NewPasswordController extends Controller
 {
     /**
-     * Reset password
+     * Handle an incoming new password request.
+     *
+     * @throws ValidationException
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        //check validate
         $request->validate([
-
-            'token' => 'required',
-
-            'email' => 'required|email',
-
-            'password' => 'required|confirmed|min:6'
-
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
-        // so sánh token ng dugnf gửi vào token được lưu vòa DB
+
+        // Here we will attempt to reset the user's password. If it is successful we
+        // will update the password on an actual user model and persist it to the
+        // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
-
-            $request->only(
-                'email',
-                'password',
-                'password_confirmation',
-                'token'
-            ),
-            // sau khi check đúng token goi hàm callback dưới
-            function ($user, $password) {
-
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user) use ($request) {
                 $user->forceFill([
-
-                    'password' => $password
-
+                    'password' => Hash::make($request->string('password')),
+                    'remember_token' => Str::random(60),
                 ])->save();
 
-                $user->setRememberToken(Str::random(60));
+                event(new PasswordReset($user));
             }
-
         );
-        //kiểm tra lai pass
-        if ($status == Password::PASSWORD_RESET) {
 
-            return response()->json([
-
-                'message' => __($status)
-
+        if ($status != Password::PASSWORD_RESET) {
+            throw ValidationException::withMessages([
+                'email' => [__($status)],
             ]);
         }
 
-        return response()->json([
-
-            'message' => __($status)
-
-        ], 400);
+        return response()->json(['status' => __($status)]);
     }
 }
