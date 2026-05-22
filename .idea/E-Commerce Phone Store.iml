@@ -121,6 +121,9 @@
       <excludeFolder url="file://$MODULE_DIR$/BE_main/vendor/tijsverkoyen/css-to-inline-styles" />
       <excludeFolder url="file://$MODULE_DIR$/BE_main/vendor/vlucas/phpdotenv" />
       <excludeFolder url="file://$MODULE_DIR$/BE_main/vendor/voku/portable-ascii" />
+      <excludeFolder url="file://$MODULE_DIR$/BE_main/storage/app" />
+      <excludeFolder url="file://$MODULE_DIR$/BE_main/storage/framework" />
+      <excludeFolder url="file://$MODULE_DIR$/BE_main/vendor/_laravel_idea" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
