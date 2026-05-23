@@ -12,7 +12,7 @@ export const cartService = {
     create(data) {
         return api.post('/carts', data)
     },
-    s
+
     update(id, data) {
         return api.put(`/carts/${id}`, data)
     },
