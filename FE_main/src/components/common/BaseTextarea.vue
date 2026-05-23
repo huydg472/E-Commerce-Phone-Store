@@ -22,10 +22,10 @@ defineEmits(['update:modelValue'])
     <label v-if="label">{{ label }}</label>
 
     <textarea
-      class="form-control"
-      :rows="rows"
-      :value="modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
+        class="form-control"
+        :rows="rows"
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
     />
   </div>
 </template>

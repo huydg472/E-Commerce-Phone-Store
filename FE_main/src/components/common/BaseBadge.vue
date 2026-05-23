@@ -9,7 +9,7 @@ defineProps({
 
 <template>
   <span class="badge" :class="`badge--${variant}`">
-    <slot />
+    <slot/>
   </span>
 </template>
 

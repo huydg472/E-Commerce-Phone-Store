@@ -1,10 +1,9 @@
 <script setup>
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm.vue';
-
 </script>
 
 <template>
-    <ForgotPasswordForm />
+  <ForgotPasswordForm/>
 </template>
 
 <style scoped></style>

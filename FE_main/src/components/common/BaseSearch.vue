@@ -15,10 +15,10 @@ defineEmits(['update:modelValue', 'search'])
 
 <template>
   <input
-    class="form-control"
-    :placeholder="placeholder"
-    :value="modelValue"
-    @input="$emit('update:modelValue', $event.target.value)"
-    @keyup.enter="$emit('search')"
+      class="form-control"
+      :placeholder="placeholder"
+      :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)"
+      @keyup.enter="$emit('search')"
   >
 </template>

@@ -1,19 +1,19 @@
-import { ref } from 'vue'
+import {ref} from 'vue'
 
 export function useLoading(defaultValue = false) {
-  const loading = ref(defaultValue)
+    const loading = ref(defaultValue)
 
-  function startLoading() {
-    loading.value = true
-  }
+    function startLoading() {
+        loading.value = true
+    }
 
-  function stopLoading() {
-    loading.value = false
-  }
+    function stopLoading() {
+        loading.value = false
+    }
 
-  return {
-    loading,
-    startLoading,
-    stopLoading,
-  }
+    return {
+        loading,
+        startLoading,
+        stopLoading,
+    }
 }

@@ -1,23 +1,23 @@
 import api from './api'
 
 export const userService = {
-  getAll(params = {}) {
-    return api.get('/users', { params })
-  },
+    getAll(params = {}) {
+        return api.get('/users', {params})
+    },
 
-  getById(id) {
-    return api.get(`/users/${id}`)
-  },
+    getById(id) {
+        return api.get(`/users/${id}`)
+    },
 
-  create(data) {
-    return api.post('/users', data)
-  },
+    create(data) {
+        return api.post('/users', data)
+    },
 
-  update(id, data) {
-    return api.put(`/users/${id}`, data)
-  },
+    update(id, data) {
+        return api.put(`/users/${id}`, data)
+    },
 
-  delete(id) {
-    return api.delete(`/users/${id}`)
-  },
+    delete(id) {
+        return api.delete(`/users/${id}`)
+    },
 }

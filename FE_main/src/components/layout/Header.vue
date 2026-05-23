@@ -6,21 +6,22 @@
           <div class="logo-icon">
             <i class="bi bi-bag"></i>
           </div>
+
           <span class="logo-text">
-            Zin <strong>Moblie</strong>
+            Zin<strong>Mobile</strong>
           </span>
         </RouterLink>
 
         <div class="search-box">
-          <input type="text" placeholder="Bạn cần tìm gì?" />
-          <button>Tìm kiếm</button>
+          <input type="text" placeholder="Bạn cần tìm gì?"/>
+          <button type="button">Tìm kiếm</button>
         </div>
 
         <div class="header-actions">
           <RouterLink to="/auth/login" class="header-action">
             <i class="bi bi-person"></i>
             <span>
-              Tài khoản<br />
+              Tài khoản<br/>
               Đăng nhập
             </span>
           </RouterLink>
@@ -37,22 +38,6 @@
           </RouterLink>
         </div>
       </div>
-
-      <div class="header-nav">
-        <button class="category-btn">
-          <i class="bi bi-list"></i>
-          <span>Danh mục sản phẩm</span>
-        </button>
-
-        <nav class="main-menu">
-          <RouterLink to="/">Trang chủ</RouterLink>
-          <RouterLink to="/apple">Apple</RouterLink>
-          <RouterLink to="/samsung">Samsung</RouterLink>
-          <RouterLink to="/phu-kien">Phụ kiện</RouterLink>
-          <RouterLink to="/tin-tuc">Tin tức</RouterLink>
-          <RouterLink to="/lien-he">Liên hệ</RouterLink>
-        </nav>
-      </div>
     </div>
   </header>
 </template>
@@ -63,7 +48,7 @@
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
-  z-index: 99;
+  z-index: 100;
 }
 
 .header-top {
@@ -82,6 +67,7 @@
   color: var(--text-color);
   font-weight: 700;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .logo-icon {
@@ -162,6 +148,7 @@
   position: relative;
   white-space: nowrap;
   overflow: visible;
+  text-decoration: none;
 }
 
 .header-action i {
@@ -199,60 +186,6 @@
   z-index: 3;
 }
 
-.header-nav {
-  min-height: 50px;
-  display: grid;
-  grid-template-columns: 255px 1fr;
-  align-items: center;
-  gap: 30px;
-  padding: 8px 0;
-}
-
-.category-btn {
-  height: 40px;
-  border: none;
-  border-radius: 8px;
-  background: var(--primary-color);
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 10px;
-  padding: 0 10px;
-  width: 100%;
-  max-width: 205px;
-}
-
-.category-btn:hover {
-  background: var(--primary-hover);
-}
-
-.category-btn i {
-  font-size: 18px;
-}
-
-.main-menu {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 90px;
-  max-width: 100%;
-}
-
-.main-menu a {
-  color: var(--text-color);
-  font-weight: 700;
-  font-size: 16px;
-  line-height: 1.4;
-}
-
-.main-menu a.router-link-active,
-.main-menu a:hover {
-  color: var(--primary-color);
-}
-
 @media (max-width: 1200px) {
   .header-top {
     grid-template-columns: 240px 1fr;
@@ -263,37 +196,18 @@
     justify-content: center;
     padding-bottom: 12px;
   }
-
-  .header-nav {
-    gap: 30px;
-  }
 }
 
 @media (max-width: 900px) {
-
-  .header-top,
-  .header-nav {
-    grid-template-columns: 1fr;
-  }
-
   .header-top {
+    grid-template-columns: 1fr;
     gap: 14px;
   }
 
-  .header-nav {
-    gap: 16px;
-    padding-bottom: 12px;
-  }
-
-  .header-actions,
-  .main-menu {
+  .header-actions {
     flex-wrap: wrap;
     justify-content: center;
     gap: 18px;
-  }
-
-  .main-menu {
-    max-width: 100%;
   }
 
   .search-box {
@@ -321,10 +235,6 @@
 
   .header-action i {
     font-size: 24px;
-  }
-
-  .main-menu {
-    justify-content: flex-start;
   }
 }
 </style>

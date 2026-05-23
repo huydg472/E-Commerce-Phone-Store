@@ -106,7 +106,7 @@ const menuGroups = [
         <p class="nav-title">{{ group.title }}</p>
 
         <RouterLink v-for="item in group.items" :key="item.label" :to="item.to" class="nav-link-item"
-          active-class="active" @click="emit('close-mobile')">
+                    active-class="active" @click="emit('close-mobile')">
           <i class="bi" :class="item.icon"></i>
           <span>{{ item.label }}</span>
         </RouterLink>
@@ -132,9 +132,8 @@ const menuGroups = [
   display: flex;
   flex-direction: column;
   color: #dbeafe;
-  background:
-    radial-gradient(circle at top left, rgba(14, 165, 233, 0.2), transparent 36%),
-    linear-gradient(180deg, #061833 0%, #021124 100%);
+  background: radial-gradient(circle at top left, rgba(14, 165, 233, 0.2), transparent 36%),
+  linear-gradient(180deg, #061833 0%, #021124 100%);
   box-shadow: 16px 0 34px rgba(15, 23, 42, 0.12);
   transition: width 0.25s ease, transform 0.25s ease;
 }

@@ -17,12 +17,12 @@ defineProps({
 
 <template>
   <button
-    :type="type"
-    class="base-button"
-    :class="`base-button--${variant}`"
-    :disabled="disabled"
+      :type="type"
+      class="base-button"
+      :class="`base-button--${variant}`"
+      :disabled="disabled"
   >
-    <slot />
+    <slot/>
   </button>
 </template>
 

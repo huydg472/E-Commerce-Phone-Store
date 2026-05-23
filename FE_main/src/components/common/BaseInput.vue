@@ -25,11 +25,11 @@ defineEmits(['update:modelValue'])
   <div class="form-group">
     <label v-if="label">{{ label }}</label>
     <input
-      class="form-control"
-      :type="type"
-      :placeholder="placeholder"
-      :value="modelValue"
-      @input="$emit('update:modelValue', $event.target.value)"
+        class="form-control"
+        :type="type"
+        :placeholder="placeholder"
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
     >
   </div>
 </template>

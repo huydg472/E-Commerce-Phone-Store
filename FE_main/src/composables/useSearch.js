@@ -1,14 +1,14 @@
-import { ref } from 'vue'
+import {ref} from 'vue'
 
 export function useSearch(defaultKeyword = '') {
-  const keyword = ref(defaultKeyword)
+    const keyword = ref(defaultKeyword)
 
-  function setKeyword(value) {
-    keyword.value = value
-  }
+    function setKeyword(value) {
+        keyword.value = value
+    }
 
-  return {
-    keyword,
-    setKeyword,
-  }
+    return {
+        keyword,
+        setKeyword,
+    }
 }

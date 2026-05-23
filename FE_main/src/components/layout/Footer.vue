@@ -41,7 +41,7 @@
           <p>Nhận thông tin khuyến mãi mới nhất từ ZinMobile</p>
 
           <div class="newsletter-form">
-            <input type="email" placeholder="Nhập email của bạn" />
+            <input type="email" placeholder="Nhập email của bạn"/>
             <button>Đăng ký</button>
           </div>
         </div>

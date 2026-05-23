@@ -30,16 +30,16 @@ defineEmits(['update:modelValue'])
     <label v-if="label">{{ label }}</label>
 
     <select
-      class="form-control"
-      :value="modelValue"
-      @change="$emit('update:modelValue', $event.target.value)"
+        class="form-control"
+        :value="modelValue"
+        @change="$emit('update:modelValue', $event.target.value)"
     >
       <option value="">-- Chọn --</option>
 
       <option
-        v-for="option in options"
-        :key="option[optionValue]"
-        :value="option[optionValue]"
+          v-for="option in options"
+          :key="option[optionValue]"
+          :value="option[optionValue]"
       >
         {{ option[optionLabel] }}
       </option>

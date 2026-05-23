@@ -1,11 +1,11 @@
-import { useAuthStore } from '@/stores/authStore'
+import {useAuthStore} from '@/stores/authStore'
 
 export function guestGuard(to, from, next) {
-  const authStore = useAuthStore()
+    const authStore = useAuthStore()
 
-  if (authStore.isLoggedIn) {
-    return next({ name: 'home' })
-  }
+    if (authStore.isLoggedIn) {
+        return next({name: 'home'})
+    }
 
-  next()
+    next()
 }

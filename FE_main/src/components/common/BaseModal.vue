@@ -23,7 +23,7 @@ defineEmits(['close'])
         </div>
 
         <div class="modal-body">
-          <slot />
+          <slot/>
         </div>
       </div>
     </div>

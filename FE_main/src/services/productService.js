@@ -1,23 +1,23 @@
 import api from './api'
 
 export const productService = {
-  getAll(params = {}) {
-    return api.get('/products', { params })
-  },
+    getAll(params = {}) {
+        return api.get('/products', {params})
+    },
 
-  getById(id) {
-    return api.get(`/products/${id}`)
-  },
+    getById(id) {
+        return api.get(`/products/${id}`)
+    },
 
-  create(data) {
-    return api.post('/products', data)
-  },
+    create(data) {
+        return api.post('/products', data)
+    },
 
-  update(id, data) {
-    return api.put(`/products/${id}`, data)
-  },
+    update(id, data) {
+        return api.put(`/products/${id}`, data)
+    },
 
-  delete(id) {
-    return api.delete(`/products/${id}`)
-  },
+    delete(id) {
+        return api.delete(`/products/${id}`)
+    },
 }

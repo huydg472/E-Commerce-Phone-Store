@@ -18,7 +18,7 @@ const emit = defineEmits(['open-sidebar'])
     <div class="header-right">
       <form class="search-box" @submit.prevent>
         <i class="bi bi-search"></i>
-        <input type="search" placeholder="Tìm kiếm sản phẩm, đơn hàng, khách hàng..." />
+        <input type="search" placeholder="Tìm kiếm sản phẩm, đơn hàng, khách hàng..."/>
       </form>
 
       <button class="notification-btn" type="button" aria-label="Thông báo">
@@ -42,7 +42,7 @@ const emit = defineEmits(['open-sidebar'])
           <li><a class="dropdown-item" href="#">Thông tin tài khoản</a></li>
           <li><a class="dropdown-item" href="#">Cài đặt</a></li>
           <li>
-            <hr class="dropdown-divider" />
+            <hr class="dropdown-divider"/>
           </li>
           <li><a class="dropdown-item text-danger" href="#">Đăng xuất</a></li>
         </ul>

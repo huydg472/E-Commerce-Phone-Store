@@ -1,9 +1,9 @@
-import { useProductStore } from '@/stores/productStore'
+import {useProductStore} from '@/stores/productStore'
 
 export function useProduct() {
-  const productStore = useProductStore()
+    const productStore = useProductStore()
 
-  return {
-    productStore,
-  }
+    return {
+        productStore,
+    }
 }
