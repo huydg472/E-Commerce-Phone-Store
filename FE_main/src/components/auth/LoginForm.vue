@@ -1,5 +1,34 @@
 <script setup>
+import {reactive, ref} from 'vue'
 
+defineProps({
+  loading: {
+    type: Boolean,
+    default: false,
+  },
+  errorMessage: {
+    type: String,
+    default: '',
+  },
+})
+
+const emit = defineEmits(['submit-login'])
+
+const showPassword = ref(false)
+
+const form = reactive({
+  username: '',
+  password: '',
+  remember: false,
+})
+
+const submitLogin = () => {
+  emit('submit-login', {
+    username: form.username,
+    password: form.password,
+    remember: form.remember,
+  })
+}
 </script>
 
 <template>
@@ -19,38 +48,46 @@
       </div>
     </div>
 
-    <form>
+    <form @submit.prevent="submitLogin">
+      <!-- Username -->
       <div class="mb-4">
-        <label class="form-label fw-bold">Email hoặc số điện thoại</label>
+        <label class="form-label fw-bold">
+          Tên đăng nhập
+        </label>
 
         <div class="input-group auth-input">
-                    <span class="input-group-text">
-                        <i class="bi bi-person"></i>
-                    </span>
+          <span class="input-group-text">
+            <i class="bi bi-person"></i>
+          </span>
 
-          <input type="text" class="form-control" placeholder="Nhập email hoặc số điện thoại"/>
+          <input v-model.trim="form.username" type="text" class="form-control" placeholder="Nhập tên đăng nhập"/>
         </div>
       </div>
 
+      <!-- Password -->
       <div class="mb-3">
-        <label class="form-label fw-bold">Mật khẩu</label>
+        <label class="form-label fw-bold">
+          Mật khẩu
+        </label>
 
         <div class="input-group auth-input">
-                    <span class="input-group-text">
-                        <i class="bi bi-lock"></i>
-                    </span>
+          <span class="input-group-text">
+            <i class="bi bi-lock"></i>
+          </span>
 
-          <input type="password" class="form-control" placeholder="Nhập mật khẩu"/>
+          <input v-model.trim="form.password" :type="showPassword ? 'text' : 'password'" class="form-control"
+                 placeholder="Nhập mật khẩu"/>
 
-          <button type="button" class="input-group-text eye-btn">
-            <i class="bi bi-eye"></i>
+          <button type="button" class="input-group-text eye-btn" @click="showPassword = !showPassword">
+            <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
           </button>
         </div>
       </div>
 
+      <!-- Remember + Forgot password -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="rememberLogin"/>
+          <input v-model="form.remember" class="form-check-input" type="checkbox" id="rememberLogin"/>
 
           <label class="form-check-label" for="rememberLogin">
             Ghi nhớ đăng nhập
@@ -62,8 +99,16 @@
         </RouterLink>
       </div>
 
-      <button type="button" class="btn btn-primary w-100 auth-btn">
-        Đăng nhập
+      <!-- Error -->
+      <p v-if="errorMessage" class="text-danger small mb-3">
+        {{ errorMessage }}
+      </p>
+
+      <!-- Submit -->
+      <button type="submit" class="btn btn-primary w-100 auth-btn" :disabled="loading">
+        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+
+        {{ loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
       </button>
 
       <p class="text-center mt-4 mb-0 text-secondary">
@@ -75,8 +120,12 @@
     </form>
   </div>
 </template>
-
 <style scoped>
+.auth-input input::-ms-reveal,
+.auth-input input::-ms-clear {
+  display: none;
+}
+
 .login-form {
   max-width: 680px;
   margin-top: 6px;
@@ -140,10 +189,6 @@
   color: #7b8aad;
 }
 
-.eye-btn {
-  cursor: pointer;
-}
-
 .form-check-input:checked {
   background-color: #0066ff;
   border-color: #0066ff;
@@ -160,6 +205,10 @@
   font-size: 15px;
 }
 
+.eye-btn {
+  cursor: pointer;
+}
+
 .auth-btn {
   height: 58px;
   border-radius: 10px;
@@ -167,5 +216,16 @@
   border-color: #0066ff;
   font-size: 17px;
   font-weight: 700;
+}
+
+.auth-btn:hover {
+  background: #0055d6;
+  border-color: #0055d6;
+}
+
+.auth-btn:disabled {
+  background: #7aadff;
+  border-color: #7aadff;
+  cursor: not-allowed;
 }
 </style>

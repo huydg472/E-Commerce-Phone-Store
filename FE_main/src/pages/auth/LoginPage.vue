@@ -1,9 +1,69 @@
 <script setup>
-import LoginForm from '@/components/auth/LoginForm.vue';
+import {ref} from 'vue'
+import {useRouter} from 'vue-router'
+
+import LoginForm from '@/components/auth/LoginForm.vue'
+import {useAuthStore} from '@/stores/authStore.js'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const loading = ref(false)
+const errorMessage = ref('')
+
+const handleLogin = async (formData) => {
+  errorMessage.value = ''
+
+  if (!formData.username || !formData.password) {
+    errorMessage.value = 'Vui lòng nhập đầy đủ tài khoản và mật khẩu.'
+    return
+  }
+
+  try {
+    loading.value = true
+
+    await authStore.login({
+      username: formData.username,
+      password: formData.password,
+      remember: formData.remember,
+    })
+
+    const user = authStore.user
+    const roleId = Number(user?.['role_id'])
+
+    if (roleId === 1 || roleId === 2) {
+      await router.push('/admin/dashboard')
+      return
+    }
+
+    if (roleId === 3) {
+      await router.push('/')
+      return
+    }
+
+    await router.push('/')
+  } catch (error) {
+    if (error.response?.status === 401) {
+      errorMessage.value = 'Tài khoản hoặc mật khẩu không đúng.'
+      return
+    }
+
+    if (error.response?.status === 422) {
+      errorMessage.value = 'Dữ liệu đăng nhập không hợp lệ.'
+      return
+    }
+
+    errorMessage.value = 'Đăng nhập thất bại. Vui lòng thử lại.'
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
-  <LoginForm/>
+  <LoginForm
+      :loading="loading"
+      :error-message="errorMessage"
+      @submit-login="handleLogin"
+  />
 </template>
-
-<style scoped></style>

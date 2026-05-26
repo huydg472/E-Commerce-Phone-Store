@@ -1,13 +1,11 @@
 <?php
-
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
@@ -19,7 +17,7 @@ class RegisteredUserController extends Controller
      *
      * @throws ValidationException
      */
-    public function store(Request $request): Response
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -30,27 +28,20 @@ class RegisteredUserController extends Controller
         ]);
 
         $user = User::create([
-
-            'role_id' => 1,
-
+            'role_id' => 3,
             'name' => $request->name,
-
             'email' => $request->email,
-
             'phone' => $request->phone,
-
             'username' => $request->username,
-
-            'password' => $request->password,
-
-            'status' => 'active'
-
+            'password' => Hash::make($request->password),
+            'status' => 'active',
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return response()->noContent();
+        return response()->json([
+            'message' => 'Đăng ký tài khoản thành công',
+            'user' => $user,
+        ], 201);
     }
 }
