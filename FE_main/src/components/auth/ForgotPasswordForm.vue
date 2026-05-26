@@ -1,5 +1,34 @@
 <script setup>
+import {reactive} from 'vue'
 
+defineProps({
+  loading: {
+    type: Boolean,
+    default: false
+  },
+
+  errorMessage: {
+    type: String,
+    default: ''
+  },
+
+  successMessage: {
+    type: String,
+    default: ''
+  },
+})
+
+const emit = defineEmits(['submit-forgot-password'])
+
+const form = reactive({
+  email: '',
+})
+
+const submitForgotPassword = () => {
+  emit('submit-forgot-password', {
+    email: form.email,
+  })
+}
 </script>
 
 <template>
@@ -25,98 +54,73 @@
       </p>
     </div>
 
-    <form>
+    <form @submit.prevent="submitForgotPassword">
       <div class="mb-4">
         <label class="form-label fw-bold">Email</label>
-
         <div class="input-group auth-input">
-                    <span class="input-group-text">
-                        <i class="bi bi-envelope"></i>
-                    </span>
-
-          <input type="email" class="form-control" placeholder="Nhập email của bạn"/>
+          <span class="input-group-text">
+            <i class="bi bi-envelope"></i>
+          </span>
+          <input v-model.trim="form.email" type="email" class="form-control" placeholder="Nhập email của bạn"/>
         </div>
       </div>
 
-      <button type="button" class="btn btn-primary w-100 auth-btn">
-        Gửi liên kết đặt lại mật khẩu
+      <p v-if="errorMessage" class="text-danger small mb-3">
+        {{ errorMessage }}
+      </p>
+
+      <p v-if="successMessage" class="text-success small mb-3">
+        {{ successMessage }}
+      </p>
+
+      <button type="submit" class="btn btn-primary w-100 auth-btn" :disabled="loading">
+        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+        {{ loading ? 'Đang gửi...' : 'Gửi liên kết đặt lại mật khẩu' }}
       </button>
     </form>
   </div>
 </template>
 
 <style scoped>
-.forgot-form {
-  max-width: 560px;
-  padding-top: 26px;
-}
-
-.back-link {
-  color: #0066ff;
-  font-size: 17px;
-}
-
-.forgot-content {
-  margin-top: 34px;
-}
-
-.forgot-icon {
-  width: 132px;
-  height: 132px;
-  border-radius: 50%;
-  background: #edf4ff;
-  color: #0066ff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  font-size: 56px;
-}
-
-.key-icon {
-  position: absolute;
-  right: 32px;
-  bottom: 32px;
-  font-size: 30px;
-}
-
-.forgot-title {
-  color: #061c46;
-  font-size: 34px;
-}
-
-.forgot-desc {
-  max-width: 430px;
-  color: #52627a;
-  font-size: 18px;
-  line-height: 1.6;
-}
-
 .form-label {
   font-size: 16px;
   color: #111827;
 }
 
 .auth-input {
-  height: 62px;
+  height: 58px;
   border: 1px solid #d8e1ee;
   border-radius: 10px;
   overflow: hidden;
   background: #ffffff;
 }
 
+.auth-input:focus-within {
+  border-color: #0066ff;
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.08);
+}
+
 .auth-input .input-group-text {
   background: #ffffff;
   border: none;
   color: #66789f;
-  font-size: 22px;
-  padding: 0 18px;
+  font-size: 20px;
+  padding: 0 16px;
 }
 
 .auth-input .form-control {
   border: none;
   box-shadow: none;
-  font-size: 17px;
+  font-size: 16px;
+}
+
+.auth-input .form-control::placeholder {
+  color: #7b8aad;
+}
+
+.auth-input input::-ms-reveal,
+.auth-input input::-ms-clear {
+  display: none;
 }
 
 .auth-btn {
@@ -124,7 +128,18 @@
   border-radius: 10px;
   background: #0066ff;
   border-color: #0066ff;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
+}
+
+.auth-btn:hover {
+  background: #0055d6;
+  border-color: #0055d6;
+}
+
+.auth-btn:disabled {
+  background: #7aadff;
+  border-color: #7aadff;
+  cursor: not-allowed;
 }
 </style>

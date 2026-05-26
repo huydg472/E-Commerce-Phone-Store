@@ -11,12 +11,19 @@ const progressWidth = computed(() => {
   return (countdown.value / 5) * 100
 })
 
-const goToLogin = () => {
+const goToLogin = async () => {
   sessionStorage.removeItem('reset_password_success')
-  router.replace('/auth/login')
+  await router.replace('/auth/login')
 }
 
-onMounted(() => {
+onMounted(async () => {
+  const isSuccess = sessionStorage.getItem('reset_password_success')
+
+  if (isSuccess !== 'true') {
+    await router.replace('/auth/forgot-password')
+    return
+  }
+
   timer = setInterval(() => {
     countdown.value--
 
@@ -53,21 +60,20 @@ onBeforeUnmount(() => {
 
       <div class="countdown-box d-flex align-items-center justify-content-center gap-3 mx-auto mb-4">
         <i class="bi bi-clock"></i>
-
         <span>
-                    Tự động quay về trang đăng nhập sau
-                    <strong>5 giây</strong>
-                </span>
+          Tự động quay về trang đăng nhập sau
+          <strong>{{ countdown }} giây</strong>
+        </span>
       </div>
 
       <div class="progress reset-progress mb-4">
-        <div class="progress-bar" style="width: 80%"></div>
+        <div class="progress-bar" :style="{ width: progressWidth + '%' }"></div>
       </div>
 
-      <RouterLink to="/auth/login" class="btn back-login-btn mb-4">
+      <button type="button" class="btn back-login-btn mb-4" @click="goToLogin">
         <i class="bi bi-arrow-counterclockwise me-2"></i>
         Quay về đăng nhập ngay
-      </RouterLink>
+      </button>
 
       <hr/>
 
@@ -150,6 +156,7 @@ onBeforeUnmount(() => {
 
 .progress-bar {
   background: #0066ff;
+  transition: width 1s linear;
 }
 
 .back-login-btn {
@@ -158,6 +165,10 @@ onBeforeUnmount(() => {
   font-weight: 700;
   border: none;
   text-decoration: none;
+}
+
+.back-login-btn:hover {
+  color: #0055d6;
 }
 
 .note {
