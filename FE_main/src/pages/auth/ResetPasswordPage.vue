@@ -1,77 +1,4 @@
 <script setup>
-import {onMounted, reactive, ref} from 'vue'
-import {useRoute, useRouter} from 'vue-router'
-import api from '@/services/api'
-
-const route = useRoute()
-const router = useRouter()
-
-const loading = ref(false)
-const errorMessage = ref('')
-const showPassword = ref(false)
-const showConfirmPassword = ref(false)
-
-const form = reactive({
-  password: '',
-  password_confirmation: '',
-})
-
-onMounted(async () => {
-  if (!route.query.email || !route.query.token) {
-    await router.replace('/auth/forgot-password')
-  }
-})
-
-const handleResetPassword = async () => {
-  errorMessage.value = ''
-
-  if (!form.password || !form.password_confirmation) {
-    errorMessage.value = 'Vui lòng nhập đầy đủ mật khẩu.'
-    return
-  }
-
-  if (form.password.length < 8) {
-    errorMessage.value = 'Mật khẩu phải có ít nhất 8 ký tự.'
-    return
-  }
-
-  if (form.password !== form.password_confirmation) {
-    errorMessage.value = 'Mật khẩu xác nhận không khớp.'
-    return
-  }
-
-  try {
-    loading.value = true
-
-    await api.post('/reset-password', {
-      email: route.query.email,
-      token: route.query.token,
-      password: form.password,
-      password_confirmation: form.password_confirmation,
-    })
-
-    sessionStorage.setItem('reset_password_success', 'true')
-
-    await router.replace('/auth/reset-password-success')
-  } catch (error) {
-    if (error.response?.status === 422) {
-      const errors = error.response.data.errors
-
-      if (errors) {
-        const firstErrorKey = Object.keys(errors)[0]
-        errorMessage.value = errors[firstErrorKey][0]
-        return
-      }
-
-      errorMessage.value = 'Dữ liệu đặt lại mật khẩu không hợp lệ.'
-      return
-    }
-
-    errorMessage.value = 'Liên kết không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.'
-  } finally {
-    loading.value = false
-  }
-}
 </script>
 
 <template>
@@ -92,20 +19,19 @@ const handleResetPassword = async () => {
         </p>
       </div>
 
-      <form @submit.prevent="handleResetPassword">
+      <form>
         <div class="mb-4">
           <label class="form-label fw-bold">Mật khẩu mới</label>
 
           <div class="input-group auth-input">
-            <span class="input-group-text">
-              <i class="bi bi-lock"></i>
-            </span>
+                        <span class="input-group-text">
+                            <i class="bi bi-lock"></i>
+                        </span>
 
-            <input v-model.trim="form.password" :type="showPassword ? 'text' : 'password'" class="form-control"
-                   placeholder="Nhập mật khẩu mới"/>
+            <input type="password" class="form-control" placeholder="Nhập mật khẩu mới"/>
 
-            <button type="button" class="input-group-text eye-btn" @click="showPassword = !showPassword">
-              <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+            <button type="button" class="input-group-text eye-btn">
+              <i class="bi bi-eye"></i>
             </button>
           </div>
         </div>
@@ -114,26 +40,20 @@ const handleResetPassword = async () => {
           <label class="form-label fw-bold">Xác nhận mật khẩu</label>
 
           <div class="input-group auth-input">
-            <span class="input-group-text">
-              <i class="bi bi-lock"></i>
-            </span>
+                        <span class="input-group-text">
+                            <i class="bi bi-lock"></i>
+                        </span>
 
-            <input v-model.trim="form.password_confirmation" :type="showConfirmPassword ? 'text' : 'password'"
-                   class="form-control" placeholder="Nhập lại mật khẩu mới"/>
+            <input type="password" class="form-control" placeholder="Nhập lại mật khẩu mới"/>
 
-            <button type="button" class="input-group-text eye-btn" @click="showConfirmPassword = !showConfirmPassword">
-              <i :class="showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+            <button type="button" class="input-group-text eye-btn">
+              <i class="bi bi-eye"></i>
             </button>
           </div>
         </div>
 
-        <p v-if="errorMessage" class="text-danger small mb-3">
-          {{ errorMessage }}
-        </p>
-
-        <button type="submit" class="btn btn-primary w-100 auth-btn" :disabled="loading">
-          <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
-          {{ loading ? 'Đang đặt lại...' : 'Đặt lại mật khẩu' }}
+        <button type="button" class="btn btn-primary w-100 auth-btn">
+          Đặt lại mật khẩu
         </button>
       </form>
     </div>
@@ -141,11 +61,6 @@ const handleResetPassword = async () => {
 </template>
 
 <style scoped>
-.auth-input input::-ms-reveal,
-.auth-input input::-ms-clear {
-  display: none;
-}
-
 .reset-page {
   background: radial-gradient(circle at top left, rgba(0, 102, 255, 0.08), transparent 34%),
   radial-gradient(circle at bottom right, rgba(0, 102, 255, 0.08), transparent 34%),
