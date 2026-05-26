@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from 'vue'
 import {useRouter} from 'vue-router'
+
 import LoginForm from '@/components/auth/LoginForm.vue'
 import {useAuthStore} from '@/stores/authStore.js'
 
@@ -11,46 +12,37 @@ const loading = ref(false)
 const errorMessage = ref('')
 
 const handleLogin = async (formData) => {
-  console.log('Đã nhận dữ liệu từ LoginForm:', formData)
-
   errorMessage.value = ''
 
   if (!formData.username || !formData.password) {
-    errorMessage.value = 'Vui lòng nhập đầy đủ tài khoản hoặc mật khẩu'
+    errorMessage.value = 'Vui lòng nhập đầy đủ tài khoản và mật khẩu.'
     return
   }
 
   try {
     loading.value = true
 
-    const response = await authStore.login({
+    await authStore.login({
       username: formData.username,
       password: formData.password,
       remember: formData.remember,
     })
 
-    console.log('Response login:', response)
-    console.log('Auth store user:', authStore.user)
-
     const user = authStore.user
-
-    const roleId = Number(user?.role_id)
+    const roleId = Number(user?.['role_id'])
 
     if (roleId === 1 || roleId === 2) {
-      router.push('/admin/dashboard')
+      await router.push('/admin/dashboard')
       return
     }
 
     if (roleId === 3) {
-      router.push('/')
+      await router.push('/')
       return
     }
 
-    console.warn('Không xác định được role, chuyển về home:', user)
-    router.push('/')
+    await router.push('/')
   } catch (error) {
-    console.log('Lỗi đăng nhập:', error.response?.data || error)
-
     if (error.response?.status === 401) {
       errorMessage.value = 'Tài khoản hoặc mật khẩu không đúng.'
       return
