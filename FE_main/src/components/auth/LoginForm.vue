@@ -1,5 +1,26 @@
 <script setup>
+import { reactive } from "vue";
 
+defineProps({
+  loading: {type: Boolean, default: false},
+  errorMessage: {type: String, default: ''},
+})
+
+const emit = defineEmits(["submit-login"]);
+
+const form = reactive({
+  username: '',
+  password: '',
+  remember: false,
+})
+
+const submitLogin = () => {
+  emit("submit-login", {
+    username: form.username,
+    password: form.password,
+    remember: form.remember,
+  });
+}
 </script>
 
 <template>
@@ -19,16 +40,16 @@
       </div>
     </div>
 
-    <form>
+    <form @submit.prevent="submitLogin">
       <div class="mb-4">
-        <label class="form-label fw-bold">Email hoặc số điện thoại</label>
+        <label class="form-label fw-bold">Tên đăng nhập</label>
 
         <div class="input-group auth-input">
                     <span class="input-group-text">
                         <i class="bi bi-person"></i>
                     </span>
 
-          <input type="text" class="form-control" placeholder="Nhập email hoặc số điện thoại"/>
+          <input v-model.trim="form.username" type="text" class="form-control" placeholder="Nhập tên đăng nhập"/>
         </div>
       </div>
 
@@ -40,17 +61,14 @@
                         <i class="bi bi-lock"></i>
                     </span>
 
-          <input type="password" class="form-control" placeholder="Nhập mật khẩu"/>
-
-          <button type="button" class="input-group-text eye-btn">
-            <i class="bi bi-eye"></i>
-          </button>
+          <input v-model.trim="form.password" type="password"
+                 class="form-control" placeholder="Nhập mật khẩu"/>
         </div>
       </div>
 
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="rememberLogin"/>
+          <input v-model="form.remember" class="form-check-input" type="checkbox" id="rememberLogin"/>
 
           <label class="form-check-label" for="rememberLogin">
             Ghi nhớ đăng nhập
@@ -62,8 +80,12 @@
         </RouterLink>
       </div>
 
-      <button type="button" class="btn btn-primary w-100 auth-btn">
-        Đăng nhập
+      <p v-if="errorMessage" class="text-danger small mb-3">
+        {{ errorMessage }}
+      </p>
+
+      <button type="submit" class="btn btn-primary w-100 auth-btn" :disabled="loading">
+        {{ loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}
       </button>
 
       <p class="text-center mt-4 mb-0 text-secondary">
@@ -138,10 +160,6 @@
 
 .auth-input .form-control::placeholder {
   color: #7b8aad;
-}
-
-.eye-btn {
-  cursor: pointer;
 }
 
 .form-check-input:checked {
