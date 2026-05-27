@@ -1,38 +1,22 @@
 <script setup>
-import {ref} from 'vue'
+import { ref } from 'vue'
 import AdminHeader from '@/components/layout/AdminHeader.vue'
 import AdminSidebar from '@/components/layout/AdminSidebar.vue'
 
-const isSidebarCollapsed = ref(false)
-const isMobileSidebarOpen = ref(false)
-
-const toggleSidebar = () => {
-  isSidebarCollapsed.value = !isSidebarCollapsed.value
-}
-
-const openMobileSidebar = () => {
-  isMobileSidebarOpen.value = true
-}
-
-const closeMobileSidebar = () => {
-  isMobileSidebarOpen.value = false
-}
+const sidebarOpen = ref(false)
 </script>
 
 <template>
   <div class="admin-layout">
-    <AdminSidebar :collapsed="isSidebarCollapsed" :mobile-open="isMobileSidebarOpen" @toggle="toggleSidebar"
-                  @close-mobile="closeMobileSidebar"/>
+    <AdminSidebar :is-open="sidebarOpen" @close="sidebarOpen = false"/>
 
-    <div class="admin-overlay" :class="{ show: isMobileSidebarOpen }" @click="closeMobileSidebar"/>
+    <div class="admin-main">
+      <AdminHeader @open-sidebar="sidebarOpen = true" />
 
-    <main class="admin-main" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-      <AdminHeader @open-sidebar="openMobileSidebar"/>
-
-      <section class="admin-content">
-        <RouterView/>
-      </section>
-    </main>
+      <main class="admin-content">
+        <RouterView />
+      </main>
+    </div>
   </div>
 </template>
 
@@ -40,47 +24,31 @@ const closeMobileSidebar = () => {
 .admin-layout {
   min-height: 100vh;
   background: #f6f8fc;
+  display: flex;
 }
 
 .admin-main {
-  min-height: 100vh;
-  margin-left: 290px;
-  transition: margin-left 0.25s ease;
-}
-
-.admin-main.sidebar-collapsed {
-  margin-left: 94px;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-content {
-  padding: 22px 34px 32px;
-  overflow-x: hidden;
+  flex: 1;
+  padding: 24px 28px 28px;
+  background: #f6f8fc;
 }
 
-.admin-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1030;
-  background: rgba(15, 23, 42, 0.42);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-
-.admin-overlay.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-@media (max-width: 991.98px) {
-
-  .admin-main,
-  .admin-main.sidebar-collapsed {
-    margin-left: 0;
-  }
-
+@media (max-width: 1200px) {
   .admin-content {
-    padding: 18px 16px 28px;
+    padding: 20px 22px 24px;
+  }
+}
+
+@media (max-width: 700px) {
+  .admin-content {
+    padding: 16px;
   }
 }
 </style>

@@ -1,320 +1,436 @@
 <script setup>
-const props = defineProps({
-  collapsed: {
-    type: Boolean,
-    default: false,
-  },
-  mobileOpen: {
+import {useRoute, useRouter} from 'vue-router'
+import {useAuthStore} from '@/stores/authStore.js'
+
+defineProps({
+  isOpen: {
     type: Boolean,
     default: false,
   },
 })
 
-const emit = defineEmits(['toggle', 'close-mobile'])
+const emit = defineEmits(['close'])
+
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
 
 const menuGroups = [
   {
-    title: 'TỔNG QUAN',
+    title: 'Tổng quan',
     items: [
       {
         label: 'Dashboard',
-        icon: 'bi-house-fill',
+        icon: 'bi bi-grid',
         to: '/admin/dashboard',
+        match: '/admin/dashboard',
       },
     ],
   },
   {
-    title: 'QUẢN LÝ CỬA HÀNG',
+    title: 'Quản lý bán hàng',
     items: [
       {
         label: 'Sản phẩm',
-        icon: 'bi-phone',
+        icon: 'bi bi-phone',
         to: '/admin/products',
+        match: '/admin/products',
       },
       {
         label: 'Danh mục',
-        icon: 'bi-list-ul',
+        icon: 'bi bi-grid-3x3-gap',
         to: '/admin/categories',
+        match: '/admin/categories',
+      },
+      {
+        label: 'Thương hiệu',
+        icon: 'bi bi-award',
+        to: '/admin/brands',
+        match: '/admin/brands',
       },
       {
         label: 'Đơn hàng',
-        icon: 'bi-cart3',
+        icon: 'bi bi-receipt',
         to: '/admin/orders',
-      },
-      {
-        label: 'Khách hàng',
-        icon: 'bi-people-fill',
-        to: '/admin/customers',
-      },
-      {
-        label: 'Khuyến mãi',
-        icon: 'bi-patch-check-fill',
-        to: '/admin/promotions',
+        match: '/admin/orders',
       },
     ],
   },
   {
-    title: 'QUẢN TRỊ HỆ THỐNG',
+    title: 'Quản lý người dùng',
     items: [
       {
-        label: 'Tài khoản',
-        icon: 'bi-person-fill',
-        to: '/admin/users',
+        label: 'Khách hàng',
+        icon: 'bi bi-people',
+        to: '/admin/customers',
+        match: '/admin/customers',
       },
       {
-        label: 'Phân quyền',
-        icon: 'bi-shield-shaded',
-        to: '/admin/roles',
+        label: 'Nhân viên',
+        icon: 'bi bi-person-badge',
+        to: '/admin/staff',
+        match: '/admin/staff',
+      },
+    ],
+  },
+  {
+    title: 'Nội dung & hệ thống',
+    items: [
+      {
+        label: 'Tin tức',
+        icon: 'bi bi-newspaper',
+        to: '/admin/news',
+        match: '/admin/news',
       },
       {
-        label: 'Thống kê',
-        icon: 'bi-bar-chart-line-fill',
-        to: '/admin/reports',
+        label: 'Banner',
+        icon: 'bi bi-image',
+        to: '/admin/banners',
+        match: '/admin/banners',
       },
       {
         label: 'Cài đặt',
-        icon: 'bi-gear-fill',
+        icon: 'bi bi-gear',
         to: '/admin/settings',
+        match: '/admin/settings',
       },
     ],
   },
 ]
+
+const isActive = (item) => {
+  return route.path.startsWith(item.match)
+}
+
+const handleClose = () => {
+  emit('close')
+}
+
+const handleLogout = async () => {
+  await authStore.logout()
+  emit('close')
+  await router.replace('/auth/login')
+}
 </script>
 
 <template>
-  <aside class="admin-sidebar" :class="{
-    collapsed: props.collapsed,
-    'mobile-open': props.mobileOpen,
-  }">
-    <div class="sidebar-brand">
-      <div class="brand-logo">
-        <i class="bi bi-phone"></i>
-      </div>
+  <div v-if="isOpen" class="sidebar-overlay d-lg-none" @click="handleClose"></div>
 
-      <div class="brand-content">
-        <h1>Zin Mobile</h1>
-        <p>Admin Dashboard</p>
-      </div>
+  <aside class="admin-sidebar" :class="{ 'is-open': isOpen }">
+    <!-- Top -->
+    <div class="sidebar-top">
+      <RouterLink to="/admin/dashboard" class="brand" @click="handleClose">
+        <span class="brand-logo">
+          <i class="bi bi-phone"></i>
+        </span>
 
-      <button class="btn close-sidebar-btn d-lg-none" type="button" @click="emit('close-mobile')">
+        <span class="brand-text">
+          <strong>ZinMobile</strong>
+          <small>Admin Panel</small>
+        </span>
+      </RouterLink>
+
+      <button class="sidebar-close d-lg-none" type="button" @click="handleClose">
         <i class="bi bi-x-lg"></i>
       </button>
     </div>
 
-    <nav class="sidebar-nav">
-      <div v-for="group in menuGroups" :key="group.title" class="nav-group">
-        <p class="nav-title">{{ group.title }}</p>
+    <!-- Menu -->
+    <div class="sidebar-body">
+      <div v-for="group in menuGroups" :key="group.title" class="sidebar-group">
+        <p class="group-title">
+          {{ group.title }}
+        </p>
 
-        <RouterLink v-for="item in group.items" :key="item.label" :to="item.to" class="nav-link-item"
-                    active-class="active" @click="emit('close-mobile')">
-          <i class="bi" :class="item.icon"></i>
-          <span>{{ item.label }}</span>
-        </RouterLink>
+        <ul class="menu-list">
+          <li v-for="item in group.items" :key="item.to">
+            <RouterLink :to="item.to" class="menu-link" :class="{ active: isActive(item) }" @click="handleClose">
+              <span class="menu-icon">
+                <i :class="item.icon"></i>
+              </span>
+              <span class="menu-label">
+                {{ item.label }}
+              </span>
+            </RouterLink>
+          </li>
+        </ul>
       </div>
-    </nav>
+    </div>
 
-    <button class="collapse-btn" type="button" @click="emit('toggle')">
-      <span class="collapse-icon">
-        <i class="bi" :class="props.collapsed ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
-      </span>
-      <span>Thu gọn</span>
-    </button>
+    <!-- Bottom -->
+    <div class="sidebar-bottom">
+      <button class="logout-btn" type="button" @click="handleLogout">
+        <span class="menu-icon">
+          <i class="bi bi-box-arrow-right"></i>
+        </span>
+        <span class="menu-label">Đăng xuất</span>
+      </button>
+    </div>
   </aside>
 </template>
 
 <style scoped>
 .admin-sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
-  z-index: 1040;
-  width: 290px;
+  width: 280px;
   min-height: 100vh;
+  background: #ffffff;
+  border-right: 1px solid #e5eaf3;
   display: flex;
   flex-direction: column;
-  color: #dbeafe;
-  background: radial-gradient(circle at top left, rgba(14, 165, 233, 0.2), transparent 36%),
-  linear-gradient(180deg, #061833 0%, #021124 100%);
-  box-shadow: 16px 0 34px rgba(15, 23, 42, 0.12);
-  transition: width 0.25s ease, transform 0.25s ease;
+  position: sticky;
+  top: 0;
+  z-index: 1040;
 }
 
-.sidebar-brand {
+/* Overlay */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 1039;
+}
+
+/* Top */
+.sidebar-top {
+  height: 84px;
+  padding: 20px 50px 15px;
+  border-bottom: 1px solid #eef2f7;
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 27px 18px 26px 32px;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
 }
 
 .brand-logo {
-  width: 38px;
-  height: 58px;
-  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
   display: grid;
   place-items: center;
-  border: 3px solid #1294ff;
-  border-radius: 9px;
-  color: #1294ff;
-  font-size: 24px;
-  box-shadow: inset 0 0 14px rgba(18, 148, 255, 0.22);
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  font-size: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 10px 22px rgba(37, 99, 235, 0.2);
 }
 
-.brand-content h1 {
-  margin: 0;
-  color: #ffffff;
-  font-size: 27px;
+.brand-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-text strong {
+  color: #0f172a;
+  font-size: 22px;
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.1;
+}
+
+.brand-text small {
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.sidebar-close {
+  width: 38px;
+  height: 38px;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #334155;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.sidebar-close:hover {
+  color: #2563eb;
+  background: #eef5ff;
+  border-color: #bfdbfe;
+}
+
+/* Body */
+.sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 12px 18px;
+}
+
+.sidebar-group + .sidebar-group {
+  margin-top: 14px;
+}
+
+.group-title {
+  margin: 0 10px 8px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   white-space: nowrap;
 }
 
-.brand-content p {
-  margin: 4px 0 0;
-  color: #d4d9e4;
+.menu-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu-list li + li {
+  margin-top: 4px;
+}
+
+.menu-link,
+.logout-btn {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #334155;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s ease;
+  position: relative;
+}
+
+.menu-link:hover,
+.logout-btn:hover {
+  background: #f4f8ff;
+  color: #2563eb;
+}
+
+.menu-link.active {
+  background: #eef5ff;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.menu-link.active .menu-icon,
+.menu-link:hover .menu-icon,
+.logout-btn:hover .menu-icon {
+  color: #2563eb;
+}
+
+.menu-link.active::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  border-radius: 999px;
+  background: #2563eb;
+  position: absolute;
+  left: 0;
+}
+
+.menu-icon {
+  width: 20px;
+  min-width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
   font-size: 18px;
+  transition: 0.2s ease;
+}
+
+.menu-label {
+  font-size: 15px;
+  font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
 }
 
-.close-sidebar-btn {
-  margin-left: auto;
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+/* Bottom */
+.sidebar-bottom {
+  padding: 14px 12px 18px;
+  border-top: 1px solid #eef2f7;
 }
 
-.sidebar-nav {
-  flex: 1;
-  padding: 0 18px 16px;
-  overflow-y: auto;
+.logout-btn {
+  color: #ef4444;
 }
 
-.sidebar-nav::-webkit-scrollbar {
-  width: 0;
+.logout-btn .menu-icon {
+  color: #ef4444;
 }
 
-.nav-group {
-  margin-bottom: 24px;
+.logout-btn:hover {
+  background: #fff1f2;
+  color: #dc2626;
 }
 
-.nav-title {
-  margin: 0 0 12px 12px;
-  color: #cbd5e1;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.045em;
+.logout-btn:hover .menu-icon {
+  color: #dc2626;
 }
 
-.nav-link-item {
-  min-height: 54px;
-  display: flex;
-  align-items: center;
-  gap: 19px;
-  padding: 0 18px;
-  margin-bottom: 8px;
-  color: #e2e8f0;
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 18px;
-  font-weight: 500;
-  transition: all 0.18s ease;
+/* Scrollbar */
+.sidebar-body::-webkit-scrollbar {
+  width: 6px;
 }
 
-.nav-link-item i {
-  width: 28px;
-  font-size: 24px;
-  text-align: center;
-  color: rgba(226, 232, 240, 0.86);
+.sidebar-body::-webkit-scrollbar-thumb {
+  background: #d7e0ec;
+  border-radius: 999px;
 }
 
-.nav-link-item:hover,
-.nav-link-item.active {
-  color: #ffffff;
-  background: linear-gradient(135deg, #0d8cff, #0069ff);
-  box-shadow: 0 12px 25px rgba(0, 105, 255, 0.25);
-}
-
-.nav-link-item:hover i,
-.nav-link-item.active i {
-  color: #ffffff;
-}
-
-.collapse-btn {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  min-height: 70px;
-  margin: 0 23px 24px;
-  padding: 0 13px;
-  color: #dbeafe;
+.sidebar-body::-webkit-scrollbar-track {
   background: transparent;
-  border: 0;
-  border-top: 1px solid rgba(148, 163, 184, 0.18);
-  font-size: 18px;
 }
 
-.collapse-icon {
-  width: 32px;
-  height: 32px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  color: #0f172a;
-  background: #cbd5e1;
+/* Desktop */
+@media (min-width: 992px) {
+  .admin-sidebar {
+    transform: none !important;
+  }
 }
 
-.admin-sidebar.collapsed {
-  width: 94px;
-}
-
-.admin-sidebar.collapsed .brand-content,
-.admin-sidebar.collapsed .nav-title,
-.admin-sidebar.collapsed .nav-link-item span,
-.admin-sidebar.collapsed .collapse-btn span:last-child {
-  display: none;
-}
-
-.admin-sidebar.collapsed .sidebar-brand {
-  justify-content: center;
-  padding-inline: 16px;
-}
-
-.admin-sidebar.collapsed .sidebar-nav {
-  padding-inline: 14px;
-}
-
-.admin-sidebar.collapsed .nav-link-item {
-  justify-content: center;
-  padding-inline: 0;
-}
-
-.admin-sidebar.collapsed .collapse-btn {
-  justify-content: center;
-  margin-inline: 14px;
-}
-
+/* Mobile */
 @media (max-width: 991.98px) {
-
-  .admin-sidebar,
-  .admin-sidebar.collapsed {
-    width: 290px;
-    transform: translateX(-105%);
+  .admin-sidebar {
+    width: 280px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 16px 0 34px rgba(15, 23, 42, 0.16);
   }
 
-  .admin-sidebar.mobile-open,
-  .admin-sidebar.collapsed.mobile-open {
+  .admin-sidebar.is-open {
     transform: translateX(0);
   }
+}
 
-  .admin-sidebar.collapsed .brand-content,
-  .admin-sidebar.collapsed .nav-title,
-  .admin-sidebar.collapsed .nav-link-item span,
-  .admin-sidebar.collapsed .collapse-btn span:last-child {
-    display: block;
+@media (max-width: 575.98px) {
+  .admin-sidebar {
+    width: 260px;
   }
 
-  .admin-sidebar.collapsed .sidebar-brand,
-  .admin-sidebar.collapsed .nav-link-item,
-  .admin-sidebar.collapsed .collapse-btn {
-    justify-content: flex-start;
+  .brand-text strong {
+    font-size: 20px;
+  }
+
+  .menu-label {
+    font-size: 14px;
   }
 }
 </style>

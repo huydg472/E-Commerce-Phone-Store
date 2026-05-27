@@ -32,16 +32,16 @@ const handleLogin = async (formData) => {
     const roleId = Number(user?.['role_id'])
 
     if (roleId === 1 || roleId === 2) {
-      await router.push('/admin/dashboard')
+      await router.replace('/admin/dashboard')
       return
     }
 
     if (roleId === 3) {
-      await router.push('/')
+      await router.replace('/')
       return
     }
 
-    await router.push('/')
+    await router.replace('/')
   } catch (error) {
     if (error.response?.status === 401) {
       errorMessage.value = 'Tài khoản hoặc mật khẩu không đúng.'

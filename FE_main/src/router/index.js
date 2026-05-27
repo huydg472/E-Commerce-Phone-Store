@@ -35,20 +35,19 @@ const router = createRouter({
     },
 })
 
-// router.beforeEach((to, from, next) => {
-//   if (to.meta.requiresAdmin) {
-//     return adminGuard(to, from, next)
-//   }
+router.beforeEach((to, from, next) => {
+    if (to.meta['requiresAdmin']) {
+        return adminGuard(to, from, next)
+    }
 
-//   if (to.meta.requiresAuth) {
-//     return authGuard(to, from, next)
-//   }
+    if (to.meta['requiresAuth']) {
+        return authGuard(to, from, next)
+    }
 
-//   if (to.meta.requiresGuest) {
-//     return guestGuard(to, from, next)
-//   }
+    if (to.meta['requiresGuest']) {
+        return guestGuard(to, from, next)
+    }
 
-//   next()
-// })
-
+    next()
+})
 export default router

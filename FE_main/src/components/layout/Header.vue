@@ -1,3 +1,23 @@
+<script setup>
+import {computed} from 'vue'
+import {useRouter} from 'vue-router'
+import {useAuthStore} from "@/stores/authStore.js";
+
+const router = useRouter();
+const authStore = useAuthStore();
+
+const isLoggedIn = computed(() => authStore.isLoggedIn)
+
+const displayName = computed(() => {
+  return authStore.user?.['name'] || authStore.user?.['username'] || 'Tài khoản'
+})
+
+const handleLogout = async () => {
+  await authStore.logout()
+  await router.replace('/auth/login')
+}
+
+</script>
 <template>
   <header class="site-header">
     <div class="container-fluid px-4">
@@ -18,13 +38,51 @@
         </div>
 
         <div class="header-actions">
-          <RouterLink to="/auth/login" class="header-action">
+          <RouterLink v-if="!isLoggedIn" to="/auth/login" class="header-action">
             <i class="bi bi-person"></i>
             <span>
               Tài khoản<br/>
               Đăng nhập
             </span>
           </RouterLink>
+
+          <div v-else class="dropdown account-dropdown">
+            <button class="header-action account-btn dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+              <i class="bi bi-person-circle"></i>
+              <div class="account-info">
+                <span>Xin chào</span>
+                <strong>{{ displayName }}</strong>
+              </div>
+            </button>
+
+            <ul class="dropdown-menu account-menu">
+              <li>
+                <RouterLink class="dropdown-item" to="/account">
+                  <i class="bi bi-person me-2"></i>
+                  Tài khoản của tôi
+                </RouterLink>
+              </li>
+
+              <li>
+                <RouterLink class="dropdown-item" to="/orders">
+                  <i class="bi bi-bag-check me-2"></i>
+                  Đơn hàng của tôi
+                </RouterLink>
+              </li>
+
+              <li>
+                <hr class="dropdown-divider"/>
+              </li>
+
+              <li>
+                <button class="dropdown-item text-danger" type="button" @click="handleLogout">
+                  <i class="bi bi-box-arrow-right me-2"></i>
+                  Đăng xuất
+                </button>
+              </li>
+            </ul>
+          </div>
 
           <RouterLink to="/yeu-thich" class="header-action">
             <i class="bi bi-heart"></i>
@@ -86,7 +144,7 @@
 .logo-text {
   font-size: 26px;
   line-height: 1;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 .logo-text strong {
@@ -184,6 +242,103 @@
   align-items: center;
   justify-content: center;
   z-index: 3;
+}
+
+.header-action span {
+  display: block;
+  font-size: 14px;
+  color: #111827;
+  line-height: 1.1;
+}
+
+.header-action strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.account-btn {
+  cursor: pointer;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+.account-dropdown {
+  position: relative;
+}
+
+.account-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.account-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.account-btn:hover .account-info span,
+.account-btn:hover .account-info strong,
+.account-btn:hover i {
+  color: var(--primary-color);
+}
+
+.account-info span {
+  display: block;
+  font-size: 13px;
+  color: #111827;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+.account-info strong {
+  display: block;
+  font-size: 14px;
+  color: #111827;
+  line-height: 1.2;
+  font-weight: 700;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-menu {
+  min-width: 210px;
+  padding: 10px;
+  margin-top: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+}
+
+.account-menu .dropdown-item {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.account-menu .dropdown-item:hover {
+  background: #eef5ff;
+  color: var(--primary-color);
+}
+
+.account-menu .dropdown-divider {
+  margin: 6px 0;
+}
+
+.dropdown-toggle::after {
+  display: none;
 }
 
 @media (max-width: 1200px) {

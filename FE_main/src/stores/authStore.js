@@ -1,18 +1,27 @@
 import {defineStore} from 'pinia'
 import {authService} from '@/services/authService'
-import {getToken, removeToken, setToken} from '@/utils/storage'
+import {getToken, removeToken, setToken, getUser, setUser, removeUser} from '@/utils/storage'
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
-        user: null,
+        user: getUser(),
         token: getToken(),
         loading: false,
     }),
 
     getters: {
         isLoggedIn: (state) => Boolean(state.token),
+
         isAdmin: (state) => {
-            return state.user?.role?.name === 'admin' || state.user?.role === 'admin'
+            return Number(state.user?.['role_id']) === 1
+        },
+
+        isStaff: (state) => {
+            return Number(state.user?.['role_id']) === 2
+        },
+
+        isCustomer: (state) => {
+            return Number(state.user?.['role_id']) === 3
         },
     },
 
@@ -22,14 +31,20 @@ export const useAuthStore = defineStore('auth', {
 
             try {
                 const response = await authService.login(payload)
+
                 const token = response.data.token || response.data.access_token
+                const user = response.data.user || response.data.data || null
 
                 if (token) {
                     this.token = token
                     setToken(token)
                 }
 
-                this.user = response.data.user || response.data.data || null
+                if (user) {
+                    this.user = user
+                    setUser(user)
+                }
+
                 return response
             } finally {
                 this.loading = false
@@ -38,7 +53,12 @@ export const useAuthStore = defineStore('auth', {
 
         async fetchMe() {
             const response = await authService.me()
-            this.user = response.data.data || response.data.user || response.data
+
+            const user = response.data.user || response.data.data || response.data
+
+            this.user = user
+            setUser(user)
+
             return response
         },
 
@@ -48,7 +68,9 @@ export const useAuthStore = defineStore('auth', {
             } finally {
                 this.user = null
                 this.token = null
+
                 removeToken()
+                removeUser()
             }
         },
     },
