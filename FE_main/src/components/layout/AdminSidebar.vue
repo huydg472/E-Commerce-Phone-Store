@@ -404,7 +404,7 @@ const handleLogout = async () => {
 }
 
 /* Mobile */
-@media (max-width: 991.98px) {
+@media (max-width: 990px) {
   .admin-sidebar {
     width: 280px;
     position: fixed;
@@ -420,7 +420,7 @@ const handleLogout = async () => {
   }
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 575px) {
   .admin-sidebar {
     width: 260px;
   }
