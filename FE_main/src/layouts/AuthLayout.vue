@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import {RouterView} from 'vue-router';
-
+import { RouterLink, RouterView } from 'vue-router'
 </script>
 
 <template>
@@ -11,7 +10,9 @@ import {RouterView} from 'vue-router';
         <div class="left-content position-relative z-2">
           <h2 class="fw-bold mb-3">Chào mừng bạn đến với</h2>
 
-          <h1 class="brand-title fw-bold mb-4">Zin<span>Mobile</span></h1>
+          <h1 class="brand-title fw-bold mb-4">
+            Zin<span>Mobile</span>
+          </h1>
 
           <p class="description mb-5">
             Đăng nhập để trải nghiệm mua sắm dễ dàng, nhận nhiều ưu đãi và quản
@@ -23,6 +24,7 @@ import {RouterView} from 'vue-router';
               <div class="icon-box">
                 <i class="bi bi-bullseye"></i>
               </div>
+
               <div>
                 <h5 class="fw-bold mb-2">Ưu đãi dành riêng cho bạn</h5>
                 <p class="mb-0 text-dark">
@@ -35,6 +37,7 @@ import {RouterView} from 'vue-router';
               <div class="icon-box">
                 <i class="bi bi-cart-check"></i>
               </div>
+
               <div>
                 <h5 class="fw-bold mb-2">Quản lý đơn hàng dễ dàng</h5>
                 <p class="mb-0 text-dark">
@@ -47,6 +50,7 @@ import {RouterView} from 'vue-router';
               <div class="icon-box">
                 <i class="bi bi-shield-check"></i>
               </div>
+
               <div>
                 <h5 class="fw-bold mb-2">Thanh toán nhanh chóng, an toàn</h5>
                 <p class="mb-0 text-dark">
@@ -73,7 +77,17 @@ import {RouterView} from 'vue-router';
 
       <!-- RIGHT -->
       <div class="auth-right col-12 col-lg-5 bg-white d-flex justify-content-center align-items-start">
-        <RouterView/>
+        <div class="auth-form-wrapper">
+          <RouterLink
+              to="/"
+              class="back-home-link text-decoration-none"
+          >
+            <i class="bi bi-arrow-left"></i>
+            <span>Quay về trang chủ</span>
+          </RouterLink>
+
+          <RouterView />
+        </div>
       </div>
     </div>
   </div>
@@ -186,16 +200,35 @@ import {RouterView} from 'vue-router';
   padding: 40px 64px;
 }
 
+.auth-form-wrapper {
+  width: 100%;
+  max-width: 680px;
+}
+
+.back-home-link {
+  width: fit-content;
+  margin-bottom: 24px;
+  color: #0066ff;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.back-home-link i {
+  font-size: 18px;
+}
+
+.back-home-link:hover {
+  color: #0055d6;
+  transform: translateX(-2px);
+}
+
 @media (max-width: 1400px) {
   .auth-left {
     padding: 56px 52px;
-  }
-
-  .logo-preview {
-    width: 330px;
-    height: 250px;
-    right: 32px;
-    bottom: 60px;
   }
 
   .safe-box {
@@ -209,7 +242,30 @@ import {RouterView} from 'vue-router';
   }
 
   .auth-right {
+    min-height: calc(100vh - 16px);
     padding: 32px 20px;
+    align-items: center !important;
+  }
+}
+
+@media (max-width: 575px) {
+  .auth-page {
+    padding: 0 !important;
+  }
+
+  .auth-card {
+    min-height: 100vh;
+    border: none;
+    border-radius: 0;
+  }
+
+  .auth-right {
+    min-height: 100vh;
+    padding: 24px 16px;
+  }
+
+  .back-home-link {
+    margin-bottom: 18px;
   }
 }
 </style>

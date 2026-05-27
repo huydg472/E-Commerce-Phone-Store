@@ -2,6 +2,13 @@
 import ServicePolicyBar from '@/components/common/ServicePolicyBar.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
 
+import {onMounted} from "vue";
+import {storeToRefs} from "pinia";
+import {useProductStore} from "@/stores/productStore.js";
+
+const productStore = useProductStore();
+const {featuredProducts, brandProducts, loading} = storeToRefs(productStore)
+
 const placeholder = {
   hero: 'https://placehold.co/1800x420/e8f0fb/2563eb?text=Hero+Banner',
   product: 'https://placehold.co/300x180/f1f5f9/2563eb?text=Phone',
@@ -9,43 +16,6 @@ const placeholder = {
   tradeIn: 'https://placehold.co/900x180/f1ecfb/2563eb?text=Trade+In',
 }
 
-const featuredProducts = [
-  {
-    id: 1,
-    image: placeholder.product,
-    name: 'iPhone 15 Pro Max 256GB',
-    price: '34.990.000đ',
-    oldPrice: '',
-  },
-  {
-    id: 2,
-    image: placeholder.product,
-    name: 'Samsung Galaxy S24 Ultra 5G 256GB',
-    price: '28.990.000đ',
-    oldPrice: '30.990.000đ',
-  },
-  {
-    id: 3,
-    image: placeholder.product,
-    name: 'Xiaomi 14 5G 256GB',
-    price: '21.990.000đ',
-    oldPrice: '',
-  },
-  {
-    id: 4,
-    image: placeholder.product,
-    name: 'OPPO Reno11 F 5G 256GB',
-    price: '8.990.000đ',
-    oldPrice: '',
-  },
-  {
-    id: 5,
-    image: placeholder.product,
-    name: 'Realme C67 8GB/256GB',
-    price: '6.490.000đ',
-    oldPrice: '',
-  },
-]
 </script>
 
 <template>
@@ -69,16 +39,22 @@ const featuredProducts = [
       </div>
 
       <div class="product-slider-wrap">
-        <button class="product-nav product-nav-left">
+        <button class="product-nav product-nav-left" type="button">
           <i class="bi bi-chevron-left"></i>
         </button>
 
         <div class="product-grid">
-          <ProductCard v-for="product in featuredProducts" :key="product.id" :image="product.image"
-                       :name="product.name" :price="product.price" :old-price="product.oldPrice"/>
+          <ProductCard
+              v-for="product in featuredProducts"
+              :key="product.id"
+              :image="product.image"
+              :name="product.name"
+              :price="product.price"
+              :old-price="product.oldPrice"
+          />
         </div>
 
-        <button class="product-nav product-nav-right">
+        <button class="product-nav product-nav-right" type="button">
           <i class="bi bi-chevron-right"></i>
         </button>
       </div>
@@ -93,6 +69,43 @@ const featuredProducts = [
         <RouterLink to="/thu-cu-doi-moi" class="promo-placeholder-card">
           <img :src="placeholder.tradeIn" alt="Trade in placeholder"/>
         </RouterLink>
+      </div>
+    </section>
+
+    <section class="container-fluid px-4 brand-products-section">
+      <div class="section-heading brand-heading">
+        <div>
+          <h2>Sản phẩm theo hãng</h2>
+          <p>Khám phá các mẫu điện thoại nổi bật theo từng thương hiệu</p>
+        </div>
+
+        <RouterLink to="/san-pham">
+          Xem tất cả
+          <i class="bi bi-chevron-right"></i>
+        </RouterLink>
+      </div>
+
+      <div class="brand-tabs">
+        <button
+            v-for="(brand, index) in brandTabs"
+            :key="brand"
+            type="button"
+            class="brand-tab"
+            :class="{ active: index === 0 }"
+        >
+          {{ brand }}
+        </button>
+      </div>
+
+      <div class="brand-product-grid">
+        <ProductCard
+            v-for="product in brandProducts"
+            :key="product.id"
+            :image="product.image"
+            :name="product.name"
+            :price="product.price"
+            :old-price="product.oldPrice"
+        />
       </div>
     </section>
   </div>
@@ -126,6 +139,7 @@ const featuredProducts = [
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
   margin-bottom: 14px;
 }
 
@@ -137,10 +151,19 @@ const featuredProducts = [
   color: var(--text-color);
 }
 
+.section-heading p {
+  margin: 5px 0 0;
+  color: var(--muted-color);
+  font-size: 15px;
+  font-weight: 500;
+}
+
 .section-heading a {
   color: var(--primary-color);
   font-weight: 700;
   font-size: 16px;
+  white-space: nowrap;
+  text-decoration: none;
 }
 
 .section-heading a:hover {
@@ -210,6 +233,50 @@ const featuredProducts = [
   object-fit: cover;
 }
 
+.brand-products-section {
+  margin-top: 28px;
+  padding-bottom: 46px;
+}
+
+.brand-heading {
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.brand-tabs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.brand-tab {
+  height: 38px;
+  padding: 0 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--text-color);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.brand-tab.active,
+.brand-tab:hover {
+  border-color: var(--primary-color);
+  background: var(--primary-color);
+  color: #ffffff;
+}
+
+.brand-product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 22px;
+}
+
 @media (max-width: 1200px) {
   .hero-banner {
     height: 340px;
@@ -217,6 +284,10 @@ const featuredProducts = [
 
   .product-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .brand-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -229,7 +300,8 @@ const featuredProducts = [
     height: 260px;
   }
 
-  .product-grid {
+  .product-grid,
+  .brand-product-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 18px;
   }
@@ -245,6 +317,11 @@ const featuredProducts = [
   .product-nav-right {
     right: -10px;
   }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 
 @media (max-width: 576px) {
@@ -252,12 +329,17 @@ const featuredProducts = [
     height: 210px;
   }
 
-  .product-grid {
+  .product-grid,
+  .brand-product-grid {
     grid-template-columns: 1fr;
   }
 
   .section-heading h2 {
     font-size: 24px;
+  }
+
+  .brand-products-section {
+    margin-top: 24px;
   }
 }
 </style>

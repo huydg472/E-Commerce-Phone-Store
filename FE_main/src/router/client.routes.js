@@ -9,6 +9,18 @@ export default [
                 component: () => import('@/pages/client/HomePage.vue'),
             },
             {
+                path: 'tin-tuc',
+                name: 'news',
+                component: () => import('@/pages/client/NewsPage.vue'),
+            },
+
+            {
+                path: 'lien-he',
+                name: 'contact',
+                component: () => import('@/pages/client/ContactPage.vue')
+            },
+
+            {
                 path: 'products',
                 name: 'products.index',
                 component: () => import('@/pages/client/ProductListPage.vue'),
