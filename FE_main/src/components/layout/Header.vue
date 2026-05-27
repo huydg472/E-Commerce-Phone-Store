@@ -58,7 +58,7 @@ const handleLogout = async () => {
 
             <ul class="dropdown-menu account-menu">
               <li>
-                <RouterLink class="dropdown-item" to="/account">
+                <RouterLink class="dropdown-item" to="/profile">
                   <i class="bi bi-person me-2"></i>
                   Tài khoản của tôi
                 </RouterLink>
@@ -89,7 +89,7 @@ const handleLogout = async () => {
             <span>Yêu thích</span>
           </RouterLink>
 
-          <RouterLink to="/gio-hang" class="header-action cart-action">
+          <RouterLink to="/cart" class="header-action cart-action">
             <i class="bi bi-cart3"></i>
             <span>Giỏ hàng</span>
             <em>0</em>
