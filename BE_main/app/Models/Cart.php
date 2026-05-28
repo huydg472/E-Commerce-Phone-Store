@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Cart extends Model
 {
-    /** @use HasFactory<\Database\Factories\CartFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -21,6 +20,12 @@ class Cart extends Model
     }
 
     public function cartItems()
+    {
+        return $this->hasMany(CartItem::class);
+    }
+
+    // Thêm hàm này để controller có thể gọi with(['items...'])
+    public function items()
     {
         return $this->hasMany(CartItem::class);
     }

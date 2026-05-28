@@ -5,8 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use ErrorException;
-use PhpParser\Node\Stmt\TryCatch;
+use Illuminate\Http\JsonResponse;
 
 class ProductController extends Controller
 {
@@ -21,7 +20,6 @@ class ProductController extends Controller
             'data' => $product
         ]);
     }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -94,5 +92,27 @@ class ProductController extends Controller
                 'message' => $e->getMessage()
             ]);
         }
+    }
+    public function toggleStatus(Product $product): JsonResponse
+    {
+        $product->update([
+            'status' => $product->status === 'active' ? 'inactive' : 'active',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật trạng thái sản phẩm thành công.',
+            'data' => $product,
+        ]);
+    }
+    public function showBySlug(string $slug): JsonResponse
+    {
+        $product = Product::where('slug', $slug)->firstOrFail();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Lấy chi tiết sản phẩm theo slug thành công.',
+            'data' => $product
+        ]);
     }
 }

@@ -29,22 +29,7 @@ class ProductSpecificationController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreProductSpecificationRequest $request)
-    {
-        $productSpecification = ProductSpecification::create([
-            'product_id' => $request->poduct_id,
-            'spec_name' => $request->spec_name,
-            'spec_value' => $request->spec_value,
-            'short_order' => $request->short_order,
-        ]);
-        return response()->json([
-            'message' => 'thêm thành công',
-            'data' => $productSpecification
-        ]);
-    }
+
 
     /**
      * Display the specified resource.
@@ -57,20 +42,38 @@ class ProductSpecificationController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+    public function store(StoreProductSpecificationRequest $request)
+    {
+        $data = $request->validated();
+
+        if (!$request->filled('sort_order')) {
+            $maxSortOrder = ProductSpecification::where('product_id', $data['product_id'])
+                ->max('sort_order');
+
+            $data['sort_order'] = $maxSortOrder === null ? 0 : $maxSortOrder + 1;
+        }
+
+        $productSpecification = ProductSpecification::create($data);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Thêm thông số sản phẩm thành công',
+            'data' => $productSpecification
+        ], 201);
+    }
+
     public function update(UpdateProductSpecificationRequest $request, ProductSpecification $productSpecification)
     {
-        $productSpecification->update([
-            'product_id' => $request->poduct_id,
-            'spec_name' => $request->spec_name,
-            'spec_value' => $request->spec_value,
-            'short_order' => $request->short_order
-        ]);
+        $data = $request->validated();
+
+        $productSpecification->update($data);
+
+        $productSpecification->refresh();
+
         return response()->json([
-            'message' => 'update thành công',
-            'data' => $productSpecification,
+            'status' => true,
+            'message' => 'Cập nhật thông số sản phẩm thành công',
+            'data' => $productSpecification
         ]);
     }
 

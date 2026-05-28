@@ -1,7 +1,10 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\AuthTestController;
+use App\Http\Controllers\Web\TestProductController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -25,4 +28,42 @@ Route::prefix('auth-test')->name('auth-test.')->group(function () {
     });
 });
 
+
+
+
+
+// test api product
+Route::get('/api-test/products', function () {
+    return view('api_test.products');
+})->name('api-test.products');
+// test api brands
+Route::view('/api-test/brands', 'api_test.brands')
+    ->name('api-test.brands');
+// test api categories
+Route::get('/api-test/categories/{slug?}', function (?string $slug = null) {
+    return view('api_test.categories', [
+        'initialSlug' => $slug
+    ]);
+})->name('api-test.categories');
+// test api products
+Route::get('/api-test/products/{slug?}', function (?string $slug = null) {
+    return view('api_test.products', [
+        'initialSlug' => $slug
+    ]);
+})->name('api-test.products');
+// test api product-variants
+Route::get('/api-test/product-variants/{sku?}', function (?string $sku = null) {
+    return view('api_test.product_variants', [
+        'initialSku' => $sku
+    ]);
+})->name('api-test.product-variants');
+// test api product-variant-images
+Route::view('/api-test/product-variant-images', 'api_test.product_variant_images')
+    ->name('api-test.product-variant-images');
+// test api product-specification
+Route::view('/api-test/product-specifications', 'api_test.product_specifications')
+    ->name('api-test.product-specifications');
+// test api cart
+Route::view('/api-test/cart', 'api_test.cart')
+    ->name('api-test.cart');
 require __DIR__ . '/auth.php';

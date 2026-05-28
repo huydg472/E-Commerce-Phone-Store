@@ -22,19 +22,7 @@ class ProductVariantImageController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreProductVariantImageRequest $request)
-    {
-        $productVariantImage = ProductVariantImage::create([
-            'product_variant_id' => $request->product_variant_id,
-            'image_url' => $request->image_url,
-            'alt_text' => $request->alt_text,
-            'short_order' => $request->short_order
-        ]);
-        return response()->json([
-            'message' => 'Thêm thành công',
-            'data' => $productVariantImage
-        ]);
-    }
+
 
     /**
      * Display the specified resource.
@@ -46,31 +34,51 @@ class ProductVariantImageController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+
+    public function store(StoreProductVariantImageRequest $request)
+    {
+        $data = $request->validated();
+
+        // Nếu người dùng không nhập sort_order
+        // thì hệ thống tự tính theo từng biến thể sản phẩm
+        if (!$request->filled('sort_order')) {
+            $maxSortOrder = ProductVariantImage::where('product_variant_id', $data['product_variant_id'])
+                ->max('sort_order');
+
+            $data['sort_order'] = $maxSortOrder === null ? 0 : $maxSortOrder + 1;
+        }
+
+        $productVariantImage = ProductVariantImage::create($data);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Thêm ảnh biến thể thành công',
+            'data' => $productVariantImage
+        ], 201);
+    }
+
     public function update(UpdateProductVariantImageRequest $request, ProductVariantImage $productVariantImage)
     {
-        $productVariantImage->update([
-            'product_variant_id' => $request->product_variant_id,
-            'image_url' => $request->image_url,
-            'alt_text' => $request->alt_text,
-            'short_order' => $request->short_order
-        ]);
+        $data = $request->validated();
+
+        $productVariantImage->update($data);
+
+        $productVariantImage->refresh();
+
         return response()->json([
-            'message' => 'update thành công',
+            'status' => true,
+            'message' => 'Cập nhật ảnh biến thể thành công',
             'data' => $productVariantImage
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(ProductVariantImage $productVariantImage)
     {
         $productVariantImage->delete();
+
         return response()->json([
-            'message' => 'xóa thất bại'
+            'status' => true,
+            'message' => 'Xóa ảnh biến thể thành công'
         ]);
     }
 }
