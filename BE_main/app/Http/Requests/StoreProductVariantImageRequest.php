@@ -24,7 +24,7 @@ class StoreProductVariantImageRequest extends FormRequest
                     ->where('product_variant_id', $this->product_variant_id),
             ],
             'alt_text' => ['nullable', 'string', 'max:225'],
-            'sort_order' => ['sometimes', 'integer', 'min:0'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
         ];
     }
 
@@ -61,5 +61,4 @@ class StoreProductVariantImageRequest extends FormRequest
             'sort_order' => 'Thứ tự hiển thị',
         ];
     }
-
 }

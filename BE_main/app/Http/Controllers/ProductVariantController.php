@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ProductVariant;
 use App\Http\Requests\StoreProductVariantRequest;
 use App\Http\Requests\UpdateProductVariantRequest;
+use Illuminate\Http\JsonResponse;
 
 class ProductVariantController extends Controller
 {
@@ -60,7 +61,7 @@ class ProductVariantController extends Controller
      */
     public function update(UpdateProductVariantRequest $request, ProductVariant $productVariant)
     {
-        $productVariant->updated([
+        $productVariant->update([
             'product_id' => $request->product_id,
             'color' => $request->color,
             'storage' => $request->storage,
@@ -94,5 +95,27 @@ class ProductVariantController extends Controller
                 'message' => 'xóa thất bại'
             ]);
         }
+    }
+    public function showBySku(string $sku): JsonResponse
+    {
+        $variant = ProductVariant::where('sku', $sku)->firstOrFail();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Lấy chi tiết biến thể theo SKU thành công.',
+            'data' => $variant
+        ]);
+    }
+    public function toggleStatus(ProductVariant $productVariant): JsonResponse
+    {
+        $productVariant->update([
+            'status' => $productVariant->status === 'active' ? 'inactive' : 'active',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật trạng thái biến thể thành công.',
+            'data' => $productVariant,
+        ]);
     }
 }

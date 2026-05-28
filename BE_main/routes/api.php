@@ -20,6 +20,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ShippingAddressController;
 use App\Http\Controllers\StockLogController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Web\AuthTestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,7 +28,10 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResource('brand', BrandController::class)->only([
+
+
+Route::patch('/brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus']);
+Route::apiResource('brands', BrandController::class)->only([
     'index', //ok
     'store', //ok
     'show', //ok
@@ -35,24 +39,39 @@ Route::apiResource('brand', BrandController::class)->only([
     'destroy' //ok
 ]);
 
-Route::apiResource('cart', CartController::class)->only([
-    'index', //ok
-    'store', //ok
-    'show', //ok
-    'update', //ok
-    'destroy' //ok
-]);
+
+Route::post('/login', [AuthenticatedSessionController::class, 'login']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/cart', [CartController::class, 'show']);
+    Route::delete('/cart', [CartController::class, 'clear']);
+
+    Route::post('/cart/items', [CartItemController::class, 'store']);
+    Route::put('/cart/items/{cartItem}', [CartItemController::class, 'update']);
+    Route::delete('/cart/items/{cartItem}', [CartItemController::class, 'destroy']);
+});
 
 
-Route::apiResource('cartitem', CartItemController::class)->only([
-    'index',
-    'store',
-    'show',
-    'update',
-    'destroy'
-]);
 
-Route::apiResource('category', CategoryController::class)->only([
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Xem giỏ hàng
+    Route::get('/cart', [CartItemController::class, 'index']);
+
+    // Xóa toàn bộ giỏ hàng nếu bạn đã có hàm clear
+    Route::delete('/cart', [CartItemController::class, 'clear']);
+
+    // Thêm sản phẩm vào giỏ
+    Route::post('/cart/items', [CartItemController::class, 'store']);
+
+    // Cập nhật số lượng item
+    Route::put('/cart/items/{cartItem}', [CartItemController::class, 'update']);
+
+    // Xóa 1 item khỏi giỏ
+    //  Route::delete('/cart/items/{cartItem}', [CartItemController::class, 'destroy']);
+});
+Route::patch('/categories/{category}/toggle-status', [CategoryController::class, 'toggleStatus']);
+Route::get('/categories/by-slug/{slug}', [CategoryController::class, 'showBySlug']);
+Route::apiResource('categories', CategoryController::class)->only([
     'index',
     'store',
     'show',
@@ -91,8 +110,12 @@ Route::apiResource('permission', PermissionController::class)->only([
     'update',
     'destroy'
 ]);
+Route::get('/products/by-slug/{slug}', [ProductController::class, 'showBySlug']);
 
-Route::apiResource('product', ProductController::class)->only([
+Route::patch('/products/{product}/toggle-status', [ProductController::class, 'toggleStatus']);
+
+Route::apiResource('products', ProductController::class);
+Route::apiResource('products', ProductController::class)->only([
     'index',
     'store',
     'show',
@@ -100,7 +123,19 @@ Route::apiResource('product', ProductController::class)->only([
     'destroy'
 ]);
 
-Route::apiResource('productspecification', ProductSpecificationController::class)->only([
+Route::apiResource('product-specifications', ProductSpecificationController::class)->only([
+    'index',
+    'store',
+    'show',
+    'update',
+    'destroy'
+]);
+Route::get('/product-variants/by-sku/{sku}', [ProductVariantController::class, 'showBySku']);
+
+Route::patch('/product-variants/{productVariant}/toggle-status', [ProductVariantController::class, 'toggleStatus']);
+
+Route::apiResource('product-variants', ProductVariantController::class);
+Route::apiResource('product-variants', ProductVariantController::class)->only([
     'index',
     'store',
     'show',
@@ -108,15 +143,7 @@ Route::apiResource('productspecification', ProductSpecificationController::class
     'destroy'
 ]);
 
-Route::apiResource('productvariant', ProductVariantController::class)->only([
-    'index',
-    'store',
-    'show',
-    'update',
-    'destroy'
-]);
-
-Route::apiResource('productvariantimage', ProductVariantImageController::class)->only([
+Route::apiResource('product-variant-images', ProductVariantImageController::class)->only([
     'index',
     'store',
     'show',
