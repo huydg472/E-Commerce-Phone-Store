@@ -15,8 +15,12 @@ export const useProductStore = defineStore('product', {
 
             try {
                 const response = await productService.getAll(params)
-                this.items = response.data.data || response.data
-                this.pagination = response.data.meta || null
+                const payload = response.data?.data ?? response.data
+
+                this.items = Array.isArray(payload) ? payload : (payload?.data ?? [])
+                this.pagination = payload?.meta
+                    ? payload.meta
+                    : response.data?.meta || null
                 return response
             } finally {
                 this.loading = false
@@ -28,7 +32,7 @@ export const useProductStore = defineStore('product', {
 
             try {
                 const response = await productService.getById(id)
-                this.item = response.data.data || response.data
+                this.item = response.data?.data ?? response.data
                 return response
             } finally {
                 this.loading = false

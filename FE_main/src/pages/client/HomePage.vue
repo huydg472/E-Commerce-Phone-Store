@@ -1,13 +1,18 @@
 <script setup>
 import ServicePolicyBar from '@/components/common/ServicePolicyBar.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
+import {formatCurrency} from '@/utils/formatCurrency'
 
-import {onMounted} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {storeToRefs} from "pinia";
 import {useProductStore} from "@/stores/productStore.js";
+import {useBrandStore} from "@/stores/brandStore.js";
 
 const productStore = useProductStore();
-const {featuredProducts, brandProducts, loading} = storeToRefs(productStore)
+const brandStore = useBrandStore();
+
+const {items: products, loading: productLoading} = storeToRefs(productStore)
+const {items: brands, loading: brandLoading} = storeToRefs(brandStore)
 
 const placeholder = {
   hero: 'https://placehold.co/1800x420/e8f0fb/2563eb?text=Hero+Banner',
@@ -16,6 +21,46 @@ const placeholder = {
   tradeIn: 'https://placehold.co/900x180/f1ecfb/2563eb?text=Trade+In',
 }
 
+const selectedBrand = ref('')
+
+onMounted(() => {
+  productStore.fetchAll()
+
+  brandStore.fetchAll().then(() => {
+    const firstBrand = brandList.value[0]
+    if (firstBrand) {
+      selectedBrand.value = firstBrand.slug ?? firstBrand.name ?? ''
+    }
+  })
+})
+
+const productList = computed(() => Array.isArray(products.value) ? products.value : [])
+const brandList = computed(() => Array.isArray(brands.value) ? brands.value : [])
+
+const featuredProducts = computed(() => {
+  return productList.value
+      .filter((product) => product.is_featured || product.isFeatured)
+      .slice(0, 5)
+})
+
+const brandProducts = computed(() => {
+  if (!selectedBrand.value) {
+    return productList.value.slice(0, 8)
+  }
+
+  return productList.value
+      .filter((product) => {
+        const productBrand = product.brand
+
+        return productBrand?.slug === selectedBrand.value
+            || productBrand?.name === selectedBrand.value
+      })
+      .slice(0, 8)
+})
+
+const brandTabs = computed(() => {
+  return brandList.value.slice(0, 6)
+})
 </script>
 
 <template>
@@ -44,13 +89,16 @@ const placeholder = {
         </button>
 
         <div class="product-grid">
+          <div v-if="productLoading" class="loading-state">Đang tải sản phẩm...</div>
+
           <ProductCard
               v-for="product in featuredProducts"
               :key="product.id"
-              :image="product.image"
+              :image="product.thumbnail_url"
               :name="product.name"
-              :price="product.price"
-              :old-price="product.oldPrice"
+              :price="formatCurrency(product.display_price)"
+              :old-price="formatCurrency(product.display_old_price)"
+              :storage="product.category?.name || product.brand?.name || ''"
           />
         </div>
 
@@ -88,12 +136,13 @@ const placeholder = {
       <div class="brand-tabs">
         <button
             v-for="(brand, index) in brandTabs"
-            :key="brand"
+            :key="brand.id || brand.slug || brand.name"
             type="button"
             class="brand-tab"
-            :class="{ active: index === 0 }"
+            :class="{ active: selectedBrand ? selectedBrand === (brand.slug || brand.name) : index === 0 }"
+            @click="selectedBrand = brand.slug || brand.name"
         >
-          {{ brand }}
+          {{ brand.name }}
         </button>
       </div>
 
@@ -101,10 +150,11 @@ const placeholder = {
         <ProductCard
             v-for="product in brandProducts"
             :key="product.id"
-            :image="product.image"
+            :image="product.thumbnail_url"
             :name="product.name"
-            :price="product.price"
-            :old-price="product.oldPrice"
+            :price="formatCurrency(product.display_price)"
+            :old-price="formatCurrency(product.display_old_price)"
+            :storage="product.category?.name || product.brand?.name || ''"
         />
       </div>
     </section>
@@ -178,6 +228,14 @@ const placeholder = {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 24px;
+}
+
+.loading-state {
+  grid-column: 1 / -1;
+  padding: 16px 0;
+  color: var(--muted-color);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .product-nav {

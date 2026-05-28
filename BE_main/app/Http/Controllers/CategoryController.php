@@ -96,6 +96,7 @@ class CategoryController extends Controller
             'data' => $category,
         ], 200);
     }
+
     public function showBySlug(string $slug): JsonResponse
     {
         $category = Category::where('slug', $slug)->firstOrFail();
