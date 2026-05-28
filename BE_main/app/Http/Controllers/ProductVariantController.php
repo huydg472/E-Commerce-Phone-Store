@@ -11,7 +11,9 @@ class ProductVariantController extends Controller
 {
     public function index()
     {
-        $productVariant = ProductVariant::all();
+        $productVariant = ProductVariant::query()
+            ->orderByDesc('id')
+            ->get();
         return response()->json(['status' => true, 'message' => 'Lay du lieu thanh cong', 'data' => $productVariant]);
     }
 

@@ -2,117 +2,125 @@
 import ProductCard from '@/components/product/ProductCard.vue'
 import ProductFilter from '@/components/product/ProductFilter.vue'
 import BasePagination from '@/components/common/BasePagination.vue'
+import {computed, onMounted, ref, watch} from 'vue'
+import {storeToRefs} from 'pinia'
+import {useProductStore} from '@/stores/productStore.js'
+import {buildProductCards, normalizeText} from '@/utils/productCardHelpers.js'
 
-const products = [
-  {
-    id: 1,
-    name: 'iPhone 15 Pro Max 256GB',
-    image: '/images/products/iphone-15-pro-max.png',
-    storage: '256GB',
-    price: '34.990.000đ',
-    oldPrice: '',
-    discount: '',
-  },
-  {
-    id: 2,
-    name: 'iPhone 15 128GB',
-    image: '/images/products/iphone-15.png',
-    storage: '128GB',
-    price: '21.990.000đ',
-    oldPrice: '',
-    discount: '',
-  },
-  {
-    id: 3,
-    name: 'Samsung Galaxy S24 Ultra 5G 256GB',
-    image: '/images/products/samsung-galaxy-s24-ultra.png',
-    storage: '256GB',
-    price: '25.990.000đ',
-    oldPrice: '28.990.000đ',
-    discount: '10%',
-  },
-  {
-    id: 4,
-    name: 'Samsung Galaxy S24 256GB',
-    image: '/images/products/samsung-galaxy-s24.png',
-    storage: '256GB',
-    price: '18.990.000đ',
-    oldPrice: '',
-    discount: '',
-  },
-  {
-    id: 5,
-    name: 'Xiaomi 14 256GB',
-    image: '/images/products/xiaomi-14.png',
-    storage: '256GB',
-    price: '17.990.000đ',
-    oldPrice: '19.990.000đ',
-    discount: '10%',
-  },
-  {
-    id: 6,
-    name: 'OPPO Reno11 F 5G 256GB',
-    image: '/images/products/oppo-reno11-f.png',
-    storage: '256GB',
-    price: '9.990.000đ',
-    oldPrice: '11.990.000đ',
-    discount: '17%',
-  },
-  {
-    id: 7,
-    name: 'realme C67 256GB',
-    image: '/images/products/realme-c67.png',
-    storage: '256GB',
-    price: '6.490.000đ',
-    oldPrice: '7.490.000đ',
-    discount: '13%',
-  },
-  {
-    id: 8,
-    name: 'vivo V30e 256GB',
-    image: '/images/products/vivo-v30e.png',
-    storage: '256GB',
-    price: '9.490.000đ',
-    oldPrice: '10.990.000đ',
-    discount: '14%',
-  },
-  {
-    id: 9,
-    name: 'POCO X6 Pro 5G 256GB',
-    image: '/images/products/poco-x6-pro.png',
-    storage: '256GB',
-    price: '8.990.000đ',
-    oldPrice: '9.990.000đ',
-    discount: '10%',
-  },
-  {
-    id: 10,
-    name: 'Samsung Galaxy A55 5G 256GB',
-    image: '/images/products/samsung-galaxy-a55.png',
-    storage: '256GB',
-    price: '10.490.000đ',
-    oldPrice: '11.990.000đ',
-    discount: '13%',
-  },
-  {
-    id: 11,
-    name: 'iPhone 14 128GB',
-    image: '/images/products/iphone-14.png',
-    storage: '128GB',
-    price: '16.990.000đ',
-    oldPrice: '18.990.000đ',
-    discount: '11%',
-  },
-  {
-    id: 12,
-    name: 'Infinix Note 40 Pro 256GB',
-    image: '/images/products/infinix-note-40-pro.png',
-    storage: '256GB',
-    price: '6.990.000đ',
-    oldPrice: '7.990.000đ',
-    discount: '13%',
-  },
+const productStore = useProductStore()
+const {items: products} = storeToRefs(productStore)
+
+const selectedBrands = ref([])
+const selectedPriceRange = ref('')
+const selectedStorages = ref([])
+const selectedSort = ref('newest')
+const selectedPageSize = ref(12)
+const currentPage = ref(1)
+
+const handleSelectedBrands = (brandIds) => {
+  selectedBrands.value = brandIds
+}
+
+const handleSelectedPriceRange = (priceRange) => {
+  selectedPriceRange.value = priceRange
+}
+
+const handleSelectedStorages = (storages) => {
+  selectedStorages.value = storages
+}
+
+const productList = computed(() => Array.isArray(products.value) ? products.value : [])
+const productCards = computed(() => buildProductCards(productList.value))
+
+const sortOptions = [
+  {label: 'Sắp xếp: Mới nhất', value: 'newest'},
+  {label: 'Giá tăng dần', value: 'price-asc'},
+  {label: 'Giá giảm dần', value: 'price-desc'},
+  {label: 'Tên A-Z', value: 'name-asc'},
 ]
+
+const pageSizeOptions = [12, 24, 36]
+
+const matchesPriceRange = (price) => {
+  if (!selectedPriceRange.value) {
+    return true
+  }
+
+  switch (selectedPriceRange.value) {
+    case 'under-5':
+      return price < 5000000
+    case '5-10':
+      return price >= 5000000 && price < 10000000
+    case '10-20':
+      return price >= 10000000 && price < 20000000
+    case 'over-20':
+      return price >= 20000000
+    default:
+      return true
+  }
+}
+
+const filteredProducts = computed(() => {
+  return productCards.value.filter((productCard) => {
+    const brandOk =
+        !selectedBrands.value.length ||
+        selectedBrands.value.includes(productCard.brandId)
+
+    const romOk =
+        !selectedStorages.value.length ||
+        selectedStorages.value.some((storage) => {
+          return normalizeText(storage) === normalizeText(productCard.rom)
+        })
+
+    return brandOk && romOk && matchesPriceRange(productCard.price)
+  })
+})
+
+const sortedProducts = computed(() => {
+  const products = [...filteredProducts.value]
+
+  switch (selectedSort.value) {
+    case 'price-asc':
+      return products.sort((a, b) => a.price - b.price)
+    case 'price-desc':
+      return products.sort((a, b) => b.price - a.price)
+    case 'name-asc':
+      return products.sort((a, b) => {
+        return a.name.localeCompare(b.name, 'vi', {sensitivity: 'base'})
+      })
+    default:
+      return products
+  }
+})
+
+const totalPages = computed(() => {
+  return Math.max(1, Math.ceil(sortedProducts.value.length / selectedPageSize.value))
+})
+
+const visibleProducts = computed(() => {
+  const startIndex = (currentPage.value - 1) * selectedPageSize.value
+  return sortedProducts.value.slice(startIndex, startIndex + selectedPageSize.value)
+})
+
+const resetPage = () => {
+  currentPage.value = 1
+}
+
+watch(
+    [selectedBrands, selectedPriceRange, selectedStorages, selectedSort, selectedPageSize],
+    resetPage,
+    {deep: true}
+)
+
+watch(totalPages, (nextTotalPages) => {
+  if (currentPage.value > nextTotalPages) {
+    currentPage.value = nextTotalPages
+  }
+})
+
+onMounted(() => {
+  productStore.fetchAll()
+})
 </script>
 
 <template>
@@ -127,44 +135,61 @@ const products = [
       <div class="page-heading">
         <div>
           <h1>Tất cả sản phẩm</h1>
-          <p>Hiển thị 1 - 12 sản phẩm</p>
+          <p>Hiển thị {{ visibleProducts.length }} / {{ filteredProducts.length }} sản phẩm</p>
         </div>
 
         <div class="heading-action">
-          <select class="form-select">
-            <option>Sắp xếp: Mới nhất</option>
-            <option>Giá tăng dần</option>
-            <option>Giá giảm dần</option>
-            <option>Tên A-Z</option>
+          <select v-model="selectedSort" class="form-select">
+            <option
+                v-for="option in sortOptions"
+                :key="option.value"
+                :value="option.value"
+            >
+              {{ option.label }}
+            </option>
           </select>
 
-          <select class="form-select show-select">
-            <option>Hiển thị: 12</option>
-            <option>Hiển thị: 24</option>
-            <option>Hiển thị: 36</option>
+          <select v-model.number="selectedPageSize" class="form-select show-select">
+            <option
+                v-for="pageSize in pageSizeOptions"
+                :key="pageSize"
+                :value="pageSize"
+            >
+              Hiển thị: {{ pageSize }}
+            </option>
           </select>
         </div>
       </div>
 
       <div class="product-layout">
-        <ProductFilter/>
+        <ProductFilter
+            @update:selected-brands="handleSelectedBrands"
+            @update:selected-price-range="handleSelectedPriceRange"
+            @update:selected-storages="handleSelectedStorages"
+        />
 
         <div class="product-main">
-          <div class="product-grid">
+          <div v-if="!visibleProducts.length" class="empty-state">
+            Không tìm thấy sản phẩm phù hợp.
+          </div>
+
+          <div v-else class="product-grid">
             <ProductCard
-                v-for="product in products"
+                v-for="product in visibleProducts"
                 :key="product.id"
                 :name="product.name"
                 :image="product.image"
-                :storage="product.storage"
+                :colors="product.colors"
                 :price="product.price"
-                :old-price="product.oldPrice"
-                :discount="product.discount"
-                :to="`/products/${product.id}`"
+                :old-price="product.oldPrice || ''"
+                :to="product.to"
             />
           </div>
 
-          <BasePagination/>
+          <BasePagination
+              v-model:currentPage="currentPage"
+              :total-pages="totalPages"
+          />
         </div>
       </div>
     </div>
@@ -259,6 +284,16 @@ const products = [
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
+}
+
+.empty-state {
+  padding: 32px 20px;
+  border: 1px dashed #dbe3ef;
+  border-radius: 12px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
 }
 
 @media (max-width: 1200px) {

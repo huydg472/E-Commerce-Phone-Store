@@ -1,5 +1,8 @@
 <script setup>
-defineProps({
+import {computed} from 'vue'
+import {formatCurrency} from '@/utils/formatCurrency'
+
+const props = defineProps({
   image: {
     type: String,
     default: '',
@@ -9,16 +12,16 @@ defineProps({
     default: 'Tên sản phẩm',
   },
   price: {
-    type: String,
+    type: [String, Number],
     default: '',
   },
   oldPrice: {
-    type: String,
+    type: [String, Number],
     default: '',
   },
-  storage: {
-    type: String,
-    default: '',
+  colors: {
+    type: Array,
+    default: () => [],
   },
   discount: {
     type: String,
@@ -32,8 +35,31 @@ defineProps({
 
 const fallbackImage = 'https://placehold.co/300x220/f1f5f9/2563eb?text=Zin+Mobile'
 
+const normalizeMoney = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return ''
+  }
+
+  const formatted = formatCurrency(value)
+  return formatted || String(value)
+}
+
+const salePrice = computed(() => normalizeMoney(props.price))
+const previousPrice = computed(() => normalizeMoney(props.oldPrice))
+const hasPreviousPrice = computed(() => {
+  return Boolean(previousPrice.value) && previousPrice.value !== salePrice.value
+})
+const colorSwatches = computed(() => Array.isArray(props.colors) ? props.colors.slice(0, 5) : [])
+
+const isLightColor = (value) => {
+  const normalized = String(value || '').trim().toLowerCase()
+  return ['#f8fafc', '#ffffff', '#fff', 'white'].includes(normalized)
+}
+
 const handleImageError = (event) => {
-  event.target.src = fallbackImage
+  if (event?.target) {
+    event.target.src = fallbackImage
+  }
 }
 </script>
 
@@ -47,6 +73,8 @@ const handleImageError = (event) => {
       <img
           :src="image || fallbackImage"
           :alt="name"
+          loading="lazy"
+          decoding="async"
           @error="handleImageError"
       />
     </RouterLink>
@@ -56,15 +84,23 @@ const handleImageError = (event) => {
         {{ name }}
       </RouterLink>
 
-      <span v-if="storage" class="product-storage">
-        {{ storage }}
-      </span>
+      <div v-if="colorSwatches.length" class="product-colors">
+        <span
+            v-for="color in colorSwatches"
+            :key="`${color.name}-${color.value}`"
+            class="color-swatch"
+            :class="{ 'is-light': isLightColor(color.value) }"
+            :title="color.name"
+            :aria-label="color.name"
+            :style="{ backgroundColor: color.value }"
+        ></span>
+      </div>
 
       <div class="price-row">
-        <span class="sale-price">{{ price }}</span>
+        <span class="sale-price">{{ salePrice }}</span>
 
-        <del v-if="oldPrice" class="old-price">
-          {{ oldPrice }}
+        <del v-if="hasPreviousPrice" class="old-price">
+          {{ previousPrice }}
         </del>
 
         <span v-if="discount" class="discount-badge">
@@ -148,17 +184,25 @@ const handleImageError = (event) => {
   color: #0d6efd;
 }
 
-.product-storage {
-  display: inline-flex;
+.product-colors {
+  display: flex;
   align-items: center;
-  height: 22px;
-  padding: 0 8px;
-  margin-bottom: 10px;
-  border-radius: 6px;
-  background: #f1f5f9;
-  color: #475569;
-  font-size: 12px;
-  font-weight: 700;
+  gap: 6px;
+  min-height: 18px;
+  margin-bottom: 8px;
+}
+
+.color-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.color-swatch.is-light {
+  border-color: rgba(148, 163, 184, 0.7);
 }
 
 .price-row {

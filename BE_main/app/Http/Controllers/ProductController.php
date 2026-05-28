@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -22,13 +23,11 @@ class ProductController extends Controller
         return $product;
     }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $query = Product::query()
-            ->with(['brand', 'category', 'productVariants.images']);
+            ->with(['brand', 'category', 'productVariants.images'])
+            ->latest();
 
         if ($request->filled('is_featured')) {
             $query->where('is_featured', $request->boolean('is_featured'));
@@ -61,9 +60,6 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(StoreProductRequest $request)
     {
         $product = Product::create([
@@ -83,14 +79,11 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Thêm thành công',
+            'message' => 'Them thanh cong',
             'data' => $product,
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Product $product)
     {
         $product->load(['brand', 'category', 'productVariants.images']);
@@ -102,9 +95,6 @@ class ProductController extends Controller
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(UpdateProductRequest $request, Product $product)
     {
         $product->update([
@@ -124,14 +114,11 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Cập nhật thành công',
+            'message' => 'Cap nhat thanh cong',
             'data' => $product,
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Product $product)
     {
         try {
@@ -139,13 +126,18 @@ class ProductController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'Xóa thành công',
+                'message' => 'Xoa thanh cong',
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error('Failed to delete product', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage(),
+            ]);
+
             return response()->json([
                 'status' => false,
-                'message' => $e->getMessage(),
-            ]);
+                'message' => 'Xoa that bai',
+            ], 500);
         }
     }
 
@@ -160,7 +152,7 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Cập nhật trạng thái sản phẩm thành công.',
+            'message' => 'Cap nhat trang thai san pham thanh cong.',
             'data' => $product,
         ]);
     }
@@ -175,7 +167,7 @@ class ProductController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Lấy chi tiết sản phẩm theo slug thành công.',
+            'message' => 'Lay chi tiet san pham theo slug thanh cong.',
             'data' => $product,
         ]);
     }

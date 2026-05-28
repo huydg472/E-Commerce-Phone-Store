@@ -1,35 +1,103 @@
 <script setup>
-defineProps({
+import {computed} from 'vue'
+
+const props = defineProps({
   currentPage: {
     type: Number,
     default: 1,
   },
+  totalPages: {
+    type: Number,
+    default: 1,
+  },
+  siblingCount: {
+    type: Number,
+    default: 1,
+  },
 })
+
+const emit = defineEmits(['update:currentPage'])
+
+const safeTotalPages = computed(() => Math.max(1, Number(props.totalPages) || 1))
+const safeCurrentPage = computed(() => {
+  const current = Number(props.currentPage) || 1
+  return Math.min(Math.max(current, 1), safeTotalPages.value)
+})
+
+const pages = computed(() => {
+  const total = safeTotalPages.value
+  const current = safeCurrentPage.value
+
+  if (total <= 5) {
+    return Array.from({length: total}, (_, index) => index + 1)
+  }
+
+  const start = Math.max(2, current - props.siblingCount)
+  const end = Math.min(total - 1, current + props.siblingCount)
+  const items = [1]
+
+  if (start > 2) {
+    items.push('ellipsis-start')
+  }
+
+  for (let page = start; page <= end; page += 1) {
+    items.push(page)
+  }
+
+  if (end < total - 1) {
+    items.push('ellipsis-end')
+  }
+
+  items.push(total)
+  return items
+})
+
+const goToPage = (page) => {
+  const nextPage = Math.min(Math.max(page, 1), safeTotalPages.value)
+  if (nextPage !== safeCurrentPage.value) {
+    emit('update:currentPage', nextPage)
+  }
+}
 </script>
 
 <template>
-  <nav class="pagination-wrap">
+  <nav v-if="safeTotalPages > 1" class="pagination-wrap" aria-label="Pagination">
     <ul class="pagination-list">
       <li>
-        <button class="page-btn" type="button">
+        <button
+            class="page-btn"
+            type="button"
+            :disabled="safeCurrentPage === 1"
+            @click="goToPage(safeCurrentPage - 1)"
+        >
           <i class="bi bi-chevron-left"></i>
         </button>
       </li>
 
-      <li>
-        <button class="page-btn active" type="button">1</button>
-      </li>
+      <template v-for="page in pages" :key="page">
+        <li v-if="typeof page === 'number'">
+          <button
+              class="page-btn"
+              :class="{ active: page === safeCurrentPage }"
+              type="button"
+              @click="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+        </li>
+
+        <li v-else>
+          <span class="page-ellipsis">...</span>
+        </li>
+      </template>
 
       <li>
-        <button class="page-btn" type="button">2</button>
-      </li>
-
-      <li>
-        <button class="page-btn" type="button">3</button>
-      </li>
-
-      <li>
-        <button class="page-btn" type="button">
+        <button
+            class="page-btn"
+            type="button"
+            :disabled="safeCurrentPage === safeTotalPages"
+            @click="goToPage(safeCurrentPage + 1)"
+        >
           <i class="bi bi-chevron-right"></i>
         </button>
       </li>
@@ -68,10 +136,26 @@ defineProps({
   font-weight: 700;
 }
 
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .page-btn:hover,
 .page-btn.active {
   border-color: #0d6efd;
   background: #0d6efd;
   color: #ffffff;
+}
+
+.page-ellipsis {
+  min-width: 18px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 14px;
+  font-weight: 700;
 }
 </style>

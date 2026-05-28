@@ -13,7 +13,9 @@ class ProductVariantImageController extends Controller
      */
     public function index()
     {
-        $productVariantImage = ProductVariantImage::all();
+        $productVariantImage = ProductVariantImage::query()
+            ->orderByDesc('id')
+            ->get();
         return response()->json([
             'data' => $productVariantImage
         ]);

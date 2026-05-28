@@ -13,7 +13,9 @@ class ShippingAddressController extends Controller
      */
     public function index()
     {
-        $shippingAddress = ShippingAddress::all();
+        $shippingAddress = ShippingAddress::query()
+            ->orderByDesc('id')
+            ->get();
         return response()->json([
             'data' => $shippingAddress
         ]);

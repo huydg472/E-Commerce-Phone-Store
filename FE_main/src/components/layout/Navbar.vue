@@ -8,12 +8,45 @@
         </button>
 
         <nav class="main-menu">
-          <RouterLink to="/">Trang chủ</RouterLink>
-          <RouterLink to="/apple">Apple</RouterLink>
-          <RouterLink to="/samsung">Samsung</RouterLink>
-          <RouterLink to="/phu-kien">Phụ kiện</RouterLink>
-          <RouterLink to="/tin-tuc">Tin tức</RouterLink>
-          <RouterLink to="/lien-he">Liên hệ</RouterLink>
+          <RouterLink
+              v-slot="{ href, navigate, isExactActive }"
+              to="/"
+              custom
+          >
+            <a :href="href" :class="{ 'is-active': isExactActive }" @click="navigate">Trang chủ</a>
+          </RouterLink>
+
+          <RouterLink
+              v-slot="{ href, navigate, isExactActive }"
+              to="/products"
+              custom
+          >
+            <a :href="href" :class="{ 'is-active': isExactActive }" @click="navigate">Sản phẩm</a>
+          </RouterLink>
+
+          <RouterLink
+              v-slot="{ href, navigate, isExactActive }"
+              to="/phu-kien"
+              custom
+          >
+            <a :href="href" :class="{ 'is-active': isExactActive }" @click="navigate">Phụ kiện</a>
+          </RouterLink>
+
+          <RouterLink
+              v-slot="{ href, navigate, isExactActive }"
+              to="/tin-tuc"
+              custom
+          >
+            <a :href="href" :class="{ 'is-active': isExactActive }" @click="navigate">Tin tức</a>
+          </RouterLink>
+
+          <RouterLink
+              v-slot="{ href, navigate, isExactActive }"
+              to="/lien-he"
+              custom
+          >
+            <a :href="href" :class="{ 'is-active': isExactActive }" @click="navigate">Liên hệ</a>
+          </RouterLink>
         </nav>
       </div>
     </div>
@@ -34,7 +67,7 @@
   display: grid;
   grid-template-columns: 255px 1fr;
   align-items: center;
-  gap: 30px;
+  gap: 150px;
   padding: 8px 0;
 }
 
@@ -79,7 +112,7 @@
   text-decoration: none;
 }
 
-.main-menu a.router-link-active,
+.main-menu a.is-active,
 .main-menu a:hover {
   color: var(--primary-color);
 }

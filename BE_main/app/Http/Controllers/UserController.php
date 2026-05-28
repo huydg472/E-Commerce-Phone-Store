@@ -13,7 +13,9 @@ class UserController extends Controller
      */
     public function index()
     {
-        $user = User::all();
+        $user = User::query()
+            ->orderByDesc('id')
+            ->get();
         return response()->json([
             'data' => $user,
         ]);

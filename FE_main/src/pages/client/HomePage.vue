@@ -1,18 +1,17 @@
 <script setup>
 import ServicePolicyBar from '@/components/common/ServicePolicyBar.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
-import {formatCurrency} from '@/utils/formatCurrency'
+import {computed, onMounted, ref, watch} from 'vue'
+import {storeToRefs} from 'pinia'
+import {useProductStore} from '@/stores/productStore.js'
+import {useBrandStore} from '@/stores/brandStore.js'
+import {buildProductCards, normalizeText} from '@/utils/productCardHelpers.js'
 
-import {computed, onMounted, ref} from "vue";
-import {storeToRefs} from "pinia";
-import {useProductStore} from "@/stores/productStore.js";
-import {useBrandStore} from "@/stores/brandStore.js";
-
-const productStore = useProductStore();
-const brandStore = useBrandStore();
+const productStore = useProductStore()
+const brandStore = useBrandStore()
 
 const {items: products, loading: productLoading} = storeToRefs(productStore)
-const {items: brands, loading: brandLoading} = storeToRefs(brandStore)
+const {items: brands} = storeToRefs(brandStore)
 
 const placeholder = {
   hero: 'https://placehold.co/1800x420/e8f0fb/2563eb?text=Hero+Banner',
@@ -22,44 +21,71 @@ const placeholder = {
 }
 
 const selectedBrand = ref('')
+const brandPriority = ['Apple', 'Samsung', 'OPPO', 'Xiaomi', 'Vivo', 'Realme']
 
-onMounted(() => {
-  productStore.fetchAll()
+const productList = computed(() => Array.isArray(products.value) ? products.value : [])
+const brandList = computed(() => {
+  const list = Array.isArray(brands.value) ? brands.value : []
 
-  brandStore.fetchAll().then(() => {
-    const firstBrand = brandList.value[0]
-    if (firstBrand) {
-      selectedBrand.value = firstBrand.slug ?? firstBrand.name ?? ''
+  return [...list].sort((left, right) => {
+    const leftIndex = brandPriority.indexOf(String(left?.name ?? '').trim())
+    const rightIndex = brandPriority.indexOf(String(right?.name ?? '').trim())
+
+    const safeLeftIndex = leftIndex === -1 ? Number.POSITIVE_INFINITY : leftIndex
+    const safeRightIndex = rightIndex === -1 ? Number.POSITIVE_INFINITY : rightIndex
+
+    if (safeLeftIndex !== safeRightIndex) {
+      return safeLeftIndex - safeRightIndex
     }
+
+    return String(left?.name ?? '').localeCompare(String(right?.name ?? ''), 'vi', {sensitivity: 'base'})
   })
 })
 
-const productList = computed(() => Array.isArray(products.value) ? products.value : [])
-const brandList = computed(() => Array.isArray(brands.value) ? brands.value : [])
+const brandTabs = computed(() => brandList.value.slice(0, 6))
+const productCards = computed(() => buildProductCards(productList.value, placeholder.product))
+
+const getBrandTabValue = (brand) => {
+  return String(brand?.slug ?? brand?.name ?? brand?.id ?? '')
+}
+
+const matchesBrand = (productCard) => {
+  if (!selectedBrand.value) {
+    return true
+  }
+
+  const brandValue = normalizeText(selectedBrand.value)
+  return [
+    productCard.brandSlug,
+    productCard.brandName,
+    productCard.brandId,
+  ].some((value) => normalizeText(value) === brandValue)
+}
 
 const featuredProducts = computed(() => {
-  return productList.value
-      .filter((product) => product.is_featured || product.isFeatured)
-      .slice(0, 5)
+  const featured = productCards.value.filter((product) => product.isFeatured)
+  return (featured.length ? featured : productCards.value).slice(0, 5)
 })
 
 const brandProducts = computed(() => {
-  if (!selectedBrand.value) {
-    return productList.value.slice(0, 8)
-  }
-
-  return productList.value
-      .filter((product) => {
-        const productBrand = product.brand
-
-        return productBrand?.slug === selectedBrand.value
-            || productBrand?.name === selectedBrand.value
-      })
+  return productCards.value
+      .filter(matchesBrand)
       .slice(0, 8)
 })
 
-const brandTabs = computed(() => {
-  return brandList.value.slice(0, 6)
+watch(
+    brandList,
+    (list) => {
+      if (!selectedBrand.value && list.length) {
+        selectedBrand.value = getBrandTabValue(list[0])
+      }
+    },
+    {immediate: true}
+)
+
+onMounted(() => {
+  productStore.fetchAll()
+  brandStore.fetchAll()
 })
 </script>
 
@@ -89,16 +115,19 @@ const brandTabs = computed(() => {
         </button>
 
         <div class="product-grid">
-          <div v-if="productLoading" class="loading-state">Đang tải sản phẩm...</div>
+          <div v-if="productLoading" class="loading-state">
+            Đang tải sản phẩm...
+          </div>
 
           <ProductCard
               v-for="product in featuredProducts"
               :key="product.id"
-              :image="product.thumbnail_url"
+              :image="product.image"
               :name="product.name"
-              :price="formatCurrency(product.display_price)"
-              :old-price="formatCurrency(product.display_old_price)"
-              :storage="product.category?.name || product.brand?.name || ''"
+              :colors="product.colors"
+              :price="product.price"
+              :old-price="product.oldPrice || ''"
+              :to="product.to"
           />
         </div>
 
@@ -139,8 +168,8 @@ const brandTabs = computed(() => {
             :key="brand.id || brand.slug || brand.name"
             type="button"
             class="brand-tab"
-            :class="{ active: selectedBrand ? selectedBrand === (brand.slug || brand.name) : index === 0 }"
-            @click="selectedBrand = brand.slug || brand.name"
+            :class="{ active: selectedBrand ? selectedBrand === getBrandTabValue(brand) : index === 0 }"
+            @click="selectedBrand = getBrandTabValue(brand)"
         >
           {{ brand.name }}
         </button>
@@ -150,11 +179,12 @@ const brandTabs = computed(() => {
         <ProductCard
             v-for="product in brandProducts"
             :key="product.id"
-            :image="product.thumbnail_url"
+            :image="product.image"
             :name="product.name"
-            :price="formatCurrency(product.display_price)"
-            :old-price="formatCurrency(product.display_old_price)"
-            :storage="product.category?.name || product.brand?.name || ''"
+            :colors="product.colors"
+            :price="product.price"
+            :old-price="product.oldPrice || ''"
+            :to="product.to"
         />
       </div>
     </section>
@@ -227,7 +257,7 @@ const brandTabs = computed(() => {
 .product-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 24px;
+  gap: 16px;
 }
 
 .loading-state {

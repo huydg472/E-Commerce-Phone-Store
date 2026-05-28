@@ -11,7 +11,9 @@ class ProductSpecificationController extends Controller
     public function index()
     {
         try {
-            $productSpecification = ProductSpecification::all();
+            $productSpecification = ProductSpecification::query()
+                ->orderByDesc('id')
+                ->get();
             return response()->json(['status' => true, 'message' => 'Lay du lieu thanh cong', 'data' => $productSpecification]);
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => $e->getMessage()]);

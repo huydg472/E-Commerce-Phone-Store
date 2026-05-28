@@ -13,7 +13,9 @@ class StockLogController extends Controller
      */
     public function index()
     {
-        $stockLog = StockLog::all();
+        $stockLog = StockLog::query()
+            ->orderByDesc('id')
+            ->get();
         return response()->json([
             'data' => $stockLog
         ]);
