@@ -128,7 +128,7 @@ const suggestedProducts = [
                     :name="product.name"
                     :image="product.image"
                     :price="product.price"
-                    :to="`/products/${product.id}`"
+                    :to="`/products/${product.slug || product.id}`"
                 />
 
                 <div class="suggest-rating">

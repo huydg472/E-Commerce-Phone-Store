@@ -1,5 +1,5 @@
 <script setup>
-const benefits = [
+const defaultBenefits = [
   {
     icon: 'bi-shield-check',
     title: 'Sản phẩm chính hãng',
@@ -21,6 +21,7 @@ const benefits = [
     desc: 'Trả góp 0% qua thẻ tín dụng',
   },
 ]
+
 </script>
 
 <template>
@@ -29,7 +30,7 @@ const benefits = [
       <h3>Ưu đãi & Lợi ích</h3>
 
       <div
-          v-for="benefit in benefits"
+          v-for="benefit in defaultBenefits"
           :key="benefit.title"
           class="benefit-item"
       >
@@ -61,7 +62,7 @@ const benefits = [
 .side-box {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .benefit-card,
@@ -72,22 +73,22 @@ const benefits = [
 }
 
 .benefit-card {
-  padding: 20px;
+  padding: 16px;
 }
 
 .benefit-card h3,
 .consult-card h3 {
-  margin: 0 0 18px;
+  margin: 0 0 14px;
   color: #111827;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
 }
 
 .benefit-item {
   display: grid;
-  grid-template-columns: 46px 1fr;
-  gap: 14px;
-  padding: 15px 0;
+  grid-template-columns: 40px 1fr;
+  gap: 10px;
+  padding: 12px 0;
 }
 
 .benefit-item + .benefit-item {
@@ -96,26 +97,26 @@ const benefits = [
 
 .benefit-icon {
   color: #0d6efd;
-  font-size: 34px;
+  font-size: 30px;
   line-height: 1;
 }
 
 .benefit-item h4 {
   margin: 0 0 5px;
   color: #111827;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
 }
 
 .benefit-item p {
   margin: 0;
   color: #64748b;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
 .consult-card {
-  padding: 20px;
+  padding: 16px;
   text-align: center;
   background: #f4f7fb;
 }
@@ -127,14 +128,14 @@ const benefits = [
 .consult-card p {
   margin: 0 0 12px;
   color: #64748b;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 
 .consult-card a {
   color: #0d6efd;
   text-decoration: none;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
   display: inline-flex;
   align-items: center;
@@ -143,7 +144,7 @@ const benefits = [
 
 .consult-card span {
   color: #64748b;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
 }
 </style>

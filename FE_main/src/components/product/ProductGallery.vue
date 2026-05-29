@@ -1,16 +1,34 @@
 <script setup>
-import {ref} from 'vue'
+import {computed, ref, watch} from 'vue'
 
-const images = [
-  '/images/products/iphone-15-pro-max.png',
-  '/images/products/iphone-15-pro-max-2.png',
-  '/images/products/iphone-15-pro-max-3.png',
-  '/images/products/iphone-15-pro-max-4.png',
-]
-
-const activeImage = ref(images[0])
+const props = defineProps({
+  images: {
+    type: Array,
+    default: () => [],
+  },
+  title: {
+    type: String,
+    default: 'Sản phẩm',
+  },
+})
 
 const fallbackImage = 'https://placehold.co/520x420/f1f5f9/2563eb?text=Zin+Mobile'
+
+const normalizedImages = computed(() => {
+  const list = Array.isArray(props.images) ? props.images : []
+  const unique = [...new Set(list.filter(Boolean))]
+  return unique.length ? unique : [fallbackImage]
+})
+
+const activeImage = ref(normalizedImages.value[0])
+
+watch(
+    normalizedImages,
+    (nextImages) => {
+      activeImage.value = nextImages[0] || fallbackImage
+    },
+    {immediate: true}
+)
 
 const handleImageError = (event) => {
   event.target.src = fallbackImage
@@ -22,7 +40,7 @@ const handleImageError = (event) => {
     <div class="main-image">
       <img
           :src="activeImage"
-          alt="iPhone 15 Pro Max"
+          :alt="title"
           @error="handleImageError"
       />
     </div>
@@ -33,14 +51,14 @@ const handleImageError = (event) => {
       </button>
 
       <button
-          v-for="image in images"
+          v-for="image in normalizedImages"
           :key="image"
           type="button"
           class="thumb-item"
           :class="{ active: activeImage === image }"
           @click="activeImage = image"
       >
-        <img :src="image" alt="Ảnh sản phẩm" @error="handleImageError"/>
+        <img :src="image" :alt="title" @error="handleImageError"/>
       </button>
 
       <button class="thumb-control" type="button">
@@ -55,11 +73,11 @@ const handleImageError = (event) => {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   background: #ffffff;
-  padding: 24px 22px 18px;
+  padding: 18px 16px 14px;
 }
 
 .main-image {
-  height: 390px;
+  height: 330px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -67,28 +85,28 @@ const handleImageError = (event) => {
 
 .main-image img {
   max-width: 100%;
-  max-height: 370px;
+  max-height: 310px;
   object-fit: contain;
 }
 
 .thumb-wrap {
-  margin-top: 18px;
+  margin-top: 14px;
   display: grid;
-  grid-template-columns: 38px repeat(4, 1fr) 38px;
-  gap: 14px;
+  grid-template-columns: 30px repeat(4, 1fr) 30px;
+  gap: 10px;
   align-items: center;
 }
 
 .thumb-control {
-  height: 42px;
+  height: 36px;
   border: none;
   background: transparent;
   color: #1f2937;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .thumb-item {
-  height: 58px;
+  height: 50px;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #ffffff;
@@ -103,17 +121,17 @@ const handleImageError = (event) => {
 
 .thumb-item img {
   max-width: 100%;
-  max-height: 50px;
+  max-height: 42px;
   object-fit: contain;
 }
 
 @media (max-width: 768px) {
   .main-image {
-    height: 300px;
+    height: 280px;
   }
 
   .main-image img {
-    max-height: 280px;
+    max-height: 250px;
   }
 
   .thumb-wrap {

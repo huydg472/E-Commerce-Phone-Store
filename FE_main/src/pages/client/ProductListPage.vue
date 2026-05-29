@@ -3,11 +3,13 @@ import ProductCard from '@/components/product/ProductCard.vue'
 import ProductFilter from '@/components/product/ProductFilter.vue'
 import BasePagination from '@/components/common/BasePagination.vue'
 import {computed, onMounted, ref, watch} from 'vue'
+import {useRoute} from 'vue-router'
 import {storeToRefs} from 'pinia'
 import {useProductStore} from '@/stores/productStore.js'
 import {buildProductCards, normalizeText} from '@/utils/productCardHelpers.js'
 
 const productStore = useProductStore()
+const route = useRoute()
 const {items: products} = storeToRefs(productStore)
 
 const selectedBrands = ref([])
@@ -16,6 +18,7 @@ const selectedStorages = ref([])
 const selectedSort = ref('newest')
 const selectedPageSize = ref(12)
 const currentPage = ref(1)
+const initialBrandSlug = computed(() => String(route.query.brand ?? ''))
 
 const handleSelectedBrands = (brandIds) => {
   selectedBrands.value = brandIds
@@ -163,6 +166,7 @@ onMounted(() => {
 
       <div class="product-layout">
         <ProductFilter
+            :initial-brand-slug="initialBrandSlug"
             @update:selected-brands="handleSelectedBrands"
             @update:selected-price-range="handleSelectedPriceRange"
             @update:selected-storages="handleSelectedStorages"

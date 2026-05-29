@@ -30,6 +30,15 @@ export const normalizeText = (value) => {
   return String(value ?? '').replace(/\s+/g, '').toLowerCase()
 }
 
+export const slugifyText = (value) => {
+  return String(value ?? '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+}
+
 const colorNameEntries = Object.entries(colorNameMap)
     .map(([name, value]) => ({
       name,
@@ -267,13 +276,18 @@ const buildCardName = (product, rom) => {
 }
 
 const buildProductLink = (product, rom, variant) => {
-  const productId = product?.id
+  const productSlug =
+      product?.slug ||
+      product?.product_slug ||
+      slugifyText(product?.name) ||
+      product?.code ||
+      product?.id
   const variantId = variant?.id
   const romQuery = rom ? `rom=${encodeURIComponent(rom)}` : ''
   const variantQuery = variantId ? `variant_id=${variantId}` : ''
   const query = [romQuery, variantQuery].filter(Boolean).join('&')
 
-  return query ? `/products/${productId}?${query}` : `/products/${productId}`
+  return query ? `/products/${productSlug}?${query}` : `/products/${productSlug}`
 }
 
 const getProductBrandId = (product) => {

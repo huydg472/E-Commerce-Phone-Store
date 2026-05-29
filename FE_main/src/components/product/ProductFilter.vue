@@ -1,7 +1,14 @@
 <script setup>
-import {computed, onMounted, ref} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useBrandStore} from '@/stores/brandStore.js'
+
+const props = defineProps({
+  initialBrandSlug: {
+    type: String,
+    default: '',
+  },
+})
 
 const emit = defineEmits([
   'update:selected-brands',
@@ -91,6 +98,40 @@ const toggleSection = (section) => {
     [section]: !openSections.value[section],
   }
 }
+
+const normalizeBrandKey = (value) => {
+  return String(value ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+}
+
+watch(
+    [brandList, () => props.initialBrandSlug],
+    ([nextBrands, nextSlug]) => {
+      const slug = normalizeBrandKey(nextSlug)
+
+      if (!slug) {
+        return
+      }
+
+      const matchedBrand = (nextBrands || []).find((brand) => {
+        return normalizeBrandKey(brand?.slug ?? brand?.name) === slug
+      })
+
+      if (!matchedBrand) {
+        return
+      }
+
+      const brandId = String(matchedBrand.id)
+
+      if (!activeBrandIds.value.includes(brandId) || activeBrandIds.value.length !== 1) {
+        activeBrandIds.value = [brandId]
+        emit('update:selected-brands', [brandId])
+      }
+    },
+    {immediate: true, deep: true}
+)
 </script>
 
 <template>

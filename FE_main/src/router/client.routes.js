@@ -26,7 +26,7 @@ export default [
                 component: () => import('@/pages/client/ProductListPage.vue'),
             },
             {
-                path: 'products/:id',
+                path: 'products/:slug',
                 name: 'products.show',
                 component: () => import('@/pages/client/ProductDetailPage.vue'),
             },
