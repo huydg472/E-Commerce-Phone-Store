@@ -255,7 +255,10 @@ const getVariantImage = (variant) => {
 }
 
 const getBestVariantByRom = (variants) => {
-  return [...variants].sort((a, b) => {
+  const availableVariants = variants.filter((variant) => Number(variant?.quantity ?? 0) > 0)
+  const source = availableVariants.length ? availableVariants : variants
+
+  return [...source].sort((a, b) => {
     return getVariantPrice(a) - getVariantPrice(b)
   })[0] ?? null
 }
@@ -306,6 +309,7 @@ const createRomProductCard = (product, rom, variants, placeholderImage = '') => 
   const bestVariant = getBestVariantByRom(variants)
   const price = getVariantPrice(bestVariant) || getProductFallbackPrice(product)
   const oldPrice = getVariantOldPrice(bestVariant) || getProductFallbackOldPrice(product)
+  const stockQuantity = Number(bestVariant?.quantity ?? product?.quantity ?? 0)
 
   return {
     id: `${product?.id}-${normalizeText(rom) || bestVariant?.id || 'default'}`,
@@ -334,6 +338,7 @@ const createRomProductCard = (product, rom, variants, placeholderImage = '') => 
         bestVariant?.is_featured ||
         bestVariant?.isFeatured
     ),
+    stockQuantity,
     to: buildProductLink(product, rom, bestVariant),
   }
 }

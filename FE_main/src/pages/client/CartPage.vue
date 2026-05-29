@@ -1,56 +1,274 @@
 <script setup>
+import { computed, onMounted, ref, watch } from 'vue'
 import CartItem from '@/components/cart/CartItem.vue'
 import CartSummary from '@/components/cart/CartSummary.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
+import { useCartStore } from '@/stores/cartStore'
+import { useProductStore } from '@/stores/productStore'
+import { formatCurrency } from '@/utils/formatCurrency'
+import { buildProductCards, toNumberPrice } from '@/utils/productCardHelpers'
 
-const cartItems = [
-  {
-    id: 1,
-    name: 'iPhone 15 Pro Max 256GB',
-    image: '/images/products/iphone-15-pro-max.png',
-    version: '256GB',
-    color: 'Titan Tự nhiên',
-    colorCode: '#6d6258',
-    price: '34.990.000đ',
-    total: '34.990.000đ',
-    quantity: 1,
-  },
-  {
-    id: 2,
-    name: 'Samsung Galaxy S24 Ultra 5G 256GB',
-    image: '/images/products/samsung-galaxy-s24-ultra.png',
-    version: '256GB',
-    color: 'Titanium Gray',
-    colorCode: '#4b4946',
-    price: '28.990.000đ',
-    total: '28.990.000đ',
-    quantity: 1,
-  },
-]
+const cartStore = useCartStore()
+const productStore = useProductStore()
+const isInitialLoading = ref(true)
+const selectedItemIds = ref([])
+const cartHydrated = ref(false)
 
-const suggestedProducts = [
-  {
-    id: 1,
-    name: 'iPhone 15 128GB',
-    image: '/images/products/iphone-15.png',
-    price: '22.990.000đ',
-    rating: '(128)',
-  },
-  {
-    id: 2,
-    name: 'Samsung Galaxy S24 5G 256GB',
-    image: '/images/products/samsung-galaxy-s24.png',
-    price: '21.490.000đ',
-    rating: '(96)',
-  },
-  {
-    id: 3,
-    name: 'OPPO Reno11 F 5G 256GB',
-    image: '/images/products/oppo-reno11-f.png',
-    price: '8.990.000đ',
-    rating: '(64)',
-  },
-]
+const fallbackSuggestImage = '/images/products/iphone-15.png'
+
+const resolveVariant = (item) => {
+  return (
+      item?.productVariant ??
+      item?.product_variant ??
+      item?.variant ??
+      item?.product_variants?.[0] ??
+      null
+  )
+}
+
+const resolveProduct = (item, variant) => {
+  return (
+      variant?.product ??
+      item?.product ??
+      item?.products ??
+      null
+  )
+}
+
+const resolveColorName = (variant) => {
+  if (typeof variant?.color === 'object' && variant?.color !== null) {
+    return String(
+        variant.color.name ??
+        variant.color.color_name ??
+        variant.color.title ??
+        ''
+    ).trim()
+  }
+
+  return String(
+      variant?.color ??
+      variant?.color_name ??
+      variant?.colorName ??
+      variant?.name_color ??
+      ''
+  ).trim()
+}
+
+const resolveColorCode = (variant) => {
+  const colorObject = typeof variant?.color === 'object' ? variant.color : null
+
+  return String(
+      colorObject?.code ??
+      colorObject?.hex ??
+      colorObject?.hex_code ??
+      colorObject?.color_code ??
+      variant?.color_code ??
+      variant?.colorCode ??
+      variant?.hex_code ??
+      variant?.hexCode ??
+      variant?.color_hex ??
+      variant?.colorHex ??
+      '#d1d5db'
+  ).trim()
+}
+
+const resolveVersion = (variant) => {
+  return String(
+      variant?.rom ??
+      variant?.ROM ??
+      variant?.storage ??
+      variant?.storage_size ??
+      variant?.capacity ??
+      ''
+  ).trim()
+}
+
+const resolveImage = (product, variant) => {
+  const firstVariantImage =
+      variant?.productVariantImages?.[0] ??
+      variant?.product_variant_images?.[0] ??
+      variant?.images?.[0] ??
+      null
+
+  return (
+      firstVariantImage?.image_url ??
+      firstVariantImage?.imageUrl ??
+      firstVariantImage?.url ??
+      firstVariantImage?.path ??
+      firstVariantImage?.image ??
+      firstVariantImage?.image_path ??
+      variant?.thumbnail_url ??
+      variant?.thumbnailUrl ??
+      variant?.image ??
+      product?.thumbnail_url ??
+      product?.thumbnailUrl ??
+      product?.image ??
+      product?.image_url ??
+      product?.imageUrl ??
+      ''
+  )
+}
+
+const cartItems = computed(() => {
+  const source = cartStore.item?.items
+  return Array.isArray(source) ? source : (Array.isArray(cartStore.items) ? cartStore.items : [])
+})
+
+const mappedCartItems = computed(() => {
+  return cartItems.value.map((item) => {
+    const variant = resolveVariant(item)
+    const product = resolveProduct(item, variant)
+    const quantity = Number(item?.quantity ?? 1)
+    const priceValue = toNumberPrice(
+        item?.price ??
+        variant?.sale_price ??
+        variant?.salePrice ??
+        variant?.price ??
+        variant?.display_price ??
+        variant?.displayPrice ??
+        product?.display_price ??
+        product?.sale_price ??
+        product?.price
+    )
+    const totalValue = toNumberPrice(
+        item?.subtotal ??
+        item?.total ??
+        priceValue * quantity
+    )
+
+    return {
+      id: item?.id,
+      name: product?.name ?? 'Sản phẩm',
+      image: resolveImage(product, variant),
+      version: resolveVersion(variant),
+      color: resolveColorName(variant),
+      colorCode: resolveColorCode(variant),
+      price: formatCurrency(priceValue),
+      total: formatCurrency(totalValue),
+      priceValue,
+      totalValue,
+      quantity,
+    }
+  })
+})
+
+const selectedItems = computed(() => {
+  return mappedCartItems.value.filter((item) => selectedItemIds.value.includes(item.id))
+})
+
+const summaryItemCount = computed(() => mappedCartItems.value.length)
+const selectedItemCount = computed(() => selectedItems.value.length)
+const subtotalValue = computed(() => {
+  return selectedItems.value.reduce((sum, item) => sum + Number(item.totalValue ?? 0), 0)
+})
+const discountValue = computed(() => 0)
+const shippingValue = computed(() => 0)
+const totalValue = computed(() => subtotalValue.value)
+
+const isAllSelected = computed(() => {
+  return mappedCartItems.value.length > 0 && selectedItemIds.value.length === mappedCartItems.value.length
+})
+
+const suggestedProducts = computed(() => {
+  const cards = buildProductCards(productStore.items, fallbackSuggestImage)
+  return cards.slice(0, 3)
+})
+
+watch(mappedCartItems, (items) => {
+  if (!cartHydrated.value) {
+    return
+  }
+
+  const nextIds = items.map((item) => item.id)
+  selectedItemIds.value = selectedItemIds.value.filter((id) => nextIds.includes(id))
+})
+
+const syncInitialSelection = () => {
+  selectedItemIds.value = mappedCartItems.value.map((item) => item.id)
+  cartHydrated.value = true
+}
+
+const toggleAll = (checked) => {
+  if (checked) {
+    selectedItemIds.value = mappedCartItems.value.map((item) => item.id)
+    return
+  }
+
+  selectedItemIds.value = []
+}
+
+const toggleItem = (itemId, checked) => {
+  if (checked) {
+    if (!selectedItemIds.value.includes(itemId)) {
+      selectedItemIds.value = [...selectedItemIds.value, itemId]
+    }
+    return
+  }
+
+  selectedItemIds.value = selectedItemIds.value.filter((id) => id !== itemId)
+}
+
+const isSelected = (itemId) => {
+  return selectedItemIds.value.includes(itemId)
+}
+
+const getLiveCartItem = (itemId) => {
+  const source = cartStore.item?.items ?? cartStore.items ?? []
+  return source.find((cartItem) => cartItem.id === itemId) ?? null
+}
+
+const handleIncrease = async (item) => {
+  try {
+    const liveItem = getLiveCartItem(item.id) ?? item
+    const currentQuantity = Number(liveItem.quantity ?? 1)
+    await cartStore.update(item.id, {
+      quantity: currentQuantity + 1,
+    })
+  } catch (error) {
+    console.error('Không thể tăng số lượng giỏ hàng:', error)
+  }
+}
+
+const handleDecrease = async (item) => {
+  try {
+    const liveItem = getLiveCartItem(item.id) ?? item
+    const currentQuantity = Number(liveItem.quantity ?? 1)
+
+    if (currentQuantity <= 1) {
+      await handleRemove(item)
+      return
+    }
+
+    await cartStore.update(item.id, {
+      quantity: currentQuantity - 1,
+    })
+  } catch (error) {
+    console.error('Không thể giảm số lượng giỏ hàng:', error)
+  }
+}
+
+const handleRemove = async (item) => {
+  try {
+    await cartStore.remove(item.id)
+    selectedItemIds.value = selectedItemIds.value.filter((id) => id !== item.id)
+  } catch (error) {
+    console.error('Không thể xóa sản phẩm khỏi giỏ hàng:', error)
+  }
+}
+
+onMounted(async () => {
+  isInitialLoading.value = true
+
+  try {
+    await Promise.allSettled([
+      cartStore.fetchAll(),
+      productStore.fetchAll(),
+    ])
+    syncInitialSelection()
+  } finally {
+    isInitialLoading.value = false
+  }
+})
 </script>
 
 <template>
@@ -64,13 +282,25 @@ const suggestedProducts = [
 
       <h1 class="page-title">Giỏ hàng</h1>
 
-      <div class="cart-layout">
+      <div v-if="isInitialLoading" class="cart-loading">
+        <div class="cart-loading-card">
+          <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+          <p>Đang tải dữ liệu giỏ hàng...</p>
+        </div>
+      </div>
+
+      <div v-else class="cart-layout">
         <div class="cart-left">
           <div class="cart-table">
             <div class="cart-select-row">
               <label>
-                <input type="checkbox" class="form-check-input" checked />
-                Chọn tất cả (2 sản phẩm)
+                <input
+                    type="checkbox"
+                    class="form-check-input"
+                    :checked="isAllSelected"
+                    @change="toggleAll($event.target.checked)"
+                />
+                Chọn tất cả ({{ summaryItemCount }} sản phẩm)
               </label>
             </div>
 
@@ -83,20 +313,34 @@ const suggestedProducts = [
               <span>Thao tác</span>
             </div>
 
-            <CartItem
-                v-for="item in cartItems"
-                :key="item.id"
-                :name="item.name"
-                :image="item.image"
-                :version="item.version"
-                :color="item.color"
-                :color-code="item.colorCode"
-                :price="item.price"
-                :total="item.total"
-                :quantity="item.quantity"
-            />
+            <template v-if="mappedCartItems.length">
+              <CartItem
+                  v-for="item in mappedCartItems"
+                  :key="item.id"
+                  :name="item.name"
+                  :image="item.image"
+                  :version="item.version"
+                  :color="item.color"
+                  :color-code="item.colorCode"
+                  :price="item.price"
+                  :total="item.total"
+                  :quantity="item.quantity"
+                  :selected="isSelected(item.id)"
+                  @toggle="(checked) => toggleItem(item.id, checked)"
+                  @increase="handleIncrease(item)"
+                  @decrease="handleDecrease(item)"
+                  @remove="handleRemove(item)"
+              />
+            </template>
 
-            <div class="continue-shopping">
+            <div v-else class="cart-empty-state">
+              <i class="bi bi-cart3"></i>
+              <h3>Giỏ hàng đang trống</h3>
+              <p>Hãy thêm sản phẩm bạn thích vào giỏ để xem tại đây.</p>
+              <RouterLink to="/products">Tiếp tục mua sắm</RouterLink>
+            </div>
+
+            <div v-if="mappedCartItems.length" class="continue-shopping">
               <RouterLink to="/products">
                 <i class="bi bi-arrow-left"></i>
                 Tiếp tục mua sắm
@@ -104,7 +348,7 @@ const suggestedProducts = [
             </div>
           </div>
 
-          <div class="suggest-section">
+          <div v-if="suggestedProducts.length" class="suggest-section">
             <div class="suggest-header">
               <h2>Có thể bạn sẽ thích</h2>
 
@@ -128,26 +372,26 @@ const suggestedProducts = [
                     :name="product.name"
                     :image="product.image"
                     :price="product.price"
-                    :to="`/products/${product.slug || product.id}`"
+                    :old-price="product.oldPrice"
+                    :colors="product.colors"
+                    :to="product.to"
+                    :product-id="product.productId"
+                    :variant-id="product.variantId"
+                    :cart-quantity="1"
+                    :stock-quantity="product.stockQuantity ?? 0"
                 />
-
-                <div class="suggest-rating">
-                  <span>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                    <i class="bi bi-star-fill"></i>
-                  </span>
-
-                  <em>{{ product.rating }}</em>
-                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <CartSummary />
+        <CartSummary
+            :item-count="selectedItemCount"
+            :subtotal="subtotalValue"
+            :discount="discountValue"
+            :shipping="shippingValue"
+            :total="totalValue"
+        />
       </div>
     </div>
   </section>
@@ -193,6 +437,33 @@ const suggestedProducts = [
   color: #111827;
   font-size: 36px;
   font-weight: 900;
+}
+
+.cart-loading {
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cart-loading-card {
+  min-width: 240px;
+  padding: 28px 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.cart-loading-card p {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .cart-layout {
@@ -254,6 +525,7 @@ const suggestedProducts = [
   font-weight: 800;
   border-bottom: 1px solid #eef2f7;
 }
+
 .cart-table-head .product-head {
   justify-content: center;
 }
@@ -263,6 +535,47 @@ const suggestedProducts = [
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.cart-empty-state {
+  padding: 42px 24px 48px;
+  text-align: center;
+}
+
+.cart-empty-state i {
+  color: #0d6efd;
+  font-size: 44px;
+}
+
+.cart-empty-state h3 {
+  margin: 14px 0 8px;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.cart-empty-state p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cart-empty-state a {
+  margin-top: 16px;
+  color: #0d6efd;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #0d6efd;
+  border-radius: 8px;
+  background: #f8fbff;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 .continue-shopping {
@@ -316,11 +629,6 @@ const suggestedProducts = [
 
 .suggest-card {
   position: relative;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  background: #ffffff;
-  overflow: hidden;
-  padding-bottom: 14px;
 }
 
 .suggest-heart {
@@ -335,57 +643,7 @@ const suggestedProducts = [
 }
 
 .suggest-card :deep(.product-card) {
-  border: none;
-  box-shadow: none;
-  min-height: 196px;
-  padding: 12px 14px 4px;
-}
-
-.suggest-card :deep(.product-card:hover) {
-  transform: none;
-  box-shadow: none;
-}
-
-.suggest-card :deep(.wishlist-btn) {
-  display: none;
-}
-
-.suggest-card :deep(.product-image) {
-  height: 108px;
-}
-
-.suggest-card :deep(.product-image img) {
-  height: 104px;
-}
-
-.suggest-card :deep(.product-name) {
-  min-height: 38px;
-  font-size: 14px;
-}
-
-.suggest-card :deep(.sale-price) {
-  font-size: 17px;
-}
-
-.suggest-rating {
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.suggest-rating span {
-  color: #f59e0b;
-  display: inline-flex;
-  gap: 3px;
-  font-size: 13px;
-}
-
-.suggest-rating em {
-  color: #64748b;
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 600;
+  min-height: 285px;
 }
 
 @media (max-width: 1200px) {

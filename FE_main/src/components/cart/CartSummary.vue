@@ -1,16 +1,60 @@
+<script setup>
+import { computed } from 'vue'
+import { formatCurrency } from '@/utils/formatCurrency'
+import { toNumberPrice } from '@/utils/productCardHelpers'
+
+const props = defineProps({
+  itemCount: {
+    type: Number,
+    default: 0,
+  },
+  subtotal: {
+    type: [Number, String],
+    default: 0,
+  },
+  discount: {
+    type: [Number, String],
+    default: 0,
+  },
+  shipping: {
+    type: [Number, String],
+    default: 0,
+  },
+  total: {
+    type: [Number, String],
+    default: 0,
+  },
+})
+
+const subtotalValue = computed(() => toNumberPrice(props.subtotal))
+const discountValue = computed(() => toNumberPrice(props.discount))
+const shippingValue = computed(() => toNumberPrice(props.shipping))
+const totalValue = computed(() => toNumberPrice(props.total))
+
+const shippingText = computed(() => {
+  if (shippingValue.value <= 0) {
+    return 'Miễn phí'
+  }
+
+  return formatCurrency(shippingValue.value)
+})
+</script>
+
 <template>
   <div class="cart-summary">
     <div class="summary-card">
       <h2>Tóm tắt đơn hàng</h2>
 
       <div class="summary-row">
-        <span>Tạm tính (2 sản phẩm)</span>
-        <strong>63.980.000đ</strong>
+        <span>Tạm tính ({{ itemCount }} sản phẩm)</span>
+        <strong>{{ formatCurrency(subtotalValue) }}</strong>
       </div>
 
       <div class="summary-row">
         <span>Giảm giá</span>
-        <strong class="discount-text">-2.000.000đ</strong>
+        <strong class="discount-text">
+          {{ discountValue > 0 ? `-${formatCurrency(discountValue)}` : formatCurrency(0) }}
+        </strong>
       </div>
 
       <div class="summary-row">
@@ -19,25 +63,16 @@
           <i class="bi bi-info-circle"></i>
         </span>
 
-        <strong class="free-text">Miễn phí</strong>
+        <strong class="free-text">{{ shippingText }}</strong>
       </div>
 
       <div class="summary-total">
         <span>Tổng cộng</span>
 
         <div>
-          <strong>61.980.000đ</strong>
+          <strong>{{ formatCurrency(totalValue) }}</strong>
           <p>(Đã bao gồm VAT)</p>
         </div>
-      </div>
-
-      <div class="coupon-applied">
-        <p>Mã giảm giá đang áp dụng</p>
-
-        <button type="button">
-          GIAM2TR
-          <i class="bi bi-x-lg"></i>
-        </button>
       </div>
 
       <div class="coupon-form">
@@ -93,9 +128,6 @@
     </div>
   </div>
 </template>
-
-<script setup>
-</script>
 
 <style scoped>
 .cart-summary {
@@ -178,33 +210,6 @@
   color: #64748b;
   font-size: 12px;
   font-weight: 600;
-}
-
-.coupon-applied {
-  margin-top: 18px;
-}
-
-.coupon-applied p {
-  margin: 0 0 9px;
-  color: #334155;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.coupon-applied button {
-  height: 42px;
-  min-width: 150px;
-  padding: 0 14px;
-  border: 1px solid #0d6efd;
-  border-radius: 8px;
-  background: #f8fbff;
-  color: #0d6efd;
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 28px;
-  font-size: 14px;
-  font-weight: 800;
 }
 
 .coupon-form {

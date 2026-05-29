@@ -1,5 +1,5 @@
 <script setup>
-defineProps({
+const props = defineProps({
   image: {
     type: String,
     default: '',
@@ -32,7 +32,13 @@ defineProps({
     type: Number,
     default: 1,
   },
+  selected: {
+    type: Boolean,
+    default: true,
+  },
 })
+
+const emit = defineEmits(['toggle', 'increase', 'decrease', 'remove'])
 
 const fallbackImage = 'https://placehold.co/150x150/f1f5f9/2563eb?text=Zin+Mobile'
 
@@ -44,7 +50,12 @@ const handleImageError = (event) => {
 <template>
   <div class="cart-item">
     <div class="cart-check">
-      <input type="checkbox" class="form-check-input" checked />
+      <input
+          type="checkbox"
+          class="form-check-input"
+          :checked="props.selected"
+          @change="emit('toggle', $event.target.checked)"
+      />
     </div>
 
     <div class="product-cell">
@@ -82,9 +93,9 @@ const handleImageError = (event) => {
 
     <div class="quantity-cell">
       <div class="quantity-box">
-        <button type="button">−</button>
+        <button type="button" @click="emit('decrease')">−</button>
         <span>{{ quantity }}</span>
-        <button type="button">+</button>
+        <button type="button" @click="emit('increase')">+</button>
       </div>
     </div>
 
@@ -93,7 +104,7 @@ const handleImageError = (event) => {
     </div>
 
     <div class="action-cell">
-      <button type="button" class="delete-btn">
+      <button type="button" class="delete-btn" @click="emit('remove')">
         <i class="bi bi-trash"></i>
       </button>
     </div>

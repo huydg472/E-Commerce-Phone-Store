@@ -22,11 +22,16 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  productVariantId: {
+    type: [String, Number],
+    default: null,
+  },
 })
 
 const emit = defineEmits([
   'update:selectedStorage',
   'update:selectedColor',
+  'add-to-cart',
 ])
 
 const fallbackStorages = ['256GB', '512GB', '1TB']
@@ -121,6 +126,17 @@ const decreaseQuantity = () => {
 const increaseQuantity = () => {
   quantity.value++
 }
+
+const handleAddToCart = () => {
+  if (!props.productVariantId || props.isOutOfStock) {
+    return
+  }
+
+  emit('add-to-cart', {
+    productVariantId: props.productVariantId,
+    quantity: quantity.value,
+  })
+}
 </script>
 
 <template>
@@ -176,7 +192,7 @@ const increaseQuantity = () => {
           <button type="button" :disabled="isOutOfStock" @click="increaseQuantity">+</button>
         </div>
 
-        <button type="button" class="buy-now-btn" :disabled="isOutOfStock">
+        <button type="button" class="buy-now-btn" :disabled="isOutOfStock" @click="handleAddToCart">
           <strong>Mua ngay</strong>
           <span>Giao hàng tận nơi hoặc nhận tại cửa hàng</span>
         </button>
@@ -184,7 +200,7 @@ const increaseQuantity = () => {
     </div>
 
     <div class="action-row">
-      <button type="button" class="cart-btn" :disabled="isOutOfStock">
+      <button type="button" class="cart-btn" :disabled="isOutOfStock" @click="handleAddToCart">
         <i class="bi bi-cart3"></i>
         Thêm vào giỏ hàng
       </button>

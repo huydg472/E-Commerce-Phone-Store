@@ -1,12 +1,22 @@
 <script setup>
-import {computed} from 'vue'
+import {computed, watch} from 'vue'
 import {useRouter} from 'vue-router'
-import {useAuthStore} from "@/stores/authStore.js";
+import {storeToRefs} from 'pinia'
+import {useAuthStore} from '@/stores/authStore.js'
+import {useCartStore} from '@/stores/cartStore'
 
 const router = useRouter();
 const authStore = useAuthStore();
+const cartStore = useCartStore()
+
+const {items: cartItems, item: cartData} = storeToRefs(cartStore)
 
 const isLoggedIn = computed(() => authStore.isLoggedIn)
+
+const cartQuantity = computed(() => {
+  const items = cartData.value?.items ?? cartItems.value ?? []
+  return Array.isArray(items) ? items.length : 0
+})
 
 const displayName = computed(() => {
   return authStore.user?.['name'] || authStore.user?.['username'] || 'Tài khoản'
@@ -17,6 +27,24 @@ const handleLogout = async () => {
   await router.replace('/auth/login')
 }
 
+const refreshCart = async () => {
+  if (!authStore.isLoggedIn) {
+    cartStore.items = []
+    cartStore.item = null
+    return
+  }
+
+  try {
+    await cartStore.fetchAll()
+  } catch (error) {
+    cartStore.items = []
+    cartStore.item = null
+  }
+}
+
+watch(isLoggedIn, () => {
+  refreshCart()
+}, { immediate: true })
 </script>
 <template>
   <header class="site-header">
@@ -92,7 +120,7 @@ const handleLogout = async () => {
           <RouterLink to="/cart" class="header-action cart-action">
             <i class="bi bi-cart3"></i>
             <span>Giỏ hàng</span>
-            <em>0</em>
+            <em>{{ cartQuantity }}</em>
           </RouterLink>
         </div>
       </div>

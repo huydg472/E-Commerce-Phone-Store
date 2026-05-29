@@ -128,6 +128,10 @@ onMounted(() => {
               :price="product.price"
               :old-price="product.oldPrice || ''"
               :to="product.to"
+              :product-id="product.productId"
+              :variant-id="product.variantId"
+              :cart-quantity="1"
+              :stock-quantity="product.stockQuantity"
           />
         </div>
 
@@ -185,6 +189,10 @@ onMounted(() => {
             :price="product.price"
             :old-price="product.oldPrice || ''"
             :to="product.to"
+            :product-id="product.productId"
+            :variant-id="product.variantId"
+            :cart-quantity="1"
+            :stock-quantity="product.stockQuantity"
         />
       </div>
     </section>

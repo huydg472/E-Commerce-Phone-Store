@@ -5,13 +5,18 @@ import ProductSpecificationBox from '@/components/product/ProductSpecificationBo
 import ProductCard from '@/components/product/ProductCard.vue'
 
 import {computed, ref, watch} from 'vue'
-import {useRoute} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
+import {useAuthStore} from '@/stores/authStore'
+import {useCartStore} from '@/stores/cartStore'
 import {useProductStore} from '@/stores/productStore'
 import {buildColorOptions, slugifyText, toNumberPrice} from '@/utils/productCardHelpers'
 import {formatCurrency} from '@/utils/formatCurrency'
 
 const route = useRoute()
+const router = useRouter()
 const productStore = useProductStore()
+const authStore = useAuthStore()
+const cartStore = useCartStore()
 
 const currentProduct = ref(null)
 const loading = ref(false)
@@ -186,6 +191,27 @@ const isVariantInStock = (variant) => {
 const currentVariantInStock = computed(() => {
   return isVariantInStock(currentSelectedVariant.value)
 })
+
+const handleAddToCart = async ({ productVariantId, quantity }) => {
+  if (!productVariantId || !currentVariantInStock.value) {
+    return
+  }
+
+  if (!authStore.isLoggedIn) {
+    await router.push('/auth/login')
+    return
+  }
+
+  try {
+    await cartStore.create({
+      product_variant_id: productVariantId,
+      quantity: Number(quantity ?? 1),
+      unit_price: currentPrice.value,
+    })
+  } catch (error) {
+    console.error('Không thể thêm vào giỏ hàng:', error)
+  }
+}
 
 const getSelectedVariant = (product) => {
   const variants = getVariants(product)
@@ -570,8 +596,10 @@ const relatedProducts = [
                 :storages="productStorageOptions"
                 :colors="productColorOptions"
                 :is-out-of-stock="!currentVariantInStock"
+                :product-variant-id="currentSelectedVariant?.id"
                 v-model:selectedStorage="selectedStorage"
                 v-model:selectedColor="selectedColor"
+                @add-to-cart="handleAddToCart"
             />
           </div>
 
