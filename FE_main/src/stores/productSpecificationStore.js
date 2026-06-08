@@ -1,7 +1,7 @@
-import {defineStore} from 'pinia'
-import {productVariantService} from '@/services/productVariantService'
+import { defineStore } from 'pinia'
+import { productSpecificationService } from '@/services/productSpecificationService'
 
-export const useProductVariantStore = defineStore('productVariant', {
+export const useProductSpecificationStore = defineStore('productSpecification', {
     state: () => ({
         items: [],
         item: null,
@@ -14,7 +14,7 @@ export const useProductVariantStore = defineStore('productVariant', {
             this.loading = true
 
             try {
-                const response = await productVariantService.getAll(params)
+                const response = await productSpecificationService.getAll(params)
                 this.items = response.data.data || response.data
                 this.pagination = response.data.meta || null
                 return response
@@ -27,7 +27,7 @@ export const useProductVariantStore = defineStore('productVariant', {
             this.loading = true
 
             try {
-                const response = await productVariantService.getById(id)
+                const response = await productSpecificationService.getById(id)
                 this.item = response.data.data || response.data
                 return response
             } finally {
@@ -36,7 +36,7 @@ export const useProductVariantStore = defineStore('productVariant', {
         },
 
         async create(payload) {
-            const response = await productVariantService.create(payload)
+            const response = await productSpecificationService.create(payload)
 
             const createdItem = response.data?.data ?? response.data ?? null
             if (createdItem?.id) {
@@ -48,13 +48,13 @@ export const useProductVariantStore = defineStore('productVariant', {
         },
 
         async update(id, payload) {
-            const response = await productVariantService.update(id, payload)
+            const response = await productSpecificationService.update(id, payload)
 
             const updatedItem = response.data?.data ?? response.data ?? null
             if (updatedItem?.id) {
                 this.item = updatedItem
                 this.items = this.items.map((item) => (
-                    item.id === updatedItem.id ? {...item, ...updatedItem} : item
+                    item.id === updatedItem.id ? { ...item, ...updatedItem } : item
                 ))
             }
 
@@ -62,7 +62,7 @@ export const useProductVariantStore = defineStore('productVariant', {
         },
 
         async remove(id) {
-            const response = await productVariantService.delete(id)
+            const response = await productSpecificationService.delete(id)
             this.items = this.items.filter((item) => item.id !== id)
             return response
         },

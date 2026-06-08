@@ -15,6 +15,15 @@ let searchTimer = null
 
 const users = computed(() => (Array.isArray(userStore.items) ? userStore.items : []))
 
+const stats = computed(() => {
+  const total = pagination.value.total || users.value.length
+  const active = users.value.filter((user) => user?.status === 'active').length
+  const inactive = users.value.filter((user) => user?.status !== 'active').length
+  const staff = users.value.filter((user) => ['admin', 'staff'].includes(user?.role?.name)).length
+
+  return { total, active, inactive, staff }
+})
+
 const pagination = computed(() => {
   return userStore.pagination || {
     current_page: 1,
@@ -111,18 +120,67 @@ watch(search, () => {
 
 <template>
   <div class="admin-page">
-    <div class="page-head">
-      <div>
+    <section class="hero-card">
+      <div class="hero-copy">
         <p class="eyebrow">Quản lý người dùng</p>
         <h1>Danh sách người dùng</h1>
-        <p class="subtitle">Xem, tạo, sửa và xóa tài khoản quản trị viên, nhân viên, khách hàng.</p>
+        <p class="subtitle">Quản lý tài khoản quản trị viên, nhân viên, khách hàng, vai trò và trạng thái hoạt động.</p>
+
+        <div class="hero-actions">
+          <RouterLink to="/admin/users/create" class="primary-action">
+            <i class="bi bi-plus-lg"></i>
+            Tạo người dùng
+          </RouterLink>
+
+          <button type="button" class="secondary-action" @click="search = ''">
+            <i class="bi bi-arrow-counterclockwise"></i>
+            Xóa tìm kiếm
+          </button>
+        </div>
       </div>
 
-      <RouterLink to="/admin/users/create" class="primary-action">
-        <i class="bi bi-plus-lg"></i>
-        Tạo người dùng
-      </RouterLink>
-    </div>
+      <div class="hero-stats">
+        <article class="stat-card">
+          <span class="stat-icon stat-icon-total">
+            <i class="bi bi-people"></i>
+          </span>
+          <div>
+            <strong>{{ stats.total }}</strong>
+            <span>Tổng người dùng</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-icon stat-icon-active">
+            <i class="bi bi-check2-circle"></i>
+          </span>
+          <div>
+            <strong>{{ stats.active }}</strong>
+            <span>Đang hoạt động</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-icon stat-icon-featured">
+            <i class="bi bi-person-gear"></i>
+          </span>
+          <div>
+            <strong>{{ stats.staff }}</strong>
+            <span>Admin / Staff</span>
+          </div>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-icon stat-icon-inactive">
+            <i class="bi bi-slash-circle"></i>
+          </span>
+          <div>
+            <strong>{{ stats.inactive }}</strong>
+            <span>Tạm ẩn</span>
+          </div>
+        </article>
+      </div>
+    </section>
 
     <div class="toolbar">
       <div class="search-box">
@@ -239,6 +297,101 @@ watch(search, () => {
   gap: 18px;
 }
 
+.hero-card {
+  padding: 24px;
+  border: 1px solid #e5eaf3;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.9fr);
+  gap: 18px;
+}
+
+.hero-copy h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.hero-stats .stat-card {
+  width: 100%;
+  height: 100%;
+  min-height: 96px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #edf2f7;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.hero-stats .stat-card strong {
+  display: block;
+  margin: 0;
+  color: #020617;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.hero-stats .stat-card span:last-child {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.hero-stats .stat-icon {
+  width: 44px;
+  height: 44px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 16px;
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.hero-stats .stat-icon i {
+  line-height: 1;
+}
+
+.stat-icon-total {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+}
+
+.stat-icon-active {
+  background: linear-gradient(135deg, #10b981 0%, #22c55e 100%);
+}
+
+.stat-icon-featured {
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+}
+
+.stat-icon-inactive {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+}
+
 .page-head {
   display: flex;
   align-items: flex-start;
@@ -270,9 +423,9 @@ watch(search, () => {
 
 .primary-action,
 .secondary-action {
-  min-height: 42px;
-  padding: 0 14px;
-  border-radius: 10px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -526,12 +679,35 @@ watch(search, () => {
 }
 
 @media (max-width: 992px) {
-  .page-head {
+  .hero-card {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .hero-card {
+    padding: 20px;
+  }
+
+  .hero-copy h1 {
+    font-size: 24px;
+  }
+
+  .hero-actions {
     flex-direction: column;
   }
 
-  .primary-action {
-    width: fit-content;
+  .hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .primary-action,
+  .secondary-action {
+    width: 100%;
   }
 }
 </style>

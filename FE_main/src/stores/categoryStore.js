@@ -43,7 +43,15 @@ export const useCategoryStore = defineStore('category', {
 
         async update(id, payload) {
             const response = await categoryService.update(id, payload)
-            await this.fetchAll()
+
+            const updatedItem = response.data?.data ?? response.data ?? null
+            if (updatedItem?.id) {
+                this.item = updatedItem
+                this.items = this.items.map((item) => (
+                    item.id === updatedItem.id ? {...item, ...updatedItem} : item
+                ))
+            }
+
             return response
         },
 

@@ -97,17 +97,7 @@ class ProductController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product)
     {
-        $product->update([
-            'brand_id' => $request->brand_id,
-            'category_id' => $request->category_id,
-            'name' => $request->name,
-            'slug' => $request->slug,
-            'thumbnail_url' => $request->thumbnail_url,
-            'short_description' => $request->short_description,
-            'description' => $request->description,
-            'is_featured' => $request->is_featured,
-            'status' => $request->status,
-        ]);
+        $product->update($request->validated());
 
         $product->load(['brand', 'category', 'productVariants.images']);
         $this->attachDisplayPrice($product);

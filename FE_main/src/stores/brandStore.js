@@ -37,13 +37,20 @@ export const useBrandStore = defineStore('brand', {
 
         async create(payload) {
             const response = await brandService.create(payload)
-            await this.fetchAll()
+            const created = response.data?.data ?? response.data ?? null
+            if (created) {
+                this.items = [created, ...this.items]
+            }
             return response
         },
 
         async update(id, payload) {
             const response = await brandService.update(id, payload)
-            await this.fetchAll()
+            const updated = response.data?.data ?? response.data ?? null
+            if (updated) {
+                this.item = updated
+                this.items = this.items.map((item) => (item.id === id ? updated : item))
+            }
             return response
         },
 

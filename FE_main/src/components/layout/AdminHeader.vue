@@ -1,12 +1,14 @@
 <script setup>
-import {computed} from 'vue'
+import { computed, onMounted } from 'vue'
 import {useRouter} from 'vue-router'
 import {useAuthStore} from '@/stores/authStore.js'
+import { useDashboardStore } from '@/stores/dashboardStore'
 
 const emit = defineEmits(['open-sidebar'])
 
 const router = useRouter()
 const authStore = useAuthStore()
+const dashboardStore = useDashboardStore()
 
 const displayName = computed(() => {
   return authStore.user?.['name'] || authStore.user?.['username'] || 'Admin'
@@ -19,6 +21,56 @@ const displayRole = computed(() => {
   if (roleName === 'staff') return 'Nhân viên'
 
   return 'Tài khoản'
+})
+
+const formatMoney = (value) => {
+  const amount = Number(value ?? 0) || 0
+
+  return new Intl.NumberFormat('vi-VN', {
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
+
+const formatTime = (value) => {
+  if (!value) {
+    return ''
+  }
+
+  return new Intl.DateTimeFormat('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+  }).format(new Date(value))
+}
+
+const pendingOrders = computed(() => {
+  return dashboardStore.orders
+    .filter((order) => order.order_status === 'pending')
+    .slice(0, 5)
+    .map((order) => ({
+      orderId: order.id,
+      id: order.order_code || `#${order.id}`,
+      title: 'Đơn hàng mới cần xác nhận',
+      description: `${order.receiver_name || order.user?.name || 'Khách hàng'} · ${formatMoney(order.total_amount)} đ`,
+      time: formatTime(order.ordered_at || order.created_at),
+      actionLabel: 'Xác nhận ngay',
+    }))
+})
+
+const notifications = computed(() => {
+  return pendingOrders.value.slice(0, 6)
+})
+
+const notificationCount = computed(() => {
+  const count = dashboardStore.pendingOrders || pendingOrders.value.length
+  return count > 99 ? '99+' : count
+})
+
+onMounted(() => {
+  if (!dashboardStore.orders.length && !dashboardStore.loading) {
+    void dashboardStore.fetchDashboard()
+  }
 })
 
 const handleLogout = async () => {
@@ -47,10 +99,44 @@ const handleLogout = async () => {
     </div>
 
     <div class="header-right">
-      <button class="notification-btn" type="button" aria-label="Thông báo">
-        <i class="bi bi-bell"></i>
-        <span>3</span>
-      </button>
+      <div class="dropdown notification-dropdown">
+        <button class="notification-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Thông báo">
+          <i class="bi bi-bell"></i>
+          <span v-if="notificationCount">{{ notificationCount }}</span>
+        </button>
+
+        <div class="dropdown-menu dropdown-menu-end notification-menu">
+          <div class="notification-head">
+            <strong>Thông báo</strong>
+            <small>{{ notifications.length }} mục</small>
+          </div>
+
+          <div v-if="notifications.length" class="notification-list">
+            <article v-for="item in notifications" :key="`${item.id}-${item.title}`" class="notification-item">
+              <div class="notification-icon">
+                <i class="bi bi-bag-check"></i>
+              </div>
+
+              <div class="notification-content">
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.description }}</p>
+                <small>
+                  {{ item.id }}<span v-if="item.time"> · {{ item.time }}</span>
+                </small>
+              </div>
+
+              <RouterLink :to="{ name: 'admin.orders.show', params: { id: item.orderId } }" class="notification-action">
+                {{ item.actionLabel }}
+              </RouterLink>
+            </article>
+          </div>
+
+          <div v-else class="notification-empty">
+            Chưa có đơn hàng mới cần xác nhận.
+          </div>
+        </div>
+      </div>
+
       <div class="dropdown admin-account-dropdown">
         <button class="admin-user dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
           <span class="admin-avatar">
@@ -213,6 +299,115 @@ const handleLogout = async () => {
   display: grid;
   place-items: center;
   box-shadow: 0 0 0 3px #f6f8fc;
+}
+
+.notification-dropdown {
+  position: relative;
+}
+
+.notification-menu {
+  width: min(420px, calc(100vw - 32px));
+  padding: 12px;
+  margin-top: 10px;
+  border: 1px solid #e5eaf3;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+}
+
+.notification-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 2px 4px 8px;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.notification-head strong {
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.notification-head small {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.notification-item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 10px;
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.notification-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #eef5ff;
+  color: #2563eb;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.notification-content {
+  min-width: 0;
+}
+
+.notification-content strong {
+  display: block;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.notification-content p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.notification-content small {
+  display: block;
+  margin-top: 4px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.notification-action {
+  border: none;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.notification-empty {
+  padding: 18px 12px;
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
 }
 
 .admin-account-dropdown {
