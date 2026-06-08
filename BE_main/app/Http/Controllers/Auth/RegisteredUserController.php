@@ -41,7 +41,7 @@ class RegisteredUserController extends Controller
 
         return response()->json([
             'message' => 'Đăng ký tài khoản thành công',
-            'user' => $user,
+            'user' => $user->load('role'),
         ], 201);
     }
 }

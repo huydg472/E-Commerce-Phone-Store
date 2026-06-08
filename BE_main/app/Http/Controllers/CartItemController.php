@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CartItem;
 use App\Http\Requests\StoreCartItemRequest;
 use App\Http\Requests\UpdateCartItemRequest;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\ProductVariant;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -13,9 +13,6 @@ use Illuminate\Http\Request;
 
 class CartItemController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -63,17 +60,11 @@ class CartItemController extends Controller
             ]
         ], 200);
     }
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
-            'quantity' => ['required', 'integer', 'min:1'],
-        ]);
 
+    public function store(StoreCartItemRequest $request): JsonResponse
+    {
         $user = $request->user();
+        $quantity = max((int) ($request->quantity ?? 1), 1);
 
         $variant = ProductVariant::findOrFail($request->product_variant_id);
 
@@ -84,7 +75,7 @@ class CartItemController extends Controller
             ], 400);
         }
 
-        if ($variant->quantity < $request->quantity) {
+        if ($variant->quantity < $quantity) {
             return response()->json([
                 'status' => false,
                 'message' => 'Số lượng tồn kho không đủ.'
@@ -107,7 +98,7 @@ class CartItemController extends Controller
             ->first();
 
         if ($cartItem) {
-            $newQuantity = $cartItem->quantity + $request->quantity;
+            $newQuantity = $cartItem->quantity + $quantity;
 
             if ($variant->quantity < $newQuantity) {
                 return response()->json([
@@ -123,9 +114,11 @@ class CartItemController extends Controller
             $cartItem = CartItem::create([
                 'cart_id' => $cart->id,
                 'product_variant_id' => $variant->id,
-                'quantity' => $request->quantity,
+                'quantity' => $quantity,
             ]);
         }
+
+        $cartItem->load(['productVariant.product']);
 
         return response()->json([
             'status' => true,
@@ -134,11 +127,17 @@ class CartItemController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(CartItem $cartItem): JsonResponse
+    public function show(Request $request, CartItem $cartItem): JsonResponse
     {
+        $cartItem->load(['cart', 'productVariant.product']);
+
+        if (!$request->user()->isAdminOrStaff() && $cartItem->cart?->user_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden.',
+            ], 403);
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Lấy chi tiết dữ liệu thành công',
@@ -146,37 +145,50 @@ class CartItemController extends Controller
         ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCartItemRequest $request, CartItem $cartItem): JsonResponse
+    public function update(Request $request, UpdateCartItemRequest $updateRequest, CartItem $cartItem): JsonResponse
     {
-        $cartItem->update($request->validated());
+        $cartItem->load(['cart', 'productVariant.product']);
+
+        if (!$request->user()->isAdminOrStaff() && $cartItem->cart?->user_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden.',
+            ], 403);
+        }
+
+        $cartItem->update($updateRequest->validated());
+        $cartItem->load(['cart', 'productVariant.product']);
 
         return response()->json([
             'success' => true,
-            'message' => "Cập nhật dữ liệu thành công",
+            'message' => 'Cập nhật dữ liệu thành công',
             'data' => $cartItem
         ], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(CartItem $cartItem): JsonResponse
+    public function destroy(Request $request, CartItem $cartItem): JsonResponse
     {
+        $cartItem->load('cart');
+
+        if (!$request->user()->isAdminOrStaff() && $cartItem->cart?->user_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden.',
+            ], 403);
+        }
+
         try {
             $cartItem->delete();
 
             return response()->json([
                 'success' => true,
-                'message' => "Xoá dữ liệu thành công",
+                'message' => 'Xoá dữ liệu thành công',
                 'data' => null
             ], 200);
         } catch (QueryException $e) {
             return response()->json([
                 'success' => false,
-                'message' => "Xoá dữ liệu thất bại",
+                'message' => 'Xoá dữ liệu thất bại',
             ], 409);
         }
     }

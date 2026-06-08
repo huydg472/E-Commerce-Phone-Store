@@ -209,6 +209,11 @@ const handleAddToCart = async ({ productVariantId, quantity }) => {
       unit_price: currentPrice.value,
     })
   } catch (error) {
+    if (error.response?.status === 401) {
+      await router.push('/auth/login')
+      return
+    }
+
     console.error('Không thể thêm vào giỏ hàng:', error)
   }
 }

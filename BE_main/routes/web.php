@@ -3,7 +3,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\AuthTestController;
-use App\Http\Controllers\Web\TestProductController;
 
 
 Route::get('/', function () {
@@ -32,10 +31,6 @@ Route::prefix('auth-test')->name('auth-test.')->group(function () {
 
 
 
-// test api product
-Route::get('/api-test/products', function () {
-    return view('api_test.products');
-})->name('api-test.products');
 // test api brands
 Route::view('/api-test/brands', 'api_test.brands')
     ->name('api-test.brands');

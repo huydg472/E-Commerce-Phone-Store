@@ -63,4 +63,26 @@ class User extends Authenticatable
     {
         return $this->hasMany(StockLog::class);
     }
+
+    public function hasRole(string|array $roles): bool
+    {
+        $roleNames = is_array($roles) ? $roles : [$roles];
+
+        return in_array($this->role?->name, $roleNames, true);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasRole('admin');
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->hasRole('staff');
+    }
+
+    public function isAdminOrStaff(): bool
+    {
+        return $this->hasRole(['admin', 'staff']);
+    }
 }

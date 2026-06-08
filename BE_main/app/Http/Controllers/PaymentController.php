@@ -14,7 +14,7 @@ class PaymentController extends Controller
      */
     public function index(): JsonResponse
     {
-        $payment = Payment::latest()->get();
+        $payment = Payment::with(['order'])->latest()->get();
 
         return response()->json([
             'success' => true,
@@ -29,6 +29,7 @@ class PaymentController extends Controller
     public function store(StorePaymentRequest $request): JsonResponse
     {
         $payment = Payment::create($request->validated());
+        $payment->load(['order']);
 
         return response()->json([
             'success' => true,
@@ -42,6 +43,8 @@ class PaymentController extends Controller
      */
     public function show(Payment $payment): JsonResponse
     {
+        $payment->load(['order']);
+
         return response()->json([
             'success' => true,
             'message' => "Lấy chi tiết dữ liệu thành công",
@@ -55,6 +58,7 @@ class PaymentController extends Controller
     public function update(UpdatePaymentRequest $request, Payment $payment): JsonResponse
     {
         $payment->update($request->validated());
+        $payment->load(['order']);
 
         return response()->json([
             'success' => true,
@@ -68,6 +72,12 @@ class PaymentController extends Controller
      */
     public function destroy(Payment $payment)
     {
-        //
+        $payment->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xoá dữ liệu thành công',
+            'data' => null,
+        ], 200);
     }
 }

@@ -1,32 +1,37 @@
 <script setup>
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: 'cod',
+  },
+})
+
+const emit = defineEmits(['update:modelValue'])
+
 const paymentMethods = [
   {
     id: 'cod',
     title: 'Thanh toán khi nhận hàng',
     description: 'Thanh toán bằng tiền mặt khi nhận hàng',
     icon: 'bi-wallet2',
-    checked: true,
   },
   {
-    id: 'bank',
+    id: 'bank_transfer',
     title: 'Chuyển khoản ngân hàng',
     description: 'Chuyển khoản qua tài khoản ngân hàng',
     icon: 'bi-bank',
-    checked: false,
   },
   {
-    id: 'card',
+    id: 'vnpay',
     title: 'Thẻ ATM / Visa / MasterCard',
     description: 'Thanh toán qua thẻ ATM, Visa, MasterCard',
     icon: 'bi-credit-card',
-    checked: false,
   },
   {
-    id: 'ewallet',
+    id: 'momo',
     title: 'Ví điện tử',
     description: 'Thanh toán qua ví điện tử',
     icon: 'bi-wallet',
-    checked: false,
   },
 ]
 </script>
@@ -44,11 +49,13 @@ const paymentMethods = [
           :key="method.id"
           class="payment-item"
       >
-        <input
+          <input
             class="form-check-input"
             type="radio"
             name="payment_method"
-            :checked="method.checked"
+            :value="method.id"
+            :checked="modelValue === method.id"
+            @change="emit('update:modelValue', method.id)"
         />
 
         <div class="payment-icon">

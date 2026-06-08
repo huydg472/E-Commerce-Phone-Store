@@ -14,6 +14,7 @@ class ProductVariantImageController extends Controller
     public function index()
     {
         $productVariantImage = ProductVariantImage::query()
+            ->with(['productVariant.product'])
             ->orderByDesc('id')
             ->get();
         return response()->json([
@@ -31,6 +32,8 @@ class ProductVariantImageController extends Controller
      */
     public function show(ProductVariantImage $productVariantImage)
     {
+        $productVariantImage->load(['productVariant.product']);
+
         return response()->json([
             'data' => $productVariantImage
         ]);
@@ -51,6 +54,7 @@ class ProductVariantImageController extends Controller
         }
 
         $productVariantImage = ProductVariantImage::create($data);
+        $productVariantImage->load(['productVariant.product']);
 
         return response()->json([
             'status' => true,
@@ -66,6 +70,7 @@ class ProductVariantImageController extends Controller
         $productVariantImage->update($data);
 
         $productVariantImage->refresh();
+        $productVariantImage->load(['productVariant.product']);
 
         return response()->json([
             'status' => true,

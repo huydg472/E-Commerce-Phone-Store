@@ -24,12 +24,23 @@ const props = defineProps({
     type: [Number, String],
     default: 0,
   },
+  selectedItemIds: {
+    type: Array,
+    default: () => [],
+  },
 })
 
 const subtotalValue = computed(() => toNumberPrice(props.subtotal))
 const discountValue = computed(() => toNumberPrice(props.discount))
 const shippingValue = computed(() => toNumberPrice(props.shipping))
 const totalValue = computed(() => toNumberPrice(props.total))
+const hasSelectedItems = computed(() => props.selectedItemIds.length > 0 && props.itemCount > 0)
+const checkoutRoute = computed(() => ({
+  name: 'checkout',
+  query: {
+    item_ids: props.selectedItemIds.join(','),
+  },
+}))
 
 const shippingText = computed(() => {
   if (shippingValue.value <= 0) {
@@ -87,9 +98,14 @@ const shippingText = computed(() => {
         </button>
       </div>
 
-      <button class="checkout-btn" type="button">
+      <RouterLink v-if="hasSelectedItems" :to="checkoutRoute" class="checkout-btn">
         <i class="bi bi-lock"></i>
         Tiến hành thanh toán
+      </RouterLink>
+
+      <button v-else class="checkout-btn checkout-btn-disabled" type="button" disabled>
+        <i class="bi bi-lock"></i>
+        Chọn sản phẩm để thanh toán
       </button>
 
       <RouterLink to="/products" class="buy-more-btn">
@@ -257,6 +273,11 @@ const shippingText = computed(() => {
   border: none;
   background: #0057ff;
   color: #ffffff;
+}
+
+.checkout-btn-disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
 }
 
 .buy-more-btn {

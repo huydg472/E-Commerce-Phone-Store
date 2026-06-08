@@ -1,5 +1,43 @@
 <script setup>
+import {ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {authService} from '@/services/authService'
 
+const router = useRouter()
+
+const email = ref('')
+const loading = ref(false)
+const errorMessage = ref('')
+const successMessage = ref('')
+
+const submit = async () => {
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  if (!email.value) {
+    errorMessage.value = 'Vui lòng nhập email.'
+    return
+  }
+
+  try {
+    loading.value = true
+    const response = await authService.forgotPassword({email: email.value})
+    successMessage.value = response.data?.message || 'Đã gửi liên kết đặt lại mật khẩu.'
+
+    setTimeout(() => {
+      router.push({name: 'login'})
+    }, 1200)
+  } catch (error) {
+    if (error.response?.status === 422) {
+      errorMessage.value = error.response.data?.errors?.email?.[0] || 'Email không hợp lệ.'
+      return
+    }
+
+    errorMessage.value = error.response?.data?.message || 'Gửi liên kết thất bại. Vui lòng thử lại.'
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
@@ -25,8 +63,8 @@
       </p>
     </div>
 
-    <form>
-      <div class="mb-4">
+    <form @submit.prevent="submit">
+      <div class="mb-3">
         <label class="form-label fw-bold">Email</label>
 
         <div class="input-group auth-input">
@@ -34,12 +72,21 @@
                         <i class="bi bi-envelope"></i>
                     </span>
 
-          <input type="email" class="form-control" placeholder="Nhập email của bạn"/>
+          <input v-model.trim="email" type="email" class="form-control" placeholder="Nhập email của bạn"/>
         </div>
       </div>
 
-      <button type="button" class="btn btn-primary w-100 auth-btn">
-        Gửi liên kết đặt lại mật khẩu
+      <p v-if="errorMessage" class="text-danger small mb-3">
+        {{ errorMessage }}
+      </p>
+
+      <p v-if="successMessage" class="text-success small mb-3">
+        {{ successMessage }}
+      </p>
+
+      <button type="submit" class="btn btn-primary w-100 auth-btn" :disabled="loading">
+        <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+        {{ loading ? 'Đang gửi...' : 'Gửi liên kết đặt lại mật khẩu' }}
       </button>
     </form>
   </div>

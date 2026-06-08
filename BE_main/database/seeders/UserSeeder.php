@@ -14,6 +14,7 @@ class UserSeeder extends Seeder
         $adminRole = Role::where('name', 'admin')->firstOrFail();
         $staffRole = Role::where('name', 'staff')->firstOrFail();
         $customerRole = Role::where('name', 'customer')->firstOrFail();
+        $defaultPassword = '123456789';
 
         User::updateOrCreate(
             ['username' => 'admin'],
@@ -23,7 +24,7 @@ class UserSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'phone' => '0900000001',
                 'username' => 'admin',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($defaultPassword),
                 'status' => 'active',
                 'email_verified_at' => now(),
             ]
@@ -37,7 +38,7 @@ class UserSeeder extends Seeder
                 'email' => 'staff@example.com',
                 'phone' => '0900000003',
                 'username' => 'staff',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($defaultPassword),
                 'status' => 'active',
                 'email_verified_at' => now(),
             ]
@@ -51,7 +52,7 @@ class UserSeeder extends Seeder
                 'email' => 'customer@example.com',
                 'phone' => '0900000002',
                 'username' => 'customer',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($defaultPassword),
                 'status' => 'active',
                 'email_verified_at' => now(),
             ]

@@ -15,7 +15,7 @@ class OrderItemController extends Controller
      */
     public function index(): JsonResponse
     {
-        $orderItems = OrderItem::latest()->get();
+        $orderItems = OrderItem::with(['productVariant.product'])->latest()->get();
 
         return response()->json([
             'success' => true,
@@ -43,6 +43,8 @@ class OrderItemController extends Controller
      */
     public function show(OrderItem $orderItem): JsonResponse
     {
+        $orderItem->load(['productVariant.product']);
+
         return response()->json([
             'success' => true,
             'message' => 'Lấy chi tiết dữ liệu thành công',

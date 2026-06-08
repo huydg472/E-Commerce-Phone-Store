@@ -1,6 +1,6 @@
 <script setup>
-import {useRoute, useRouter} from 'vue-router'
-import {useAuthStore} from '@/stores/authStore.js'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore.js'
 
 defineProps({
   isOpen: {
@@ -60,34 +60,16 @@ const menuGroups = [
     title: 'Quản lý người dùng',
     items: [
       {
-        label: 'Khách hàng',
+        label: 'Người dùng',
         icon: 'bi bi-people',
-        to: '/admin/customers',
-        match: '/admin/customers',
-      },
-      {
-        label: 'Nhân viên',
-        icon: 'bi bi-person-badge',
-        to: '/admin/staff',
-        match: '/admin/staff',
+        to: '/admin/users',
+        match: '/admin/users',
       },
     ],
   },
   {
     title: 'Nội dung & hệ thống',
     items: [
-      {
-        label: 'Tin tức',
-        icon: 'bi bi-newspaper',
-        to: '/admin/news',
-        match: '/admin/news',
-      },
-      {
-        label: 'Banner',
-        icon: 'bi bi-image',
-        to: '/admin/banners',
-        match: '/admin/banners',
-      },
       {
         label: 'Cài đặt',
         icon: 'bi bi-gear',
@@ -117,7 +99,6 @@ const handleLogout = async () => {
   <div v-if="isOpen" class="sidebar-overlay d-lg-none" @click="handleClose"></div>
 
   <aside class="admin-sidebar" :class="{ 'is-open': isOpen }">
-    <!-- Top -->
     <div class="sidebar-top">
       <RouterLink to="/admin/dashboard" class="brand" @click="handleClose">
         <span class="brand-logo">
@@ -135,7 +116,6 @@ const handleLogout = async () => {
       </button>
     </div>
 
-    <!-- Menu -->
     <div class="sidebar-body">
       <div v-for="group in menuGroups" :key="group.title" class="sidebar-group">
         <p class="group-title">
@@ -157,7 +137,6 @@ const handleLogout = async () => {
       </div>
     </div>
 
-    <!-- Bottom -->
     <div class="sidebar-bottom">
       <button class="logout-btn" type="button" @click="handleLogout">
         <span class="menu-icon">
@@ -182,7 +161,6 @@ const handleLogout = async () => {
   z-index: 1040;
 }
 
-/* Overlay */
 .sidebar-overlay {
   position: fixed;
   inset: 0;
@@ -190,7 +168,6 @@ const handleLogout = async () => {
   z-index: 1039;
 }
 
-/* Top */
 .sidebar-top {
   height: 84px;
   padding: 20px 50px 15px;
@@ -262,7 +239,6 @@ const handleLogout = async () => {
   border-color: #bfdbfe;
 }
 
-/* Body */
 .sidebar-body {
   flex: 1;
   overflow-y: auto;
@@ -359,7 +335,6 @@ const handleLogout = async () => {
   white-space: nowrap;
 }
 
-/* Bottom */
 .sidebar-bottom {
   padding: 14px 12px 18px;
   border-top: 1px solid #eef2f7;
@@ -382,7 +357,6 @@ const handleLogout = async () => {
   color: #dc2626;
 }
 
-/* Scrollbar */
 .sidebar-body::-webkit-scrollbar {
   width: 6px;
 }
@@ -396,14 +370,12 @@ const handleLogout = async () => {
   background: transparent;
 }
 
-/* Desktop */
 @media (min-width: 992px) {
   .admin-sidebar {
     transform: none !important;
   }
 }
 
-/* Mobile */
 @media (max-width: 990px) {
   .admin-sidebar {
     width: 280px;

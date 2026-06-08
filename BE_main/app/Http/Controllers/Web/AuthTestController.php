@@ -60,7 +60,7 @@ class AuthTestController extends Controller
         $request->session()->regenerate();
         // đăng ký xong đăng nhập luôn
         return redirect()
-            ->route('dashboard')
+            ->route('auth-test.dashboard')
             ->with('success', 'Đăng ký thành công.');
     }
     // hàm show giao diện admin

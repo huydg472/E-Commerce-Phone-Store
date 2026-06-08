@@ -391,6 +391,7 @@ onMounted(async () => {
             :discount="discountValue"
             :shipping="shippingValue"
             :total="totalValue"
+            :selected-item-ids="selectedItemIds"
         />
       </div>
     </div>

@@ -2,19 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
+use App\Models\Cart;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $carts = Cart::latest()->get();
+        $query = Cart::with(['items.productVariant.product'])->latest();
+
+        if (!$request->user()->isAdminOrStaff()) {
+            $query->where('user_id', $request->user()->id);
+        }
+
+        $carts = $query->get();
+
+        $carts->each(function (Cart $cart) {
+            $subtotal = 0;
+
+            foreach ($cart->items as $item) {
+                $variant = $item->productVariant;
+                $price = $variant?->sale_price ?? $variant?->price ?? 0;
+                $itemSubtotal = $price * $item->quantity;
+
+                $item->price = $price;
+                $item->subtotal = $itemSubtotal;
+
+                $subtotal += $itemSubtotal;
+            }
+
+            $cart->setAttribute('subtotal', $subtotal);
+            $cart->setAttribute('total_amount', $subtotal);
+        });
 
         return response()->json([
             'success' => true,
@@ -23,39 +45,135 @@ class CartController extends Controller
         ], 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCartRequest $request)
+    public function store(StoreCartRequest $request): JsonResponse
     {
-        //
-    }
+        $data = $request->validated();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Cart $cart): JsonResponse
-    {
+        $cart = Cart::firstOrCreate(
+            [
+                'user_id' => $request->user()->id,
+            ],
+            [
+                'status' => $data['status'] ?? 'active',
+            ]
+        );
+
+        if (isset($data['status'])) {
+            $cart->update(['status' => $data['status']]);
+        }
+
+        $cart->load(['items.productVariant.product']);
+        $cart->setAttribute('subtotal', 0);
+        $cart->setAttribute('total_amount', 0);
+
         return response()->json([
             'success' => true,
-            'message' => 'Lấy chi tiết dữ liệu thành công',
+            'message' => 'Tạo dữ liệu thành công',
+            'data' => $cart,
+        ], 201);
+    }
+
+    public function show(Request $request): JsonResponse
+    {
+        $cart = Cart::with(['items.productVariant.product'])
+            ->where('user_id', $request->user()->id)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$cart) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Giỏ hàng trống.',
+                'data' => [
+                    'items' => [],
+                    'subtotal' => 0,
+                    'total_amount' => 0,
+                ],
+            ], 200);
+        }
+
+        $subtotal = 0;
+
+        foreach ($cart->items as $item) {
+            $variant = $item->productVariant;
+            $price = $variant->sale_price ?? $variant->price ?? 0;
+            $itemSubtotal = $price * $item->quantity;
+
+            $item->price = $price;
+            $item->subtotal = $itemSubtotal;
+
+            $subtotal += $itemSubtotal;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lấy giỏ hàng thành công.',
+            'data' => [
+                'id' => $cart->id,
+                'user_id' => $cart->user_id,
+                'items' => $cart->items,
+                'subtotal' => $subtotal,
+                'total_amount' => $subtotal,
+            ],
+        ], 200);
+    }
+
+    public function update(UpdateCartRequest $request, Cart $cart): JsonResponse
+    {
+        if (!$request->user()->isAdminOrStaff() && $cart->user_id !== $request->user()->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden.',
+            ], 403);
+        }
+
+        $cart->update($request->validated());
+        $cart->load(['items.productVariant.product']);
+
+        $subtotal = 0;
+
+        foreach ($cart->items as $item) {
+            $variant = $item->productVariant;
+            $price = $variant?->sale_price ?? $variant?->price ?? 0;
+            $itemSubtotal = $price * $item->quantity;
+
+            $item->price = $price;
+            $item->subtotal = $itemSubtotal;
+
+            $subtotal += $itemSubtotal;
+        }
+
+        $cart->setAttribute('subtotal', $subtotal);
+        $cart->setAttribute('total_amount', $subtotal);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật dữ liệu thành công',
             'data' => $cart,
         ], 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCartRequest $request, Cart $cart)
+    public function destroy(Request $request): JsonResponse
     {
-        //
-    }
+        $cart = Cart::where('user_id', $request->user()->id)
+            ->where('status', 'active')
+            ->first();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Cart $cart)
-    {
-        //
+        if (!$cart) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Giỏ hàng trống.',
+                'data' => null,
+            ], 200);
+        }
+
+        $cart->cartItems()->delete();
+        $cart->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xoá dữ liệu thành công',
+            'data' => null,
+        ], 200);
     }
 }

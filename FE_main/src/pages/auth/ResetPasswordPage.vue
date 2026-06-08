@@ -1,4 +1,66 @@
 <script setup>
+import {computed, ref} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {authService} from '@/services/authService'
+
+const route = useRoute()
+const router = useRouter()
+
+const token = computed(() => String(route.query.token || ''))
+const email = computed(() => String(route.query.email || ''))
+
+const password = ref('')
+const passwordConfirmation = ref('')
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
+const loading = ref(false)
+const errorMessage = ref('')
+
+const submit = async () => {
+  errorMessage.value = ''
+
+  if (!token.value || !email.value) {
+    errorMessage.value = 'Liên kết đặt lại mật khẩu không hợp lệ.'
+    return
+  }
+
+  if (!password.value || !passwordConfirmation.value) {
+    errorMessage.value = 'Vui lòng nhập đầy đủ mật khẩu mới.'
+    return
+  }
+
+  if (password.value !== passwordConfirmation.value) {
+    errorMessage.value = 'Mật khẩu xác nhận không khớp.'
+    return
+  }
+
+  try {
+    loading.value = true
+
+    await authService.resetPassword({
+      token: token.value,
+      email: email.value,
+      password: password.value,
+      password_confirmation: passwordConfirmation.value,
+    })
+
+    sessionStorage.setItem('reset_password_success', 'true')
+    await router.push({name: 'reset-password-success'})
+  } catch (error) {
+    if (error.response?.status === 422) {
+      const errors = error.response.data?.errors
+      if (errors) {
+        const firstKey = Object.keys(errors)[0]
+        errorMessage.value = errors[firstKey]?.[0] || 'Dữ liệu không hợp lệ.'
+        return
+      }
+    }
+
+    errorMessage.value = error.response?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.'
+  } finally {
+    loading.value = false
+  }
+}
 </script>
 
 <template>
@@ -19,19 +81,19 @@
         </p>
       </div>
 
-      <form>
+      <form @submit.prevent="submit">
         <div class="mb-4">
           <label class="form-label fw-bold">Mật khẩu mới</label>
 
           <div class="input-group auth-input">
-                        <span class="input-group-text">
-                            <i class="bi bi-lock"></i>
-                        </span>
+            <span class="input-group-text">
+              <i class="bi bi-lock"></i>
+            </span>
 
-            <input type="password" class="form-control" placeholder="Nhập mật khẩu mới"/>
+            <input v-model.trim="password" :type="showPassword ? 'text' : 'password'" class="form-control" placeholder="Nhập mật khẩu mới"/>
 
-            <button type="button" class="input-group-text eye-btn">
-              <i class="bi bi-eye"></i>
+            <button type="button" class="input-group-text eye-btn" @click="showPassword = !showPassword">
+              <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
             </button>
           </div>
         </div>
@@ -40,20 +102,25 @@
           <label class="form-label fw-bold">Xác nhận mật khẩu</label>
 
           <div class="input-group auth-input">
-                        <span class="input-group-text">
-                            <i class="bi bi-lock"></i>
-                        </span>
+            <span class="input-group-text">
+              <i class="bi bi-lock"></i>
+            </span>
 
-            <input type="password" class="form-control" placeholder="Nhập lại mật khẩu mới"/>
+            <input v-model.trim="passwordConfirmation" :type="showConfirmPassword ? 'text' : 'password'" class="form-control" placeholder="Nhập lại mật khẩu mới"/>
 
-            <button type="button" class="input-group-text eye-btn">
-              <i class="bi bi-eye"></i>
+            <button type="button" class="input-group-text eye-btn" @click="showConfirmPassword = !showConfirmPassword">
+              <i :class="showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
             </button>
           </div>
         </div>
 
-        <button type="button" class="btn btn-primary w-100 auth-btn">
-          Đặt lại mật khẩu
+        <p v-if="errorMessage" class="text-danger small mb-3">
+          {{ errorMessage }}
+        </p>
+
+        <button type="submit" class="btn btn-primary w-100 auth-btn" :disabled="loading">
+          <span v-if="loading" class="spinner-border spinner-border-sm me-2"></span>
+          {{ loading ? 'Đang đặt lại...' : 'Đặt lại mật khẩu' }}
         </button>
       </form>
     </div>

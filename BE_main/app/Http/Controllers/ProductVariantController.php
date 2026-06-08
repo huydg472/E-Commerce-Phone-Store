@@ -12,6 +12,7 @@ class ProductVariantController extends Controller
     public function index()
     {
         $productVariant = ProductVariant::query()
+            ->with(['product', 'images'])
             ->orderByDesc('id')
             ->get();
         return response()->json(['status' => true, 'message' => 'Lay du lieu thanh cong', 'data' => $productVariant]);
@@ -33,11 +34,15 @@ class ProductVariantController extends Controller
             'description' => $request->description,
         ]);
 
+        $productVariant->load(['product', 'images']);
+
         return response()->json(['status' => true, 'message' => 'Them thanh cong', 'data' => $productVariant]);
     }
 
     public function show(ProductVariant $productVariant)
     {
+        $productVariant->load(['product', 'images']);
+
         return response()->json(['status' => true, 'message' => 'Lay chi tiet du lieu thanh cong', 'data' => $productVariant]);
     }
 
@@ -56,6 +61,8 @@ class ProductVariantController extends Controller
             'status' => $request->status,
             'description' => $request->description,
         ]);
+
+        $productVariant->load(['product', 'images']);
 
         return response()->json(['status' => true, 'message' => 'Cap nhat thanh cong', 'data' => $productVariant]);
     }
@@ -86,6 +93,8 @@ class ProductVariantController extends Controller
         $productVariant->update([
             'status' => $productVariant->status === 'active' ? 'inactive' : 'active',
         ]);
+
+        $productVariant->load(['product', 'images']);
 
         return response()->json([
             'status' => true,

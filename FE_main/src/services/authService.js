@@ -16,4 +16,12 @@ export const authService = {
     me() {
         return api.get('/me')
     },
+
+    forgotPassword(data) {
+        return api.post('/forgot-password', data)
+    },
+
+    resetPassword(data) {
+        return api.post('/reset-password', data)
+    },
 }

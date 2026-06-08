@@ -1,7 +1,131 @@
+<script setup>
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useOrderStore } from '@/stores/orderStore'
+import { formatCurrency } from '@/utils/formatCurrency'
+import { formatDate } from '@/utils/formatDate'
+
+const router = useRouter()
+const orderStore = useOrderStore()
+
+const searchKeyword = ref('')
+const selectedStatus = ref('all')
+const pageLoading = ref(true)
+const errorMessage = ref('')
+
+const statusMap = {
+  pending: { label: 'Chờ xác nhận', className: 'pending' },
+  confirmed: { label: 'Đã xác nhận', className: 'confirmed' },
+  shipping: { label: 'Đang giao', className: 'shipping' },
+  completed: { label: 'Hoàn thành', className: 'completed' },
+  cancelled: { label: 'Đã hủy', className: 'cancelled' },
+}
+
+const orders = computed(() => {
+  const source = Array.isArray(orderStore.items) ? orderStore.items : []
+
+  return source.map((order) => {
+    const firstItem = Array.isArray(order.orderItems) ? order.orderItems[0] : null
+    const variant = firstItem?.productVariant ?? firstItem?.product_variant ?? null
+    const product = variant?.product ?? null
+    const image = product?.thumbnail_url || product?.thumbnailUrl || product?.image || '/images/default-product.png'
+
+    return {
+      id: order.id,
+      code: order.order_code || `#${order.id}`,
+      orderDate: formatDate(order.ordered_at || order.created_at),
+      status: order.order_status || 'pending',
+      total: toNumber(order.total_amount),
+      address: order.shipping_address_text || '',
+      product: {
+        name: firstItem?.product_name || product?.name || 'Sản phẩm',
+        color: firstItem?.variant_name || '',
+        quantity: firstItem?.quantity || 0,
+        image,
+      },
+    }
+  })
+})
+
+const toNumber = (value) => {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) ? numericValue : 0
+}
+
+const filteredOrders = computed(() => {
+  const keyword = searchKeyword.value.trim().toLowerCase()
+
+  return orders.value.filter((order) => {
+    const matchesStatus = selectedStatus.value === 'all' || order.status === selectedStatus.value
+    const matchesKeyword =
+        !keyword ||
+        order.code.toLowerCase().includes(keyword) ||
+        order.product.name.toLowerCase().includes(keyword) ||
+        order.address.toLowerCase().includes(keyword)
+
+    return matchesStatus && matchesKeyword
+  })
+})
+
+const orderSummary = computed(() => [
+  {
+    label: 'Tổng đơn hàng',
+    value: orders.value.length,
+    icon: 'bi bi-bag',
+  },
+  {
+    label: 'Đang giao',
+    value: orders.value.filter((order) => order.status === 'shipping').length,
+    icon: 'bi bi-truck',
+  },
+  {
+    label: 'Hoàn thành',
+    value: orders.value.filter((order) => order.status === 'completed').length,
+    icon: 'bi bi-check-circle',
+  },
+  {
+    label: 'Đã hủy',
+    value: orders.value.filter((order) => order.status === 'cancelled').length,
+    icon: 'bi bi-x-circle',
+  },
+])
+
+const orderTabs = [
+  { key: 'all', label: 'Tất cả' },
+  { key: 'pending', label: 'Chờ xác nhận' },
+  { key: 'shipping', label: 'Đang giao' },
+  { key: 'completed', label: 'Hoàn thành' },
+  { key: 'cancelled', label: 'Đã hủy' },
+]
+
+const loadOrders = async () => {
+  pageLoading.value = true
+  errorMessage.value = ''
+
+  try {
+    await orderStore.fetchAll()
+  } catch (error) {
+    if (error.response?.status === 401) {
+      await router.replace({ name: 'login' })
+      return
+    }
+
+    errorMessage.value = error.response?.data?.message || 'Không tải được danh sách đơn hàng.'
+  } finally {
+    pageLoading.value = false
+  }
+}
+
+const handleViewDetail = (order) => {
+  router.push({ name: 'orders.show', params: { id: order.id } })
+}
+
+onMounted(loadOrders)
+</script>
+
 <template>
   <main class="order-history-page">
     <div class="order-history-container">
-      <!-- Breadcrumb -->
       <div class="breadcrumb-wrap">
         <span>Trang chủ</span>
         <span>/</span>
@@ -11,10 +135,15 @@
       <h1 class="page-title">Đơn hàng của tôi</h1>
 
       <div class="account-layout">
-        <!-- Sidebar -->
         <aside class="account-sidebar">
           <RouterLink
-              v-for="item in menuItems"
+              v-for="item in [
+                { key: 'overview', label: 'Tổng quan', icon: 'bi bi-house-door', to: '/tai-khoan' },
+                { key: 'profile', label: 'Thông tin cá nhân', icon: 'bi bi-person', to: '/tai-khoan/thong-tin-ca-nhan' },
+                { key: 'address', label: 'Sổ địa chỉ', icon: 'bi bi-geo-alt', to: '/tai-khoan/so-dia-chi' },
+                { key: 'password', label: 'Đổi mật khẩu', icon: 'bi bi-lock', to: '/tai-khoan/doi-mat-khau' },
+                { key: 'orders', label: 'Đơn hàng của tôi', icon: 'bi bi-bag', to: '/orders' },
+              ]"
               :key="item.key"
               :to="item.to"
               class="sidebar-link"
@@ -23,18 +152,9 @@
             <i :class="item.icon"></i>
             <span>{{ item.label }}</span>
           </RouterLink>
-
-          <div class="sidebar-divider"></div>
-
-          <button type="button" class="sidebar-link logout-btn">
-            <i class="bi bi-box-arrow-right"></i>
-            <span>Đăng xuất</span>
-          </button>
         </aside>
 
-        <!-- Content -->
         <section class="orders-content">
-          <!-- Filter + Summary -->
           <div class="top-row">
             <div class="filter-card">
               <div class="filter-row">
@@ -42,26 +162,16 @@
                   <input
                       v-model.trim="searchKeyword"
                       type="text"
-                      placeholder="Tìm theo mã đơn hàng hoặc sản phẩm"
+                      placeholder="Tìm theo mã đơn hàng, sản phẩm hoặc địa chỉ"
                   />
                   <i class="bi bi-search"></i>
                 </div>
 
-                <div class="input-box">
-                  <input
-                      v-model="dateRange"
-                      type="text"
-                      placeholder="Chọn khoảng thời gian"
-                  />
-                  <i class="bi bi-calendar-event"></i>
-                </div>
-
                 <select v-model="selectedStatus" class="status-select">
                   <option value="all">Tất cả trạng thái</option>
-                  <option value="pending">Chờ xác nhận</option>
-                  <option value="shipping">Đang giao</option>
-                  <option value="completed">Hoàn thành</option>
-                  <option value="cancelled">Đã hủy</option>
+                  <option v-for="tab in orderTabs.slice(1)" :key="tab.key" :value="tab.key">
+                    {{ tab.label }}
+                  </option>
                 </select>
               </div>
 
@@ -88,15 +198,22 @@
                 <div class="summary-icon">
                   <i :class="item.icon"></i>
                 </div>
-
                 <span>{{ item.label }}</span>
                 <strong>{{ item.value }}</strong>
               </div>
             </div>
           </div>
 
-          <!-- Order List -->
-          <div class="orders-list">
+          <div v-if="pageLoading" class="loading-card">
+            <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+            <p>Đang tải đơn hàng...</p>
+          </div>
+
+          <p v-else-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </p>
+
+          <div v-else class="orders-list">
             <article
                 v-for="order in filteredOrders"
                 :key="order.id"
@@ -113,11 +230,8 @@
                   <strong>{{ order.orderDate }}</strong>
                 </div>
 
-                <span
-                    class="status-badge"
-                    :class="statusMap[order.status].className"
-                >
-                  {{ statusMap[order.status].label }}
+                <span class="status-badge" :class="statusMap[order.status]?.className || 'pending'">
+                  {{ statusMap[order.status]?.label || order.status }}
                 </span>
               </div>
 
@@ -127,7 +241,7 @@
 
                   <div class="product-text">
                     <h3>{{ order.product.name }}</h3>
-                    <p>Màu sắc: {{ order.product.color }}</p>
+                    <p v-if="order.product.color">Phiên bản: {{ order.product.color }}</p>
                     <p>Số lượng: {{ order.product.quantity }}</p>
                   </div>
                 </div>
@@ -138,53 +252,17 @@
                 </div>
 
                 <div class="order-actions">
-                  <button
-                      v-if="order.status === 'shipping'"
-                      type="button"
-                      class="action-btn outline-btn"
-                  >
-                    <i class="bi bi-truck"></i>
-                    Theo dõi đơn
-                  </button>
-
-                  <button
-                      v-if="order.status === 'completed'"
-                      type="button"
-                      class="action-btn outline-btn"
-                  >
-                    <i class="bi bi-star"></i>
-                    Đánh giá
-                  </button>
-
-                  <button
-                      v-if="order.status === 'pending'"
-                      type="button"
-                      class="action-btn primary-btn"
-                  >
-                    <i class="bi bi-credit-card"></i>
-                    Thanh toán ngay
-                  </button>
-
-                  <button type="button" class="action-btn outline-btn">
+                  <button type="button" class="action-btn outline-btn" @click="handleViewDetail(order)">
                     Xem chi tiết
                   </button>
 
-                  <button
-                      v-if="order.status !== 'pending'"
-                      type="button"
-                      class="text-action blue"
-                  >
-                    <i class="bi bi-arrow-clockwise"></i>
-                    Mua lại
+                  <button v-if="order.status === 'pending'" type="button" class="action-btn primary-btn" @click="handleViewDetail(order)">
+                    Xem đơn chờ thanh toán
                   </button>
 
-                  <button
-                      v-if="order.status === 'pending'"
-                      type="button"
-                      class="text-action red"
-                  >
-                    <i class="bi bi-slash-circle"></i>
-                    Hủy đơn
+                  <button v-if="order.status !== 'pending'" type="button" class="text-action blue">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Mua lại
                   </button>
                 </div>
               </div>
@@ -193,7 +271,7 @@
                 <span>Địa chỉ nhận hàng</span>
                 <p>
                   <i class="bi bi-geo-alt"></i>
-                  {{ order.address }}
+                  {{ order.address || 'Chưa có địa chỉ' }}
                 </p>
               </div>
             </article>
@@ -201,204 +279,14 @@
             <div v-if="filteredOrders.length === 0" class="empty-card">
               <i class="bi bi-bag-x"></i>
               <h3>Không tìm thấy đơn hàng</h3>
-              <p>Hãy thử đổi từ khóa tìm kiếm hoặc trạng thái đơn hàng.</p>
+              <p>Hãy thử thay đổi từ khóa hoặc bộ lọc trạng thái.</p>
             </div>
-          </div>
-
-          <!-- Pagination -->
-          <div class="pagination-box">
-            <button type="button">
-              <i class="bi bi-chevron-left"></i>
-            </button>
-
-            <button type="button" class="active">1</button>
-            <button type="button">2</button>
-            <button type="button">3</button>
-
-            <button type="button">
-              <i class="bi bi-chevron-right"></i>
-            </button>
           </div>
         </section>
       </div>
     </div>
   </main>
 </template>
-
-<script setup>
-import { computed, ref } from 'vue'
-
-const selectedStatus = ref('all')
-const searchKeyword = ref('')
-const dateRange = ref('')
-
-const menuItems = [
-  {
-    key: 'overview',
-    label: 'Tổng quan',
-    icon: 'bi bi-house-door',
-    to: '/tai-khoan',
-  },
-  {
-    key: 'profile',
-    label: 'Thông tin cá nhân',
-    icon: 'bi bi-person',
-    to: '/tai-khoan/thong-tin-ca-nhan',
-  },
-  {
-    key: 'address',
-    label: 'Sổ địa chỉ',
-    icon: 'bi bi-geo-alt',
-    to: '/tai-khoan/so-dia-chi',
-  },
-  {
-    key: 'password',
-    label: 'Đổi mật khẩu',
-    icon: 'bi bi-lock',
-    to: '/tai-khoan/doi-mat-khau',
-  },
-  {
-    key: 'wishlist',
-    label: 'Yêu thích',
-    icon: 'bi bi-heart',
-    to: '/yeu-thich',
-  },
-  {
-    key: 'orders',
-    label: 'Đơn hàng của tôi',
-    icon: 'bi bi-bag',
-    to: '/tai-khoan/don-hang-cua-toi',
-  },
-]
-
-const orderTabs = [
-  { key: 'all', label: 'Tất cả' },
-  { key: 'pending', label: 'Chờ xác nhận' },
-  { key: 'shipping', label: 'Đang giao' },
-  { key: 'completed', label: 'Hoàn thành' },
-  { key: 'cancelled', label: 'Đã hủy' },
-]
-
-const orderSummary = [
-  {
-    label: 'Tổng đơn hàng',
-    value: 12,
-    icon: 'bi bi-bag',
-  },
-  {
-    label: 'Đang giao',
-    value: 2,
-    icon: 'bi bi-truck',
-  },
-  {
-    label: 'Hoàn thành',
-    value: 7,
-    icon: 'bi bi-check-circle',
-  },
-  {
-    label: 'Đã hủy',
-    value: 1,
-    icon: 'bi bi-x-circle',
-  },
-]
-
-const statusMap = {
-  pending: {
-    label: 'Chờ xác nhận',
-    className: 'pending',
-  },
-  shipping: {
-    label: 'Đang giao',
-    className: 'shipping',
-  },
-  completed: {
-    label: 'Hoàn thành',
-    className: 'completed',
-  },
-  cancelled: {
-    label: 'Đã hủy',
-    className: 'cancelled',
-  },
-}
-
-const orders = ref([
-  {
-    id: 1,
-    code: 'ZM240601',
-    orderDate: '01/06/2024',
-    status: 'shipping',
-    total: 34990000,
-    address: '123 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
-    product: {
-      name: 'iPhone 15 Pro Max 256GB',
-      color: 'Titan Tự Nhiên',
-      quantity: 1,
-      image: 'https://placehold.co/82x82/e5e7eb/111827?text=iPhone',
-    },
-  },
-  {
-    id: 2,
-    code: 'ZM240518',
-    orderDate: '18/05/2024',
-    status: 'completed',
-    total: 28990000,
-    address: '123 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
-    product: {
-      name: 'Samsung Galaxy S24 Ultra 5G 256GB',
-      color: 'Titan Xám',
-      quantity: 1,
-      image: 'https://placehold.co/82x82/e5e7eb/111827?text=S24',
-    },
-  },
-  {
-    id: 3,
-    code: 'ZM240430',
-    orderDate: '30/04/2024',
-    status: 'pending',
-    total: 8990000,
-    address: '123 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
-    product: {
-      name: 'OPPO Reno11 F 5G 256GB',
-      color: 'Xanh Dương',
-      quantity: 1,
-      image: 'https://placehold.co/82x82/e5e7eb/111827?text=OPPO',
-    },
-  },
-  {
-    id: 4,
-    code: 'ZM240410',
-    orderDate: '10/04/2024',
-    status: 'cancelled',
-    total: 21900000,
-    address: '123 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
-    product: {
-      name: 'Xiaomi 14 256GB',
-      color: 'Trắng',
-      quantity: 1,
-      image: 'https://placehold.co/82x82/e5e7eb/111827?text=Mi',
-    },
-  },
-])
-
-const filteredOrders = computed(() => {
-  const keyword = searchKeyword.value.toLowerCase()
-
-  return orders.value.filter((order) => {
-    const matchStatus =
-        selectedStatus.value === 'all' || order.status === selectedStatus.value
-
-    const matchKeyword =
-        order.code.toLowerCase().includes(keyword) ||
-        order.product.name.toLowerCase().includes(keyword)
-
-    return matchStatus && matchKeyword
-  })
-})
-
-const formatCurrency = (value) => {
-  return new Intl.NumberFormat('vi-VN').format(value) + 'đ'
-}
-</script>
 
 <style scoped>
 .order-history-page {
@@ -442,7 +330,7 @@ const formatCurrency = (value) => {
 }
 
 .account-sidebar {
-  min-height: 430px;
+  min-height: 220px;
   padding: 16px 14px;
   border: 1px solid #e5e7eb;
   border-radius: 7px;
@@ -482,16 +370,6 @@ const formatCurrency = (value) => {
   color: #2563eb;
 }
 
-.sidebar-divider {
-  height: 1px;
-  margin: 16px 0;
-  background: #e5e7eb;
-}
-
-.logout-btn {
-  cursor: pointer;
-}
-
 .orders-content {
   min-width: 0;
 }
@@ -506,7 +384,8 @@ const formatCurrency = (value) => {
 .filter-card,
 .summary-card,
 .order-card,
-.empty-card {
+.empty-card,
+.loading-card {
   border: 1px solid #e5e7eb;
   border-radius: 7px;
   background: #ffffff;
@@ -518,7 +397,7 @@ const formatCurrency = (value) => {
 
 .filter-row {
   display: grid;
-  grid-template-columns: minmax(220px, 1.4fr) minmax(170px, 0.9fr) 150px;
+  grid-template-columns: minmax(220px, 1fr) 170px;
   gap: 12px;
 }
 
@@ -639,6 +518,29 @@ const formatCurrency = (value) => {
   line-height: 1;
 }
 
+.loading-card {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.loading-card p,
+.error-message {
+  margin: 0;
+  color: #6b7280;
+}
+
+.error-message {
+  padding: 14px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
 .orders-list {
   display: flex;
   flex-direction: column;
@@ -698,6 +600,11 @@ const formatCurrency = (value) => {
 .status-badge.cancelled {
   background: #f1f5f9;
   color: #64748b;
+}
+
+.status-badge.confirmed {
+  background: #ede9fe;
+  color: #7c3aed;
 }
 
 .order-card-body {
@@ -864,29 +771,6 @@ const formatCurrency = (value) => {
   margin: 0;
 }
 
-.pagination-box {
-  display: flex;
-  justify-content: center;
-  gap: 7px;
-  margin-top: 14px;
-}
-
-.pagination-box button {
-  width: 30px;
-  height: 30px;
-  border: 1px solid #d8dee9;
-  border-radius: 4px;
-  background: #ffffff;
-  color: #374151;
-  font-weight: 600;
-}
-
-.pagination-box button.active {
-  border-color: #2563eb;
-  background: #2563eb;
-  color: #ffffff;
-}
-
 @media (max-width: 1200px) {
   .order-history-container {
     max-width: 1080px;
@@ -894,10 +778,6 @@ const formatCurrency = (value) => {
 
   .top-row {
     grid-template-columns: 1fr;
-  }
-
-  .filter-row {
-    grid-template-columns: minmax(220px, 1fr) minmax(170px, 0.8fr) 150px;
   }
 }
 
@@ -915,7 +795,7 @@ const formatCurrency = (value) => {
   }
 
   .summary-card {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .order-card-body {

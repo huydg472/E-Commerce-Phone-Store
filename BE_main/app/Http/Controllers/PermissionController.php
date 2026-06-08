@@ -68,6 +68,12 @@ class PermissionController extends Controller
      */
     public function destroy(Permission $permission)
     {
-        //
+        $permission->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xóa dữ liệu thành công',
+            'data' => null,
+        ], 200);
     }
 }

@@ -36,6 +36,11 @@ export default [
                 component: () => import('@/pages/client/CartPage.vue'),
             },
             {
+                path: 'dashboard',
+                name: 'dashboard',
+                component: () => import('@/pages/client/DashboardPage.vue'),
+            },
+            {
                 path: 'checkout',
                 name: 'checkout',
                 component: () => import('@/pages/client/CheckoutPage.vue'),

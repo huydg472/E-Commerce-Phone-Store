@@ -61,7 +61,7 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="progress reset-progress mb-4">
-        <div class="progress-bar" style="width: 80%"></div>
+        <div class="progress-bar" :style="{ width: `${progressWidth}%` }"></div>
       </div>
 
       <RouterLink to="/auth/login" class="btn back-login-btn mb-4">

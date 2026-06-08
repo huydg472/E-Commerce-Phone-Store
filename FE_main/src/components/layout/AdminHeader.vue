@@ -13,10 +13,10 @@ const displayName = computed(() => {
 })
 
 const displayRole = computed(() => {
-  const roleId = Number(authStore.user?.['role_id'])
+  const roleName = authStore.user?.role?.name || authStore.user?.role_name
 
-  if (roleId === 1) return 'Quản trị viên'
-  if (roleId === 2) return 'Nhân viên'
+  if (roleName === 'admin') return 'Quản trị viên'
+  if (roleName === 'staff') return 'Nhân viên'
 
   return 'Tài khoản'
 })

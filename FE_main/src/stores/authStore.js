@@ -10,22 +10,28 @@ export const useAuthStore = defineStore('auth', {
     }),
 
     getters: {
+        roleName: (state) => {
+            return state.user?.role?.name || state.user?.role_name || null
+        },
+
         isLoggedIn: (state) => Boolean(state.token),
 
-        isAdmin: (state) => {
-            return Number(state.user?.['role_id']) === 1
-        },
+        isAdmin: (state) => state.user?.role?.name === 'admin' || state.user?.role_name === 'admin',
 
-        isStaff: (state) => {
-            return Number(state.user?.['role_id']) === 2
-        },
+        isStaff: (state) => state.user?.role?.name === 'staff' || state.user?.role_name === 'staff',
 
-        isCustomer: (state) => {
-            return Number(state.user?.['role_id']) === 3
-        },
+        isCustomer: (state) => state.user?.role?.name === 'customer' || state.user?.role_name === 'customer',
     },
 
     actions: {
+        clearSession() {
+            this.user = null
+            this.token = null
+
+            removeToken()
+            removeUser()
+        },
+
         async login(payload) {
             this.loading = true
 
@@ -66,11 +72,7 @@ export const useAuthStore = defineStore('auth', {
             try {
                 await authService.logout()
             } finally {
-                this.user = null
-                this.token = null
-
-                removeToken()
-                removeUser()
+                this.clearSession()
             }
         },
     },

@@ -12,6 +12,7 @@ class ProductSpecificationController extends Controller
     {
         try {
             $productSpecification = ProductSpecification::query()
+                ->with(['product'])
                 ->orderByDesc('id')
                 ->get();
             return response()->json(['status' => true, 'message' => 'Lay du lieu thanh cong', 'data' => $productSpecification]);
@@ -22,6 +23,8 @@ class ProductSpecificationController extends Controller
 
     public function show(ProductSpecification $productSpecification)
     {
+        $productSpecification->load(['product']);
+
         return response()->json(['status' => true, 'message' => 'Lay chi tiet du lieu thanh cong', 'data' => $productSpecification]);
     }
 
@@ -34,6 +37,7 @@ class ProductSpecificationController extends Controller
         }
 
         $productSpecification = ProductSpecification::create($data);
+        $productSpecification->load(['product']);
         return response()->json(['status' => true, 'message' => 'Them thong so san pham thanh cong', 'data' => $productSpecification], 201);
     }
 
@@ -41,6 +45,7 @@ class ProductSpecificationController extends Controller
     {
         $productSpecification->update($request->validated());
         $productSpecification->refresh();
+        $productSpecification->load(['product']);
         return response()->json(['status' => true, 'message' => 'Cap nhat thong so san pham thanh cong', 'data' => $productSpecification]);
     }
 

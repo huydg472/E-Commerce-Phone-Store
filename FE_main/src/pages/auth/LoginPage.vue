@@ -28,15 +28,12 @@ const handleLogin = async (formData) => {
       remember: formData.remember,
     })
 
-    const user = authStore.user
-    const roleId = Number(user?.['role_id'])
-
-    if (roleId === 1 || roleId === 2) {
+    if (authStore.isAdmin || authStore.isStaff) {
       await router.replace('/admin/dashboard')
       return
     }
 
-    if (roleId === 3) {
+    if (authStore.isCustomer) {
       await router.replace('/')
       return
     }

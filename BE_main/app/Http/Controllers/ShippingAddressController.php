@@ -2,87 +2,102 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ShippingAddress;
 use App\Http\Requests\StoreShippingAddressRequest;
 use App\Http\Requests\UpdateShippingAddressRequest;
+use App\Models\ShippingAddress;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ShippingAddressController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        $shippingAddress = ShippingAddress::query()
-            ->orderByDesc('id')
-            ->get();
+        $query = ShippingAddress::query()->orderByDesc('id');
+
+        if (!$request->user()->isAdminOrStaff()) {
+            $query->where('user_id', $request->user()->id);
+        }
+
+        $shippingAddress = $query->get();
+
         return response()->json([
             'data' => $shippingAddress
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreShippingAddressRequest $request)
+    public function store(StoreShippingAddressRequest $request): JsonResponse
     {
-        $shippingAddress = ShippingAddress::create([
-            'user_id' => $request->user_id,
-            'receiver_name' => $request->receiver_name,
-            'receiver_phone' => $request->receiver_phone,
-            'province' => $request->province,
-            'district' => $request->district,
-            'ward' => $request->ward,
-            'address_detail' => $request->address_detail,
-            'note' => $request->note,
-            'is_default' => $request->is_default
-        ]);
+        $data = $request->validated();
+        $data['user_id'] = $request->user()->id;
+
+        $shippingAddress = DB::transaction(function () use ($data) {
+            if (!empty($data['is_default'])) {
+                ShippingAddress::where('user_id', $data['user_id'])
+                    ->update(['is_default' => false]);
+            }
+
+            return ShippingAddress::create($data);
+        });
+
         return response()->json([
-            'message' => 'thêm thành công',
+            'message' => 'thÃªm thÃ nh cÃ´ng',
             'data' => $shippingAddress
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ShippingAddress $shippingAddress)
+    public function show(Request $request, ShippingAddress $shippingAddress): JsonResponse
     {
+        if (!$request->user()->isAdminOrStaff() && $shippingAddress->user_id !== $request->user()->id) {
+            return response()->json([
+                'message' => 'Forbidden.',
+            ], 403);
+        }
+
         return response()->json([
             'data' => $shippingAddress
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateShippingAddressRequest $request, ShippingAddress $shippingAddress)
+    public function update(UpdateShippingAddressRequest $request, ShippingAddress $shippingAddress): JsonResponse
     {
-        $shippingAddress->update([
-            'user_id' => $request->user_id,
-            'receiver_name' => $request->receiver_name,
-            'receiver_phone' => $request->receiver_phone,
-            'province' => $request->province,
-            'district' => $request->district,
-            'ward' => $request->ward,
-            'address_detail' => $request->address_detail,
-            'note' => $request->note,
-            'is_default' => $request->is_default
-        ]);
+        if (!$request->user()->isAdminOrStaff() && $shippingAddress->user_id !== $request->user()->id) {
+            return response()->json([
+                'message' => 'Forbidden.',
+            ], 403);
+        }
+
+        $data = $request->validated();
+        $data['user_id'] = $request->user()->id;
+
+        DB::transaction(function () use ($shippingAddress, $data) {
+            if (!empty($data['is_default'])) {
+                ShippingAddress::where('user_id', $data['user_id'])
+                    ->where('id', '!=', $shippingAddress->id)
+                    ->update(['is_default' => false]);
+            }
+
+            $shippingAddress->update($data);
+        });
+
         return response()->json([
-            'message' => 'update thành công',
+            'message' => 'update thÃ nh cÃ´ng',
             'data' => $shippingAddress
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ShippingAddress $shippingAddress)
+    public function destroy(Request $request, ShippingAddress $shippingAddress): JsonResponse
     {
+        if (!$request->user()->isAdminOrStaff() && $shippingAddress->user_id !== $request->user()->id) {
+            return response()->json([
+                'message' => 'Forbidden.',
+            ], 403);
+        }
+
         $shippingAddress->delete();
+
         return response()->json([
-            'message' => 'xóa thành công'
+            'message' => 'xÃ³a thÃ nh cÃ´ng'
         ]);
     }
 }

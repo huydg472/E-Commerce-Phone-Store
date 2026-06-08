@@ -20,6 +20,15 @@ class StoreOrderRequest extends FormRequest
             'shipping_address_text' => ['required', 'string'],
             'shipping_fee' => ['sometimes', 'numeric', 'min:0'],
             'discount_amount' => ['sometimes', 'numeric', 'min:0'],
+            'payment_method' => ['sometimes', 'string', 'in:cod,bank_transfer,vnpay,momo'],
+            'items' => ['sometimes', 'array', 'min:1'],
+            'items.*.product_variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
+            'items.*.product_name' => ['required', 'string', 'max:200'],
+            'items.*.variant_name' => ['required', 'string', 'max:200'],
+            'items.*.sku' => ['nullable', 'string', 'max:100'],
+            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'items.*.total_price' => ['required', 'numeric', 'min:0'],
             'note' => ['nullable', 'string'],
         ];
     }
@@ -57,6 +66,7 @@ class StoreOrderRequest extends FormRequest
             'shipping_address_text' => 'Địa chỉ giao hàng',
             'shipping_fee' => 'Phí vận chuyển',
             'discount_amount' => 'Số tiền giảm giá',
+            'payment_method' => 'Phương thức thanh toán',
             'note' => 'Ghi chú',
         ];
     }

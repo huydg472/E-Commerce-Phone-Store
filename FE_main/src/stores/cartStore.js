@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { useAuthStore } from '@/stores/authStore'
 import { cartItemService } from '@/services/cartItemService'
 
 const cloneValue = (value) => {
@@ -35,6 +36,11 @@ const calculateCartTotals = (items) => {
         subtotal,
         total_amount: subtotal,
     }
+}
+
+const clearInvalidSession = () => {
+    const authStore = useAuthStore()
+    authStore.clearSession()
 }
 
 export const useCartStore = defineStore('cart', {
@@ -77,6 +83,15 @@ export const useCartStore = defineStore('cart', {
                 this.pagination = response.data?.meta || null
 
                 return response
+            } catch (error) {
+                if (error.response?.status === 401) {
+                    clearInvalidSession()
+                    this.items = []
+                    this.item = null
+                    this.pagination = null
+                }
+
+                throw error
             } finally {
                 this.loading = false
             }
@@ -89,6 +104,15 @@ export const useCartStore = defineStore('cart', {
                 const response = await cartItemService.getById(id)
                 this.item = response.data?.data ?? response.data ?? null
                 return response
+            } catch (error) {
+                if (error.response?.status === 401) {
+                    clearInvalidSession()
+                    this.items = []
+                    this.item = null
+                    this.pagination = null
+                }
+
+                throw error
             } finally {
                 this.loading = false
             }
@@ -199,6 +223,10 @@ export const useCartStore = defineStore('cart', {
                 void this.fetchAll().catch(() => {})
                 return response
             } catch (error) {
+                if (error.response?.status === 401) {
+                    clearInvalidSession()
+                }
+
                 this.items = previousItems
                 this.item = previousItem
                 throw error
@@ -276,6 +304,10 @@ export const useCartStore = defineStore('cart', {
 
                 return response
             } catch (error) {
+                if (error.response?.status === 401) {
+                    clearInvalidSession()
+                }
+
                 if (this.updateSeqById[id] !== currentSeq) {
                     return null
                 }
@@ -304,6 +336,10 @@ export const useCartStore = defineStore('cart', {
                 const response = await cartItemService.delete(id)
                 return response
             } catch (error) {
+                if (error.response?.status === 401) {
+                    clearInvalidSession()
+                }
+
                 this.items = previousItems
                 this.item = previousItem
                 throw error
