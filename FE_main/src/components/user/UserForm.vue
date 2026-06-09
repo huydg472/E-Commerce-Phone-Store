@@ -28,6 +28,18 @@ defineProps({
     type: Boolean,
     default: true,
   },
+  showRoleSelect: {
+    type: Boolean,
+    default: true,
+  },
+  showStatusSelect: {
+    type: Boolean,
+    default: true,
+  },
+  showUsernameField: {
+    type: Boolean,
+    default: true,
+  },
   showEmailVerifiedAt: {
     type: Boolean,
     default: false,
@@ -49,7 +61,7 @@ defineEmits(['submit'])
 
     <form @submit.prevent="$emit('submit')">
       <div class="form-grid">
-        <div class="form-group">
+        <div v-if="showRoleSelect" class="form-group">
           <label>Vai trò</label>
           <select v-model="form.role_id" class="form-select" required>
             <option value="">Chọn vai trò</option>
@@ -59,7 +71,7 @@ defineEmits(['submit'])
           </select>
         </div>
 
-        <div class="form-group">
+        <div v-if="showStatusSelect" class="form-group">
           <label>Trạng thái</label>
           <select v-model="form.status" class="form-select" required>
             <option value="active">Hoạt động</option>
@@ -82,7 +94,7 @@ defineEmits(['submit'])
           <input v-model.trim="form.phone" type="text" class="form-control" required/>
         </div>
 
-        <div class="form-group">
+        <div v-if="showUsernameField" class="form-group">
           <label>Username</label>
           <input v-model.trim="form.username" type="text" class="form-control" required/>
         </div>

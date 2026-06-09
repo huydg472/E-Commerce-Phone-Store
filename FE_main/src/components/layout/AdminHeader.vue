@@ -91,13 +91,6 @@ const handleLogout = async () => {
       </div>
     </div>
 
-    <div class="header-center">
-      <form class="search-box" @submit.prevent>
-        <i class="bi bi-search"></i>
-        <input type="search" placeholder="Tìm kiếm sản phẩm, đơn hàng, khách hàng..."/>
-      </form>
-    </div>
-
     <div class="header-right">
       <div class="dropdown notification-dropdown">
         <button class="notification-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"
@@ -189,7 +182,7 @@ const handleLogout = async () => {
   padding: 18px 28px;
   background: #f6f8fc;
   display: grid;
-  grid-template-columns: minmax(250px, 1fr) minmax(380px, 560px) auto;
+  grid-template-columns: minmax(250px, 1fr) auto;
   align-items: center;
   gap: 24px;
   border-bottom: 1px solid #e9eef6;
@@ -215,46 +208,6 @@ const handleLogout = async () => {
   color: #64748b;
   font-size: 15px;
   line-height: 1.4;
-}
-
-.header-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.search-box {
-  width: 100%;
-  max-width: 560px;
-  height: 54px;
-  padding: 0 18px;
-  background: #ffffff;
-  border: 1px solid #dbe3ef;
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.search-box i {
-  color: #64748b;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.search-box input {
-  width: 100%;
-  min-width: 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  color: #0f172a;
-  font-size: 16px;
-}
-
-.search-box input::placeholder {
-  color: #94a3b8;
 }
 
 .header-right {
@@ -577,7 +530,7 @@ const handleLogout = async () => {
 
 @media (max-width: 1400px) {
   .admin-header {
-    grid-template-columns: minmax(220px, 1fr) minmax(320px, 480px) auto;
+    grid-template-columns: minmax(220px, 1fr) auto;
     padding: 16px 22px;
     gap: 18px;
   }
@@ -592,7 +545,6 @@ const handleLogout = async () => {
   }
 
   .header-left,
-  .header-center,
   .header-right {
     width: 100%;
   }
@@ -623,15 +575,6 @@ const handleLogout = async () => {
   .header-right {
     flex-wrap: wrap;
     gap: 10px;
-  }
-
-  .header-center {
-    order: 3;
-  }
-
-  .search-box {
-    width: 100%;
-    height: 48px;
   }
 
   .notification-btn {

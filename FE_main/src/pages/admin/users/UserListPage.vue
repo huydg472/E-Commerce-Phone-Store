@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref, watch} from 'vue'
-import BasePagination from '@/components/common/BasePagination.vue'
+import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
 import UserTable from '@/components/user/UserTable.vue'
 import {useUserStore} from '@/stores/userStore'
 import {userService} from '@/services/userService'
@@ -9,8 +9,9 @@ const userStore = useUserStore()
 
 const search = ref('')
 const currentPage = ref(1)
-const pageSize = 10
+const pageSize = ref(5)
 const loadingError = ref('')
+const statsUsers = ref([])
 let searchTimer = null
 
 const users = computed(() => (Array.isArray(userStore.items) ? userStore.items : []))
@@ -18,17 +19,18 @@ const users = computed(() => (Array.isArray(userStore.items) ? userStore.items :
 const pagination = computed(() => userStore.pagination || {current_page: 1, last_page: 1, total: 0})
 
 const stats = computed(() => {
-  const total = pagination.value.total || users.value.length
-  const active = users.value.filter((user) => user?.status === 'active').length
-  const inactive = users.value.filter((user) => user?.status !== 'active').length
-  const staff = users.value.filter((user) => ['admin', 'staff'].includes(user?.role?.name)).length
+  const source = Array.isArray(statsUsers.value) ? statsUsers.value : []
+  const total = pagination.value.total || source.length || users.value.length
+  const active = source.filter((user) => user?.status === 'active').length
+  const inactive = source.filter((user) => user?.status !== 'active').length
+  const staff = source.filter((user) => ['admin', 'staff'].includes(user?.role?.name)).length
 
   return {total, active, inactive, staff}
 })
 
 const pageStart = computed(() => {
   if (!users.value.length) return 0
-  return (pagination.value.current_page - 1) * pageSize + 1
+  return (pagination.value.current_page - 1) * pageSize.value + 1
 })
 
 const pageEnd = computed(() => Math.min(pageStart.value + users.value.length - 1, pagination.value.total))
@@ -39,7 +41,7 @@ const fetchUsers = async (page = currentPage.value) => {
   try {
     const response = await userStore.fetchAll({
       page,
-      per_page: pageSize,
+      per_page: pageSize.value,
       q: search.value.trim() || undefined,
     })
 
@@ -47,6 +49,44 @@ const fetchUsers = async (page = currentPage.value) => {
     currentPage.value = meta?.current_page || page
   } catch (error) {
     loadingError.value = error.response?.data?.message || 'Không tải được danh sách người dùng.'
+  }
+}
+
+const fetchStatsUsers = async () => {
+  const accumulated = []
+  let page = 1
+  let lastPage = 1
+
+  try {
+    do {
+      const response = await userService.getAll({page, per_page: 50})
+      const responseData = response.data ?? {}
+      const payload = responseData.data ?? responseData ?? null
+      const pageItems = Array.isArray(payload)
+        ? payload
+        : (Array.isArray(payload?.data) ? payload.data : [])
+
+      accumulated.push(...pageItems)
+
+      const meta = (!Array.isArray(payload) && payload && (
+        Object.prototype.hasOwnProperty.call(payload, 'current_page')
+        || Object.prototype.hasOwnProperty.call(payload, 'last_page')
+        || Object.prototype.hasOwnProperty.call(payload, 'total')
+      ))
+        ? payload
+        : ((!Array.isArray(responseData) && responseData && (
+          Object.prototype.hasOwnProperty.call(responseData, 'current_page')
+          || Object.prototype.hasOwnProperty.call(responseData, 'last_page')
+          || Object.prototype.hasOwnProperty.call(responseData, 'total')
+        )) ? responseData : null)
+
+      lastPage = Number(meta?.last_page) || 1
+      page += 1
+    } while (page <= lastPage)
+
+    statsUsers.value = accumulated
+  } catch (error) {
+    statsUsers.value = users.value
   }
 }
 
@@ -60,6 +100,11 @@ const handleSearchInput = () => {
   searchTimer = setTimeout(() => {
     fetchUsers(1)
   }, 250)
+}
+
+const handlePageSizeChange = () => {
+  currentPage.value = 1
+  fetchUsers(1)
 }
 
 const handlePageChange = (page) => {
@@ -81,6 +126,7 @@ const handleStatusToggle = async (user) => {
     if (updatedUser?.updated_at) {
       user.updated_at = updatedUser.updated_at
     }
+    await fetchStatsUsers()
   } catch (error) {
     user.status = previousStatus
     user.updated_at = previousUpdatedAt
@@ -89,11 +135,18 @@ const handleStatusToggle = async (user) => {
 }
 
 onMounted(() => {
-  fetchUsers(1)
+  Promise.all([
+    fetchUsers(1),
+    fetchStatsUsers(),
+  ]).catch(() => {})
 })
 
 watch(search, () => {
   handleSearchInput()
+})
+
+watch(pageSize, () => {
+  handlePageSizeChange()
 })
 </script>
 
@@ -166,11 +219,6 @@ watch(search, () => {
         <i class="bi bi-search"></i>
         <input v-model.trim="search" type="search" placeholder="Tìm theo tên, username, email, vai trò..."/>
       </div>
-
-      <div class="meta-chip">
-        <i class="bi bi-people"></i>
-        <span>{{ pagination.total }} người dùng</span>
-      </div>
     </div>
 
     <div v-if="userStore.loading" class="state-card">
@@ -186,17 +234,18 @@ watch(search, () => {
 
     <UserTable v-else :users="users" :loading="userStore.loading" @toggle-status="handleStatusToggle"/>
 
-    <div class="table-footer" v-if="!userStore.loading && !loadingError">
-      <div class="table-summary">
-        Hiển thị {{ pageStart }}-{{ pageEnd }} trong tổng số {{ pagination.total }} người dùng
-      </div>
-
-      <BasePagination
-          :current-page="currentPage"
-          :total-pages="pagination.last_page"
-          @update:currentPage="handlePageChange"
-      />
-    </div>
+    <ListPaginationControls
+        v-if="!userStore.loading && !loadingError"
+        :current-page="currentPage"
+        :total-pages="pagination.last_page"
+        :page-size="pageSize"
+        :total-items="pagination.total"
+        :page-start="pageStart"
+        :page-end="pageEnd"
+        item-label="người dùng"
+        @update:currentPage="handlePageChange"
+        @update:pageSize="pageSize = $event"
+    />
   </div>
 </template>
 
@@ -372,19 +421,6 @@ watch(search, () => {
   line-height: 1.2;
 }
 
-.meta-chip {
-  min-height: 42px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: #eff6ff;
-  color: #2563eb;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 800;
-  white-space: nowrap;
-}
 
 .state-card {
   min-height: 240px;
@@ -442,16 +478,10 @@ watch(search, () => {
   }
 
   .search-box,
-  .meta-chip,
   .primary-action,
   .secondary-action {
     width: 100%;
     max-width: none;
-  }
-
-  .table-footer {
-    flex-direction: column;
-    align-items: stretch;
   }
 }
 </style>

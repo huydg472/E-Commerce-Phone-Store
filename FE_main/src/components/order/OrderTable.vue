@@ -19,6 +19,8 @@ const orderStatusMap = {
   cancelled: {label: 'Đã hủy', className: 'cancelled'},
 }
 
+const orderStatusOptions = ['pending', 'confirmed', 'processing', 'shipping', 'completed', 'cancelled']
+
 const paymentStatusMap = {
   unpaid: {label: 'Chưa thanh toán', className: 'unpaid'},
   pending: {label: 'Chờ thanh toán', className: 'pending'},
@@ -32,6 +34,31 @@ const paymentMethodMap = {
   bank_transfer: 'Chuyển khoản',
   momo: 'MoMo',
   vnpay: 'VNPay',
+}
+
+const orderStatusSteps = ['pending', 'confirmed', 'processing', 'shipping', 'completed']
+
+const isSelectableOrderStatus = (currentStatus, targetStatus) => {
+  if (currentStatus === 'completed') {
+    return currentStatus === targetStatus
+  }
+
+  if (currentStatus === targetStatus) {
+    return true
+  }
+
+  if (currentStatus === 'cancelled' || targetStatus === 'cancelled') {
+    return currentStatus === targetStatus
+  }
+
+  const currentIndex = orderStatusSteps.indexOf(currentStatus)
+  const targetIndex = orderStatusSteps.indexOf(targetStatus)
+
+  if (currentIndex === -1 || targetIndex === -1) {
+    return false
+  }
+
+  return Math.abs(targetIndex - currentIndex) === 1
 }
 </script>
 
@@ -104,14 +131,17 @@ const paymentMethodMap = {
                   :value="order.orderStatus"
                   class="status-select"
                   :class="orderStatusMap[order.orderStatus]?.className || 'pending'"
+                  :disabled="order.orderStatus === 'completed'"
                   @change="emit('status-change', order, $event.target.value)"
               >
-                <option value="pending">Chờ xác nhận</option>
-                <option value="confirmed">Đã xác nhận</option>
-                <option value="processing">Đang xử lý</option>
-                <option value="shipping">Đang giao</option>
-                <option value="completed">Hoàn thành</option>
-                <option value="cancelled">Đã hủy</option>
+                <option
+                    v-for="status in orderStatusOptions"
+                    :key="status"
+                    :value="status"
+                    :disabled="!isSelectableOrderStatus(order.orderStatus, status)"
+                >
+                  {{ orderStatusMap[status]?.label || status }}
+                </option>
               </select>
               <i class="bi bi-chevron-down status-caret"></i>
             </div>

@@ -253,7 +253,7 @@ onMounted(() => {
     <section class="hero-card">
       <div class="hero-copy">
         <p class="eyebrow">TỔNG QUAN QUẢN TRỊ</p>
-        <h1>Dashboard dữ liệu thật</h1>
+        <h1>Tổng quan cửa hàng</h1>
         <p class="hero-description">
           Toàn bộ số liệu được tổng hợp trực tiếp từ sản phẩm, đơn hàng, thanh toán, thương hiệu và người dùng trong hệ
           thống.
@@ -430,16 +430,16 @@ onMounted(() => {
 .dashboard-page {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 }
 
 .hero-card {
   padding: 24px;
   border: 1px solid #e5eaf3;
   border-radius: 20px;
-  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 34%),
-  linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 248, 255, 0.92));
-  box-shadow: 0 14px 36px rgba(37, 99, 235, 0.08);
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 30%),
+  linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.95fr);
   gap: 18px;
@@ -450,31 +450,32 @@ onMounted(() => {
 }
 
 .eyebrow {
-  margin: 0;
+  margin: 0 0 6px;
   color: #2563eb;
-  font-size: 14px;
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
 .hero-copy h1 {
-  margin: 8px 0 10px;
+  margin: 0;
   color: #0f172a;
   font-size: 32px;
-  line-height: 1.08;
+  line-height: 1.1;
   font-weight: 900;
 }
 
 .hero-description {
-  margin: 0;
-  color: #5b6b84;
-  font-size: 15px;
-  line-height: 1.65;
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.7;
   max-width: 760px;
 }
 
 .hero-updated {
-  margin: 14px 0 0;
+  margin: 16px 0 0;
   color: #94a3b8;
   font-size: 13px;
   font-weight: 600;
@@ -550,15 +551,15 @@ onMounted(() => {
 }
 
 .stat-card {
-  min-height: 90px;
-  padding: 14px;
+  min-height: 96px;
+  padding: 16px;
   border: 1px solid #edf2f7;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #ffffff;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
 }
 
 .stat-icon {
@@ -595,18 +596,16 @@ onMounted(() => {
 .stat-content strong {
   display: block;
   color: #0f172a;
-  font-size: 20px;
-  line-height: 1;
+  font-size: 18px;
+  line-height: 1.1;
   font-weight: 900;
   letter-spacing: -0.02em;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .stat-content span {
   display: block;
-  margin-top: 3px;
+  margin-top: 6px;
   color: #64748b;
   font-size: 13px;
   font-weight: 700;

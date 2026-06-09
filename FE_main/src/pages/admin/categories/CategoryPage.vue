@@ -3,6 +3,8 @@ import {computed, onMounted, ref} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useCategoryStore} from '@/stores/categoryStore.js'
 import {useProductStore} from '@/stores/productStore.js'
+import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
+import {useClientPagination} from '@/composables/useClientPagination.js'
 import CategoryForm from '@/components/category/CategoryForm.vue'
 import CategoryTable from '@/components/category/CategoryTable.vue'
 
@@ -57,13 +59,24 @@ const filteredCategories = computed(() => {
   })
 })
 
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  paginatedItems: paginatedCategories,
+  pageStart,
+  pageEnd,
+} = useClientPagination(filteredCategories, {
+  defaultPageSize: 5,
+  pageSizeOptions: [5, 10],
+})
+
 const stats = computed(() => {
   const total = displayCategories.value.length
   const active = displayCategories.value.filter((category) => category?.status === 'active').length
   const inactive = total - active
-  const withProducts = displayCategories.value.filter((category) => (countsByCategory.value[String(category.id)] || 0) > 0).length
 
-  return {total, active, inactive, withProducts}
+  return {total, active, inactive}
 })
 
 const clearFieldErrors = () => {
@@ -222,16 +235,6 @@ onMounted(loadData)
         </article>
 
         <article class="stat-card">
-          <span class="stat-icon stat-icon-featured">
-            <i class="bi bi-box-seam"></i>
-          </span>
-          <div>
-            <strong>{{ stats.withProducts }}</strong>
-            <span>Có sản phẩm</span>
-          </div>
-        </article>
-
-        <article class="stat-card">
           <span class="stat-icon stat-icon-inactive">
             <i class="bi bi-slash-circle"></i>
           </span>
@@ -274,12 +277,25 @@ onMounted(loadData)
 
     <CategoryTable
         v-else
-        :categories="filteredCategories"
+        :categories="paginatedCategories"
         :loading="categoryLoading"
         :deleting-id="deletingId"
         @edit="openEditModal"
         @delete="handleDelete"
         @toggle="handleToggleStatus"
+    />
+
+    <ListPaginationControls
+        v-if="!categoryLoading && !loadingError"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :page-size="pageSize"
+        :total-items="filteredCategories.length"
+        :page-start="pageStart"
+        :page-end="pageEnd"
+        item-label="danh mục"
+        @update:currentPage="currentPage = $event"
+        @update:pageSize="pageSize = $event"
     />
 
     <CategoryForm
@@ -432,10 +448,6 @@ onMounted(loadData)
 
 .stat-icon-active {
   background: linear-gradient(135deg, #10b981 0%, #22c55e 100%);
-}
-
-.stat-icon-featured {
-  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
 }
 
 .stat-icon-inactive {

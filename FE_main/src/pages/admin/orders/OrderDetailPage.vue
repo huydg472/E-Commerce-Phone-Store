@@ -33,6 +33,32 @@ const paymentMethodMap = {
   vnpay: 'VNPay',
 }
 
+const orderStatusOptions = ['pending', 'confirmed', 'processing', 'shipping', 'completed', 'cancelled']
+const orderStatusSteps = ['pending', 'confirmed', 'processing', 'shipping', 'completed']
+
+const isSelectableOrderStatus = (currentStatus, targetStatus) => {
+  if (currentStatus === 'completed') {
+    return currentStatus === targetStatus
+  }
+
+  if (currentStatus === targetStatus) {
+    return true
+  }
+
+  if (currentStatus === 'cancelled' || targetStatus === 'cancelled') {
+    return currentStatus === targetStatus
+  }
+
+  const currentIndex = orderStatusSteps.indexOf(currentStatus)
+  const targetIndex = orderStatusSteps.indexOf(targetStatus)
+
+  if (currentIndex === -1 || targetIndex === -1) {
+    return false
+  }
+
+  return Math.abs(targetIndex - currentIndex) === 1
+}
+
 const form = reactive({
   order_status: 'pending',
   note: '',
@@ -141,6 +167,16 @@ const saveChanges = async () => {
 }
 
 const quickSetStatus = async (status) => {
+  if (form.order_status === 'completed') {
+    errorMessage.value = 'Đơn hàng đã hoàn thành nên không thể thay đổi trạng thái.'
+    return
+  }
+
+  if (status !== 'cancelled' && !isSelectableOrderStatus(form.order_status, status)) {
+    errorMessage.value = 'Chỉ có thể chuyển trạng thái từng bước một.'
+    return
+  }
+
   form.order_status = status
   await saveChanges()
 }
@@ -308,12 +344,14 @@ onMounted(loadOrder)
             <label>
               <span>Đổi trạng thái</span>
               <select v-model="form.order_status" class="control">
-                <option value="pending">Chờ xác nhận</option>
-                <option value="confirmed">Đã xác nhận</option>
-                <option value="processing">Đang xử lý</option>
-                <option value="shipping">Đang giao</option>
-                <option value="completed">Hoàn thành</option>
-                <option value="cancelled">Đã hủy</option>
+                <option
+                    v-for="status in orderStatusOptions"
+                    :key="status"
+                    :value="status"
+                    :disabled="form.order_status === 'completed' || !isSelectableOrderStatus(form.order_status, status)"
+                >
+                  {{ orderStatusMap[status]?.label || status }}
+                </option>
               </select>
             </label>
 
@@ -328,9 +366,38 @@ onMounted(loadOrder)
             </label>
 
             <div class="quick-actions">
-              <button type="button" class="quick-btn" @click="quickSetStatus('confirmed')">Xác nhận</button>
-              <button type="button" class="quick-btn" @click="quickSetStatus('shipping')">Đang giao</button>
-              <button type="button" class="quick-btn" @click="quickSetStatus('completed')">Hoàn thành</button>
+              <button
+                  type="button"
+                  class="quick-btn"
+                  :disabled="form.order_status === 'completed' || !isSelectableOrderStatus(form.order_status, 'confirmed')"
+                  @click="quickSetStatus('confirmed')"
+              >
+                Xác nhận
+              </button>
+              <button
+                  type="button"
+                  class="quick-btn"
+                  :disabled="form.order_status === 'completed' || !isSelectableOrderStatus(form.order_status, 'processing')"
+                  @click="quickSetStatus('processing')"
+              >
+                Xử lý
+              </button>
+              <button
+                  type="button"
+                  class="quick-btn"
+                  :disabled="form.order_status === 'completed' || !isSelectableOrderStatus(form.order_status, 'shipping')"
+                  @click="quickSetStatus('shipping')"
+              >
+                Đang giao
+              </button>
+              <button
+                  type="button"
+                  class="quick-btn"
+                  :disabled="form.order_status === 'completed' || !isSelectableOrderStatus(form.order_status, 'completed')"
+                  @click="quickSetStatus('completed')"
+              >
+                Hoàn thành
+              </button>
               <button type="button" class="quick-btn danger" @click="quickSetStatus('cancelled')">Hủy</button>
             </div>
 

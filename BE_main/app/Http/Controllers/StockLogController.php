@@ -11,6 +11,11 @@ class StockLogController extends Controller
     public function index()
     {
         $stockLog = StockLog::query()
+            ->with([
+                'productVariant.product',
+                'user.role',
+                'order',
+            ])
             ->orderByDesc('id')
             ->get();
 
@@ -31,6 +36,12 @@ class StockLogController extends Controller
 
     public function show(StockLog $stockLog)
     {
+        $stockLog->load([
+            'productVariant.product',
+            'user.role',
+            'order',
+        ]);
+
         return response()->json([
             'data' => $stockLog
         ]);

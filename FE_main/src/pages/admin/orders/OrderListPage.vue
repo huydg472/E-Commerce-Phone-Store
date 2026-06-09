@@ -2,8 +2,10 @@
 import {computed, onMounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {storeToRefs} from 'pinia'
+import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
 import OrderTable from '@/components/order/OrderTable.vue'
 import {useOrderStore} from '@/stores/orderStore'
+import {useClientPagination} from '@/composables/useClientPagination.js'
 
 const router = useRouter()
 const orderStore = useOrderStore()
@@ -18,6 +20,31 @@ const normalize = (value) => String(value ?? '').trim().toLowerCase()
 const toNumber = (value) => {
   const numericValue = Number(value)
   return Number.isFinite(numericValue) ? numericValue : 0
+}
+
+const orderStatusSteps = ['pending', 'confirmed', 'processing', 'shipping', 'completed']
+
+const isSelectableOrderStatus = (currentStatus, targetStatus) => {
+  if (currentStatus === 'completed') {
+    return currentStatus === targetStatus
+  }
+
+  if (currentStatus === targetStatus) {
+    return true
+  }
+
+  if (currentStatus === 'cancelled' || targetStatus === 'cancelled') {
+    return currentStatus === targetStatus
+  }
+
+  const currentIndex = orderStatusSteps.indexOf(currentStatus)
+  const targetIndex = orderStatusSteps.indexOf(targetStatus)
+
+  if (currentIndex === -1 || targetIndex === -1) {
+    return false
+  }
+
+  return Math.abs(targetIndex - currentIndex) === 1
 }
 
 const displayOrders = computed(() => {
@@ -65,6 +92,18 @@ const filteredOrders = computed(() => {
   })
 })
 
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  paginatedItems: paginatedOrders,
+  pageStart,
+  pageEnd,
+} = useClientPagination(filteredOrders, {
+  defaultPageSize: 5,
+  pageSizeOptions: [5, 10],
+})
+
 const stats = computed(() => {
   const total = displayOrders.value.length
   const pending = displayOrders.value.filter((order) => order.orderStatus === 'pending').length
@@ -90,6 +129,16 @@ const handleViewDetail = (order) => {
 
 const handleStatusChange = async (order, nextStatus) => {
   if (!order || !nextStatus) return
+
+  if (order.orderStatus === 'completed') {
+    loadingError.value = 'Đơn hàng đã hoàn thành nên không thể thay đổi trạng thái.'
+    return
+  }
+
+  if (!isSelectableOrderStatus(order.orderStatus, nextStatus)) {
+    loadingError.value = 'Chỉ có thể chuyển trạng thái từng bước một.'
+    return
+  }
 
   const previousStatus = order.raw?.order_status
   if (order.raw) order.raw.order_status = nextStatus
@@ -193,9 +242,22 @@ onMounted(loadOrders)
 
     <OrderTable
         v-else
-        :orders="filteredOrders"
+        :orders="paginatedOrders"
         @view="handleViewDetail"
         @status-change="handleStatusChange"
+    />
+
+    <ListPaginationControls
+        v-if="!orderLoading && !loadingError"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :page-size="pageSize"
+        :total-items="filteredOrders.length"
+        :page-start="pageStart"
+        :page-end="pageEnd"
+        item-label="đơn hàng"
+        @update:currentPage="currentPage = $event"
+        @update:pageSize="pageSize = $event"
     />
   </div>
 </template>

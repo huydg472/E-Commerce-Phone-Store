@@ -127,7 +127,25 @@ class OrderController extends Controller
             ], 403);
         }
 
-        $order->update($request->validated());
+        $data = $request->validated();
+
+        DB::transaction(function () use ($order, $data) {
+            $order->update($data);
+
+            if (($data['order_status'] ?? null) === 'completed') {
+                $order->update([
+                    'payment_status' => 'paid',
+                    'completed_at' => $order->completed_at ?? now(),
+                ]);
+
+                $order->payment()?->update([
+                    'payment_status' => 'paid',
+                    'paid_at' => $order->payment?->paid_at ?? now(),
+                ]);
+            }
+        });
+
+        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user']);
 
         return response()->json([
             'success' => true,

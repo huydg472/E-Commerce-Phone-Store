@@ -2,9 +2,11 @@
 import {computed, onMounted, ref} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useRouter} from 'vue-router'
+import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
 import {useProductStore} from '@/stores/productStore.js'
 import {useBrandStore} from '@/stores/brandStore.js'
 import {useCategoryStore} from '@/stores/categoryStore.js'
+import {useClientPagination} from '@/composables/useClientPagination.js'
 import {formatDate} from '@/utils/formatDate.js'
 
 const router = useRouter()
@@ -57,6 +59,18 @@ const filteredProducts = computed(() => {
 
     return matchesSearch && matchesStatus && matchesBrand && matchesCategory && matchesFeatured
   })
+})
+
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  paginatedItems: paginatedProducts,
+  pageStart,
+  pageEnd,
+} = useClientPagination(filteredProducts, {
+  defaultPageSize: 5,
+  pageSizeOptions: [5, 10],
 })
 
 const stats = computed(() => {
@@ -309,7 +323,7 @@ onMounted(async () => {
           </thead>
 
           <tbody>
-          <tr v-for="product in filteredProducts" :key="product.id">
+          <tr v-for="product in paginatedProducts" :key="product.id">
             <td>
               <div class="product-cell">
                 <div class="product-thumb">
@@ -387,7 +401,20 @@ onMounted(async () => {
           </tbody>
         </table>
       </div>
+
     </section>
+
+    <ListPaginationControls
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :page-size="pageSize"
+        :total-items="filteredProducts.length"
+        :page-start="pageStart"
+        :page-end="pageEnd"
+        item-label="sản phẩm"
+        @update:currentPage="currentPage = $event"
+        @update:pageSize="pageSize = $event"
+    />
   </div>
 </template>
 
@@ -618,6 +645,7 @@ onMounted(async () => {
 }
 
 .table-card {
+  width: 100%;
   overflow: hidden;
 }
 
@@ -670,6 +698,7 @@ onMounted(async () => {
 }
 
 .table-responsive {
+  width: 100%;
   overflow-x: auto;
 }
 

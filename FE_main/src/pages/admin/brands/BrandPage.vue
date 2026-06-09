@@ -2,6 +2,8 @@
 import {computed, onMounted, reactive, ref} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useBrandStore} from '@/stores/brandStore'
+import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
+import {useClientPagination} from '@/composables/useClientPagination.js'
 import BrandForm from '@/components/brand/BrandForm.vue'
 import BrandTable from '@/components/brand/BrandTable.vue'
 
@@ -34,6 +36,18 @@ const filteredBrands = computed(() => {
 
     return matchesStatus && matchesKeyword
   })
+})
+
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  paginatedItems: paginatedBrands,
+  pageStart,
+  pageEnd,
+} = useClientPagination(filteredBrands, {
+  defaultPageSize: 5,
+  pageSizeOptions: [5, 10],
 })
 
 const stats = computed(() => {
@@ -245,12 +259,25 @@ onMounted(loadBrands)
 
     <BrandTable
         v-else
-        :brands="filteredBrands"
+        :brands="paginatedBrands"
         :loading="brandLoading"
         :deleting-id="deletingId"
         @edit="openEditModal"
         @delete="handleDelete"
         @toggle="handleToggleStatus"
+    />
+
+    <ListPaginationControls
+        v-if="!brandLoading && !loadingError"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :page-size="pageSize"
+        :total-items="filteredBrands.length"
+        :page-start="pageStart"
+        :page-end="pageEnd"
+        item-label="thương hiệu"
+        @update:currentPage="currentPage = $event"
+        @update:pageSize="pageSize = $event"
     />
 
     <BrandForm

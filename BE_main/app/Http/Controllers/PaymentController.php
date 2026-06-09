@@ -14,7 +14,12 @@ class PaymentController extends Controller
      */
     public function index(): JsonResponse
     {
-        $payment = Payment::with(['order'])->latest()->get();
+        $payment = Payment::with([
+                'order.user',
+                'order.orderItems.productVariant.product',
+            ])
+            ->latest()
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -29,7 +34,10 @@ class PaymentController extends Controller
     public function store(StorePaymentRequest $request): JsonResponse
     {
         $payment = Payment::create($request->validated());
-        $payment->load(['order']);
+        $payment->load([
+            'order.user',
+            'order.orderItems.productVariant.product',
+        ]);
 
         return response()->json([
             'success' => true,
@@ -43,7 +51,10 @@ class PaymentController extends Controller
      */
     public function show(Payment $payment): JsonResponse
     {
-        $payment->load(['order']);
+        $payment->load([
+            'order.user',
+            'order.orderItems.productVariant.product',
+        ]);
 
         return response()->json([
             'success' => true,
@@ -58,7 +69,10 @@ class PaymentController extends Controller
     public function update(UpdatePaymentRequest $request, Payment $payment): JsonResponse
     {
         $payment->update($request->validated());
-        $payment->load(['order']);
+        $payment->load([
+            'order.user',
+            'order.orderItems.productVariant.product',
+        ]);
 
         return response()->json([
             'success' => true,

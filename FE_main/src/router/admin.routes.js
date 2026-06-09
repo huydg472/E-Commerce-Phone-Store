@@ -13,6 +13,21 @@ export default [
                 name: 'admin.dashboard',
                 component: () => import('@/pages/admin/DashboardPage.vue'),
             },
+            {
+                path: 'account',
+                name: 'admin.account',
+                component: () => import('@/pages/admin/account/AccountPage.vue'),
+            },
+            {
+                path: 'account/change-password',
+                name: 'admin.account.change-password',
+                component: () => import('@/pages/admin/account/ChangePasswordPage.vue'),
+            },
+            {
+                path: 'account/edit',
+                name: 'admin.account.edit',
+                component: () => import('@/pages/admin/account/AccountEditPage.vue'),
+            },
 
             {
                 path: 'products',

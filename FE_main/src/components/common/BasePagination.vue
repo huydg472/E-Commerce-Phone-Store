@@ -61,7 +61,7 @@ const goToPage = (page) => {
 </script>
 
 <template>
-  <nav v-if="safeTotalPages > 1" class="pagination-wrap" aria-label="Pagination">
+  <nav class="pagination-wrap" aria-label="Pagination">
     <ul class="pagination-list">
       <li>
         <button
@@ -109,31 +109,36 @@ const goToPage = (page) => {
 .pagination-wrap {
   display: flex;
   justify-content: center;
-  margin-top: 28px;
+  margin-top: 0;
+  min-width: 158px;
+  flex: 0 0 auto;
 }
 
 .pagination-list {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   padding: 0;
   margin: 0;
   list-style: none;
+  min-width: 158px;
 }
 
 .page-btn {
-  min-width: 38px;
-  height: 36px;
-  padding: 0 12px;
+  flex: 0 0 auto;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 11px;
   border: 1px solid #dbe3ef;
-  border-radius: 8px;
+  border-radius: 11px;
   background: #ffffff;
   color: #334155;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
 .page-btn:disabled {
@@ -150,12 +155,12 @@ const goToPage = (page) => {
 
 .page-ellipsis {
   min-width: 18px;
-  height: 36px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: #94a3b8;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
 }
 </style>
