@@ -49,7 +49,7 @@ const paymentMethods = [
           :key="method.id"
           class="payment-item"
       >
-          <input
+        <input
             class="form-check-input"
             type="radio"
             name="payment_method"
@@ -70,7 +70,7 @@ const paymentMethods = [
     </div>
 
     <label class="invoice-check">
-      <input class="form-check-input" type="checkbox" />
+      <input class="form-check-input" type="checkbox"/>
       <span>
         <strong>Xuất hóa đơn công ty</strong>
         <small>Cung cấp thông tin để xuất hóa đơn VAT</small>

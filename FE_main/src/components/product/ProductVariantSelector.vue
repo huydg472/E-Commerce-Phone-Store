@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import {computed, ref} from 'vue'
 
 const props = defineProps({
   storages: {
@@ -37,10 +37,10 @@ const emit = defineEmits([
 const fallbackStorages = ['256GB', '512GB', '1TB']
 
 const fallbackColors = [
-  { name: 'Titan Tự Nhiên', color: '#b9b3a9' },
-  { name: 'Titan Xanh', color: '#0f1d2e' },
-  { name: 'Titan Trắng', color: '#f8fafc' },
-  { name: 'Titan Đen', color: '#24211f' },
+  {name: 'Titan Tự Nhiên', color: '#b9b3a9'},
+  {name: 'Titan Xanh', color: '#0f1d2e'},
+  {name: 'Titan Trắng', color: '#f8fafc'},
+  {name: 'Titan Đen', color: '#24211f'},
 ]
 
 const quantity = ref(1)
@@ -91,19 +91,19 @@ const colorOptions = computed(() => {
 
 const activeStorageValue = computed(() => {
   return (
-    props.selectedStorage ||
-    storageOptions.value.find((item) => !item.disabled)?.value ||
-    storageOptions.value[0]?.value ||
-    ''
+      props.selectedStorage ||
+      storageOptions.value.find((item) => !item.disabled)?.value ||
+      storageOptions.value[0]?.value ||
+      ''
   )
 })
 
 const activeColorValue = computed(() => {
   return (
-    props.selectedColor ||
-    colorOptions.value.find((item) => !item.disabled)?.name ||
-    colorOptions.value[0]?.name ||
-    ''
+      props.selectedColor ||
+      colorOptions.value.find((item) => !item.disabled)?.name ||
+      colorOptions.value[0]?.name ||
+      ''
   )
 })
 
@@ -146,13 +146,13 @@ const handleAddToCart = () => {
 
       <div class="option-list">
         <button
-          v-for="storage in storageOptions"
-          :key="storage.value"
-          type="button"
-          class="option-btn"
-          :class="{ active: activeStorageValue === storage.value, disabled: storage.disabled }"
-          :aria-disabled="storage.disabled"
-          @click="selectedStorageModel = storage.value"
+            v-for="storage in storageOptions"
+            :key="storage.value"
+            type="button"
+            class="option-btn"
+            :class="{ active: activeStorageValue === storage.value, disabled: storage.disabled }"
+            :aria-disabled="storage.disabled"
+            @click="selectedStorageModel = storage.value"
         >
           {{ storage.value }}
         </button>
@@ -164,17 +164,17 @@ const handleAddToCart = () => {
 
       <div class="color-list">
         <button
-          v-for="color in colorOptions"
-          :key="color.name"
-          type="button"
-          class="color-btn"
-          :class="{ active: activeColorValue === color.name, disabled: color.disabled }"
-          :aria-disabled="color.disabled"
-          @click="selectedColorModel = color.name"
+            v-for="color in colorOptions"
+            :key="color.name"
+            type="button"
+            class="color-btn"
+            :class="{ active: activeColorValue === color.name, disabled: color.disabled }"
+            :aria-disabled="color.disabled"
+            @click="selectedColorModel = color.name"
         >
           <span
-            class="color-dot"
-            :style="{ backgroundColor: color.color || color.value || '#e5e7eb' }"
+              class="color-dot"
+              :style="{ backgroundColor: color.color || color.value || '#e5e7eb' }"
           ></span>
 
           {{ color.name }}

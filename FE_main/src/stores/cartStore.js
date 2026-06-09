@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
-import { useAuthStore } from '@/stores/authStore'
-import { cartItemService } from '@/services/cartItemService'
+import {defineStore} from 'pinia'
+import {useAuthStore} from '@/stores/authStore'
+import {cartItemService} from '@/services/cartItemService'
 
 const cloneValue = (value) => {
     try {
@@ -220,7 +220,8 @@ export const useCartStore = defineStore('cart', {
                     }
                 }
 
-                void this.fetchAll().catch(() => {})
+                void this.fetchAll().catch(() => {
+                })
                 return response
             } catch (error) {
                 if (error.response?.status === 401) {

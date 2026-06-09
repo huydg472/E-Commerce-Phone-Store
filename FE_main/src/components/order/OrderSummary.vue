@@ -1,7 +1,7 @@
 <script setup>
-import { computed } from 'vue'
-import { formatCurrency } from '@/utils/formatCurrency'
-import { toNumberPrice } from '@/utils/productCardHelpers'
+import {computed} from 'vue'
+import {formatCurrency} from '@/utils/formatCurrency'
+import {toNumberPrice} from '@/utils/productCardHelpers'
 
 const props = defineProps({
   items: {
@@ -101,7 +101,9 @@ const shippingText = computed(() => {
 
       <div class="price-row">
         <span>Giảm giá</span>
-        <strong class="discount">{{ discountValue > 0 ? `-${formatCurrency(discountValue)}` : formatCurrency(0) }}</strong>
+        <strong class="discount">{{
+            discountValue > 0 ? `-${formatCurrency(discountValue)}` : formatCurrency(0)
+          }}</strong>
       </div>
 
       <div class="price-row">

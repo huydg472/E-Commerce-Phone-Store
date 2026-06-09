@@ -1,6 +1,6 @@
 <script setup>
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {computed} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
@@ -8,7 +8,7 @@ const router = useRouter()
 const orderId = computed(() => String(route.query.order_id || ''))
 
 const goToOrders = () => {
-  router.push({ name: 'orders.history' })
+  router.push({name: 'orders.history'})
 }
 
 const goToDetail = () => {
@@ -17,7 +17,7 @@ const goToDetail = () => {
     return
   }
 
-  router.push({ name: 'orders.show', params: { id: orderId.value } })
+  router.push({name: 'orders.show', params: {id: orderId.value}})
 }
 </script>
 

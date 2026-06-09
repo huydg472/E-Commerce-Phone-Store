@@ -1,17 +1,18 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { useProductStore } from '@/stores/productStore.js'
-import { useProductSpecificationStore } from '@/stores/productSpecificationStore.js'
-import { formatDate } from '@/utils/formatDate.js'
+import {computed, onMounted, reactive, ref} from 'vue'
+import {useRoute} from 'vue-router'
+import {storeToRefs} from 'pinia'
+import {useProductStore} from '@/stores/productStore.js'
+import {useProductSpecificationStore} from '@/stores/productSpecificationStore.js'
+import {formatDate} from '@/utils/formatDate.js'
+import ProductSpecificationForm from '@/components/product/ProductSpecificationForm.vue'
 
 const route = useRoute()
 const productStore = useProductStore()
 const specificationStore = useProductSpecificationStore()
 
-const { item: product, loading: productLoading } = storeToRefs(productStore)
-const { items: specifications, loading: specificationLoading } = storeToRefs(specificationStore)
+const {item: product, loading: productLoading} = storeToRefs(productStore)
+const {items: specifications, loading: specificationLoading} = storeToRefs(specificationStore)
 
 const loadingError = ref('')
 const formError = ref('')
@@ -26,8 +27,8 @@ const isActiveTab = (name) => route.name === name
 const filteredSpecifications = computed(() => {
   const list = Array.isArray(specifications.value) ? specifications.value : []
   return list
-    .filter((spec) => String(spec?.product_id) === String(productId.value))
-    .sort((left, right) => Number(left?.sort_order ?? 0) - Number(right?.sort_order ?? 0))
+      .filter((spec) => String(spec?.product_id) === String(productId.value))
+      .sort((left, right) => Number(left?.sort_order ?? 0) - Number(right?.sort_order ?? 0))
 })
 
 const summary = computed(() => {
@@ -185,10 +186,18 @@ onMounted(loadData)
     </section>
 
     <section class="page-tabs">
-      <RouterLink :to="{ name: 'admin.products.show', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.show') }">Thông tin</RouterLink>
-      <RouterLink :to="{ name: 'admin.products.variants', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.variants') }">Biến thể</RouterLink>
-      <RouterLink :to="{ name: 'admin.products.specifications', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.specifications') }">Thông số</RouterLink>
-      <RouterLink :to="{ name: 'admin.products.images', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.images') }">Hình ảnh</RouterLink>
+      <RouterLink :to="{ name: 'admin.products.show', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.show') }">Thông tin
+      </RouterLink>
+      <RouterLink :to="{ name: 'admin.products.variants', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.variants') }">Biến thể
+      </RouterLink>
+      <RouterLink :to="{ name: 'admin.products.specifications', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.specifications') }">Thông số
+      </RouterLink>
+      <RouterLink :to="{ name: 'admin.products.images', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.images') }">Hình ảnh
+      </RouterLink>
     </section>
 
     <section v-if="loadingError && !filteredSpecifications.length" class="notice-card error">
@@ -241,63 +250,75 @@ onMounted(loadData)
         <div class="table-responsive">
           <table class="table align-middle admin-table mb-0">
             <thead>
-              <tr>
-                <th>Thông số</th>
-                <th>Giá trị</th>
-                <th>Thứ tự</th>
-                <th>Cập nhật</th>
-                <th class="text-end">Thao tác</th>
-              </tr>
+            <tr>
+              <th>Thông số</th>
+              <th>Giá trị</th>
+              <th>Thứ tự</th>
+              <th>Cập nhật</th>
+              <th class="text-end">Thao tác</th>
+            </tr>
             </thead>
             <tbody>
-              <tr v-for="spec in filteredSpecifications" :key="spec.id">
-                <td>
-                  <div class="spec-meta">
-                    <strong>{{ spec.spec_name }}</strong>
-                    <span>Mã #{{ spec.id }}</span>
-                  </div>
-                </td>
-                <td>
-                  <span class="value-pill">{{ spec.spec_value || '—' }}</span>
-                </td>
-                <td>
-                  <span class="order-pill">{{ spec.sort_order ?? 0 }}</span>
-                </td>
-                <td>{{ formatDate(spec.updated_at || spec.created_at) }}</td>
-                <td>
-                  <div class="action-group">
-                    <button type="button" class="action-btn action-edit" title="Chỉnh sửa" @click="openEditModal(spec)">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button
+            <tr v-for="spec in filteredSpecifications" :key="spec.id">
+              <td>
+                <div class="spec-meta">
+                  <strong>{{ spec.spec_name }}</strong>
+                  <span>Mã #{{ spec.id }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="value-pill">{{ spec.spec_value || '—' }}</span>
+              </td>
+              <td>
+                <span class="order-pill">{{ spec.sort_order ?? 0 }}</span>
+              </td>
+              <td>{{ formatDate(spec.updated_at || spec.created_at) }}</td>
+              <td>
+                <div class="action-group">
+                  <button type="button" class="action-btn action-edit" title="Chỉnh sửa" @click="openEditModal(spec)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button
                       type="button"
                       class="action-btn action-delete"
                       title="Xóa"
                       :disabled="deletingId === spec.id"
                       @click="handleDelete(spec)"
-                    >
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
 
-              <tr v-if="!filteredSpecifications.length">
-                <td colspan="5">
-                  <div class="empty-state">
-                    <i class="bi bi-sliders"></i>
-                    <p>Chưa có thông số nào cho sản phẩm này.</p>
-                    <button type="button" class="secondary-action" @click="openCreateModal">Thêm thông số</button>
-                  </div>
-                </td>
-              </tr>
+            <tr v-if="!filteredSpecifications.length">
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="bi bi-sliders"></i>
+                  <p>Chưa có thông số nào cho sản phẩm này.</p>
+                  <button type="button" class="secondary-action" @click="openCreateModal">Thêm thông số</button>
+                </div>
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
       </section>
     </template>
 
-    <Teleport to="body">
+    <ProductSpecificationForm
+      :visible="showModal"
+      :title="editingSpecificationId ? 'Chỉnh sửa thông số' : 'Thêm thông số'"
+      :product-name="product?.name || ''"
+      :form="form"
+      :field-errors="fieldErrors"
+      :form-error="formError"
+      :saving="saving"
+      @close="closeModal"
+      @submit="handleSubmit"
+    />
+
+    <Teleport v-if="false" to="body">
       <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
         <div class="modal-card">
           <div class="modal-header">
@@ -316,19 +337,21 @@ onMounted(loadData)
             <div class="grid-2">
               <div class="field">
                 <label>Tên thông số</label>
-                <input v-model="form.spec_name" type="text" class="control" :class="{ invalid: fieldErrors.spec_name }" />
+                <input v-model="form.spec_name" type="text" class="control"
+                       :class="{ invalid: fieldErrors.spec_name }"/>
                 <small v-if="fieldErrors.spec_name" class="field-error">{{ fieldErrors.spec_name }}</small>
               </div>
               <div class="field">
                 <label>Thứ tự hiển thị</label>
-                <input v-model="form.sort_order" type="number" min="0" class="control" :class="{ invalid: fieldErrors.sort_order }" />
+                <input v-model="form.sort_order" type="number" min="0" class="control"
+                       :class="{ invalid: fieldErrors.sort_order }"/>
                 <small v-if="fieldErrors.sort_order" class="field-error">{{ fieldErrors.sort_order }}</small>
               </div>
             </div>
 
             <div class="field">
               <label>Giá trị</label>
-              <textarea v-model="form.spec_value" class="control textarea" rows="4" />
+              <textarea v-model="form.spec_value" class="control textarea" rows="4"/>
             </div>
 
             <div class="modal-actions">

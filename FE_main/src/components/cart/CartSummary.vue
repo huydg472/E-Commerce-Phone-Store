@@ -1,7 +1,7 @@
 <script setup>
-import { computed } from 'vue'
-import { formatCurrency } from '@/utils/formatCurrency'
-import { toNumberPrice } from '@/utils/productCardHelpers'
+import {computed} from 'vue'
+import {formatCurrency} from '@/utils/formatCurrency'
+import {toNumberPrice} from '@/utils/productCardHelpers'
 
 const props = defineProps({
   itemCount: {

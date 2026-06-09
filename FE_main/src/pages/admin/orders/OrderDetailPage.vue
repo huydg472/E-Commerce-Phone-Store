@@ -1,9 +1,13 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useOrderStore } from '@/stores/orderStore'
-import { formatCurrency } from '@/utils/formatCurrency'
-import { formatDate } from '@/utils/formatDate'
+import {computed, onMounted, reactive, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {useOrderStore} from '@/stores/orderStore'
+import OrderItem from '@/components/order/OrderItem.vue'
+import OrderStatusBadge from '@/components/order/OrderStatusBadge.vue'
+import OrderTimeline from '@/components/order/OrderTimeline.vue'
+import PaymentStatusBadge from '@/components/payment/PaymentStatusBadge.vue'
+import {formatCurrency} from '@/utils/formatCurrency'
+import {formatDate} from '@/utils/formatDate'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,20 +18,12 @@ const errorMessage = ref('')
 const saving = ref(false)
 
 const orderStatusMap = {
-  pending: { label: 'Chờ xác nhận', className: 'pending' },
-  confirmed: { label: 'Đã xác nhận', className: 'confirmed' },
-  processing: { label: 'Đang xử lý', className: 'processing' },
-  shipping: { label: 'Đang giao', className: 'shipping' },
-  completed: { label: 'Hoàn thành', className: 'completed' },
-  cancelled: { label: 'Đã hủy', className: 'cancelled' },
-}
-
-const paymentStatusMap = {
-  unpaid: { label: 'Chưa thanh toán', className: 'unpaid' },
-  pending: { label: 'Chờ thanh toán', className: 'pending' },
-  paid: { label: 'Đã thanh toán', className: 'paid' },
-  failed: { label: 'Thất bại', className: 'failed' },
-  refunded: { label: 'Đã hoàn tiền', className: 'refunded' },
+  pending: {label: 'Chờ xác nhận', className: 'pending'},
+  confirmed: {label: 'Đã xác nhận', className: 'confirmed'},
+  processing: {label: 'Đang xử lý', className: 'processing'},
+  shipping: {label: 'Đang giao', className: 'shipping'},
+  completed: {label: 'Hoàn thành', className: 'completed'},
+  cancelled: {label: 'Đã hủy', className: 'cancelled'},
 }
 
 const paymentMethodMap = {
@@ -100,12 +96,12 @@ const loadOrder = async () => {
     await orderStore.fetchById(route.params.id)
   } catch (error) {
     if (error.response?.status === 401) {
-      await router.replace({ name: 'login' })
+      await router.replace({name: 'login'})
       return
     }
 
     if (error.response?.status === 403) {
-      await router.replace({ name: 'forbidden' })
+      await router.replace({name: 'forbidden'})
       return
     }
 
@@ -121,7 +117,7 @@ const syncForm = () => {
 }
 
 const goBack = () => {
-  router.push({ name: 'admin.orders.index' })
+  router.push({name: 'admin.orders.index'})
 }
 
 const saveChanges = async () => {
@@ -156,10 +152,10 @@ watch(order, (value) => {
 })
 
 watch(
-  () => route.params.id,
-  () => {
-    void loadOrder()
-  }
+    () => route.params.id,
+    () => {
+      void loadOrder()
+    }
 )
 
 onMounted(loadOrder)
@@ -192,9 +188,7 @@ onMounted(loadOrder)
     <template v-else-if="order">
       <div class="hero-card">
         <div class="hero-main">
-          <span class="status-badge" :class="orderStatusMap[order.order_status]?.className || 'pending'">
-            {{ orderStatusMap[order.order_status]?.label || order.order_status }}
-          </span>
+          <OrderStatusBadge :status="order.order_status" />
           <div class="hero-line">
             <strong>Mã đơn:</strong>
             <span>{{ order.order_code || `#${order.id}` }}</span>
@@ -208,9 +202,7 @@ onMounted(loadOrder)
         <div class="hero-meta">
           <div class="meta-chip">
             <span>Thanh toán</span>
-            <strong :class="paymentStatusMap[order.payment_status]?.className || 'unpaid'">
-              {{ paymentStatusMap[order.payment_status]?.label || order.payment_status || 'Chưa thanh toán' }}
-            </strong>
+            <PaymentStatusBadge :status="order.payment_status" />
           </div>
           <div class="meta-chip">
             <span>Phương thức</span>
@@ -252,7 +244,7 @@ onMounted(loadOrder)
             </div>
             <div>
               <span>Trạng thái giao</span>
-              <strong>{{ orderStatusMap[order.order_status]?.label || order.order_status }}</strong>
+              <OrderStatusBadge :status="order.order_status" />
             </div>
           </div>
 
@@ -272,7 +264,9 @@ onMounted(loadOrder)
               {{ shippingAddress.receiver_name }} - {{ shippingAddress.receiver_phone }}
             </p>
             <p class="muted">
-              {{ [shippingAddress.address_detail, shippingAddress.ward, shippingAddress.district, shippingAddress.province].filter(Boolean).join(', ') || 'Không có dữ liệu' }}
+              {{
+                [shippingAddress.address_detail, shippingAddress.ward, shippingAddress.district, shippingAddress.province].filter(Boolean).join(', ') || 'Không có dữ liệu'
+              }}
             </p>
           </div>
         </section>
@@ -281,24 +275,7 @@ onMounted(loadOrder)
           <h2>Sản phẩm</h2>
 
           <div v-if="orderItems.length" class="item-list">
-            <article v-for="item in orderItems" :key="item.id" class="item-row">
-              <img
-                :src="item.productVariant?.product?.thumbnail_url || item.productVariant?.product?.thumbnailUrl || item.productVariant?.product?.image || '/images/default-product.png'"
-                :alt="item.product_name"
-              />
-
-              <div class="item-info">
-                <h3>{{ item.product_name }}</h3>
-                <p>{{ item.variant_name || 'Không có biến thể' }}</p>
-                <p>SKU: {{ item.sku || 'N/A' }}</p>
-                <p>Số lượng: {{ item.quantity }}</p>
-              </div>
-
-              <div class="item-meta">
-                <span>{{ formatCurrency(item.unit_price) }} x {{ item.quantity }}</span>
-                <strong>{{ formatCurrency(item.total_price) }}</strong>
-              </div>
-            </article>
+            <OrderItem v-for="item in orderItems" :key="item.id" :item="item" />
           </div>
 
           <div v-else class="empty-state">
@@ -317,30 +294,15 @@ onMounted(loadOrder)
 
           <div class="summary-line">
             <span>Thanh toán</span>
-            <strong :class="paymentStatusMap[order.payment_status]?.className || 'unpaid'">
-              {{ paymentStatusMap[order.payment_status]?.label || order.payment_status || 'Chưa thanh toán' }}
-            </strong>
+            <PaymentStatusBadge :status="order.payment_status" />
           </div>
 
           <div class="summary-line">
             <span>Trạng thái hiện tại</span>
-            <strong>{{ orderStatusMap[form.order_status]?.label || form.order_status }}</strong>
+            <OrderStatusBadge :status="form.order_status" />
           </div>
 
-          <div class="timeline-box">
-            <span>Dòng trạng thái</span>
-            <div class="timeline">
-              <div
-                v-for="step in statusSteps"
-                :key="step.key"
-                class="timeline-step"
-                :class="{ done: step.done, current: step.current }"
-              >
-                <i :class="step.done ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
-                <span>{{ step.label }}</span>
-              </div>
-            </div>
-          </div>
+          <OrderTimeline :steps="statusSteps" />
 
           <div class="form-stack">
             <label>
@@ -358,10 +320,10 @@ onMounted(loadOrder)
             <label>
               <span>Ghi chú nội bộ</span>
               <textarea
-                v-model.trim="form.note"
-                class="control"
-                rows="4"
-                placeholder="Ghi chú xử lý đơn hàng..."
+                  v-model.trim="form.note"
+                  class="control"
+                  rows="4"
+                  placeholder="Ghi chú xử lý đơn hàng..."
               ></textarea>
             </label>
 
@@ -490,44 +452,6 @@ onMounted(loadOrder)
   gap: 6px;
 }
 
-.status-badge {
-  width: fit-content;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 800;
-}
-
-.status-badge.pending {
-  color: #c2410c;
-  background: #fff7ed;
-}
-
-.status-badge.confirmed {
-  color: #7c3aed;
-  background: #f5f3ff;
-}
-
-.status-badge.processing {
-  color: #2563eb;
-  background: #eff6ff;
-}
-
-.status-badge.shipping {
-  color: #0f766e;
-  background: #ecfeff;
-}
-
-.status-badge.completed {
-  color: #15803d;
-  background: #ecfdf5;
-}
-
-.status-badge.cancelled {
-  color: #dc2626;
-  background: #fef2f2;
-}
-
 .hero-line {
   display: flex;
   gap: 8px;
@@ -558,19 +482,6 @@ onMounted(loadOrder)
   color: #64748b;
   font-size: 13px;
   font-weight: 700;
-}
-
-.meta-chip strong {
-  color: #0f172a;
-}
-
-.meta-chip strong.unpaid,
-.meta-chip strong.pending {
-  color: #b45309;
-}
-
-.meta-chip strong.paid {
-  color: #15803d;
 }
 
 .detail-layout {
@@ -604,8 +515,7 @@ onMounted(loadOrder)
 .summary-total,
 .address-box,
 .note-box,
-.shipping-box,
-.timeline-box {
+.shipping-box {
   padding: 11px 12px;
   border: 1px solid #eef2f7;
   border-radius: 11px;
@@ -617,8 +527,7 @@ onMounted(loadOrder)
 .summary-total span,
 .address-box span,
 .note-box span,
-.shipping-box span,
-.timeline-box span {
+.shipping-box span {
   display: block;
   margin-bottom: 6px;
   color: #64748b;
@@ -667,93 +576,12 @@ onMounted(loadOrder)
   gap: 10px;
 }
 
-.item-row {
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-  padding: 11px;
-  border: 1px solid #eef2f7;
-  border-radius: 11px;
-}
-
-.item-row img {
-  width: 64px;
-  height: 64px;
-  border-radius: 10px;
-  object-fit: cover;
-  background: #f3f4f6;
-}
-
-.item-info h3 {
-  margin: 0 0 4px;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.item-info p {
-  margin: 0 0 2px;
-  color: #64748b;
-  font-size: 12px;
-}
-
-.item-meta {
-  text-align: right;
-}
-
-.item-meta span {
-  display: block;
-  margin-bottom: 4px;
-  color: #64748b;
-  font-size: 12px;
-}
-
-.item-meta strong {
-  color: #0d6efd;
-  font-size: 14px;
-  font-weight: 850;
-}
-
 .summary-card {
   align-self: start;
 }
 
 .summary-line + .summary-line {
   margin-top: 8px;
-}
-
-.timeline-box {
-  margin-top: 10px;
-}
-
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.timeline-step {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: #64748b;
-  font-weight: 700;
-}
-
-.timeline-step i {
-  color: #cbd5e1;
-}
-
-.timeline-step.done {
-  color: #0f172a;
-}
-
-.timeline-step.done i {
-  color: #2563eb;
-}
-
-.timeline-step.current {
-  color: #2563eb;
 }
 
 .form-stack {
@@ -860,14 +688,6 @@ textarea.control {
 
   .info-grid {
     grid-template-columns: 1fr;
-  }
-
-  .item-row {
-    grid-template-columns: 1fr;
-  }
-
-  .item-meta {
-    text-align: left;
   }
 
   .quick-actions {

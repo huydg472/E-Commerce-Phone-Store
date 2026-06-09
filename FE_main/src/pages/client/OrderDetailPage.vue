@@ -1,9 +1,9 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useOrderStore } from '@/stores/orderStore'
-import { formatCurrency } from '@/utils/formatCurrency'
-import { formatDate } from '@/utils/formatDate'
+import {computed, onMounted, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {useOrderStore} from '@/stores/orderStore'
+import {formatCurrency} from '@/utils/formatCurrency'
+import {formatDate} from '@/utils/formatDate'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,18 +13,18 @@ const pageLoading = ref(true)
 const errorMessage = ref('')
 
 const statusMap = {
-  pending: { label: 'Chờ xác nhận', className: 'pending' },
-  confirmed: { label: 'Đã xác nhận', className: 'confirmed' },
-  shipping: { label: 'Đang giao', className: 'shipping' },
-  completed: { label: 'Hoàn thành', className: 'completed' },
-  cancelled: { label: 'Đã hủy', className: 'cancelled' },
+  pending: {label: 'Chờ xác nhận', className: 'pending'},
+  confirmed: {label: 'Đã xác nhận', className: 'confirmed'},
+  shipping: {label: 'Đang giao', className: 'shipping'},
+  completed: {label: 'Hoàn thành', className: 'completed'},
+  cancelled: {label: 'Đã hủy', className: 'cancelled'},
 }
 
 const paymentStatusMap = {
-  unpaid: { label: 'Chưa thanh toán', className: 'unpaid' },
-  paid: { label: 'Đã thanh toán', className: 'paid' },
-  failed: { label: 'Thanh toán thất bại', className: 'failed' },
-  refunded: { label: 'Đã hoàn tiền', className: 'refunded' },
+  unpaid: {label: 'Chưa thanh toán', className: 'unpaid'},
+  paid: {label: 'Đã thanh toán', className: 'paid'},
+  failed: {label: 'Thanh toán thất bại', className: 'failed'},
+  refunded: {label: 'Đã hoàn tiền', className: 'refunded'},
 }
 
 const order = computed(() => {
@@ -46,12 +46,12 @@ const loadOrder = async () => {
     await orderStore.fetchById(route.params.id)
   } catch (error) {
     if (error.response?.status === 401) {
-      await router.replace({ name: 'login' })
+      await router.replace({name: 'login'})
       return
     }
 
     if (error.response?.status === 403) {
-      await router.replace({ name: 'forbidden' })
+      await router.replace({name: 'forbidden'})
       return
     }
 
@@ -62,7 +62,7 @@ const loadOrder = async () => {
 }
 
 const goBack = () => {
-  router.push({ name: 'orders.history' })
+  router.push({name: 'orders.history'})
 }
 
 watch(

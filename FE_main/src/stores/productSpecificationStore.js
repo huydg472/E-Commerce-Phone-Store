@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
-import { productSpecificationService } from '@/services/productSpecificationService'
+import {defineStore} from 'pinia'
+import {productSpecificationService} from '@/services/productSpecificationService'
 
 export const useProductSpecificationStore = defineStore('productSpecification', {
     state: () => ({
@@ -54,7 +54,7 @@ export const useProductSpecificationStore = defineStore('productSpecification', 
             if (updatedItem?.id) {
                 this.item = updatedItem
                 this.items = this.items.map((item) => (
-                    item.id === updatedItem.id ? { ...item, ...updatedItem } : item
+                    item.id === updatedItem.id ? {...item, ...updatedItem} : item
                 ))
             }
 

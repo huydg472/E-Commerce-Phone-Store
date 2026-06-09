@@ -90,7 +90,8 @@ const submit = async () => {
               <i class="bi bi-lock"></i>
             </span>
 
-            <input v-model.trim="password" :type="showPassword ? 'text' : 'password'" class="form-control" placeholder="Nhập mật khẩu mới"/>
+            <input v-model.trim="password" :type="showPassword ? 'text' : 'password'" class="form-control"
+                   placeholder="Nhập mật khẩu mới"/>
 
             <button type="button" class="input-group-text eye-btn" @click="showPassword = !showPassword">
               <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
@@ -106,7 +107,8 @@ const submit = async () => {
               <i class="bi bi-lock"></i>
             </span>
 
-            <input v-model.trim="passwordConfirmation" :type="showConfirmPassword ? 'text' : 'password'" class="form-control" placeholder="Nhập lại mật khẩu mới"/>
+            <input v-model.trim="passwordConfirmation" :type="showConfirmPassword ? 'text' : 'password'"
+                   class="form-control" placeholder="Nhập lại mật khẩu mới"/>
 
             <button type="button" class="input-group-text eye-btn" @click="showConfirmPassword = !showConfirmPassword">
               <i :class="showConfirmPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>

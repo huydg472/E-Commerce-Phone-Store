@@ -1,13 +1,13 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {computed, onMounted, reactive, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import PaymentMethod from '@/components/payment/PaymentMethod.vue'
 import OrderSummary from '@/components/order/OrderSummary.vue'
-import { useAuthStore } from '@/stores/authStore'
-import { useCartStore } from '@/stores/cartStore'
-import { useOrderStore } from '@/stores/orderStore'
-import { shippingAddressService } from '@/services/shippingAddressService'
-import { formatCurrency } from '@/utils/formatCurrency'
+import {useAuthStore} from '@/stores/authStore'
+import {useCartStore} from '@/stores/cartStore'
+import {useOrderStore} from '@/stores/orderStore'
+import {shippingAddressService} from '@/services/shippingAddressService'
+import {formatCurrency} from '@/utils/formatCurrency'
 
 const router = useRouter()
 const route = useRoute()
@@ -280,7 +280,8 @@ const loadInitialData = async () => {
 
   try {
     if (!authStore.user) {
-      await authStore.fetchMe().catch(() => {})
+      await authStore.fetchMe().catch(() => {
+      })
     }
 
     await Promise.allSettled([
@@ -293,7 +294,7 @@ const loadInitialData = async () => {
     ])
 
     if (!authStore.isLoggedIn) {
-      await router.replace({ name: 'login' })
+      await router.replace({name: 'login'})
       return
     }
 
@@ -347,7 +348,8 @@ const handleSubmitOrder = async () => {
     const createdOrder = response.data?.data ?? response.data ?? null
 
     await Promise.allSettled(checkoutCartItems.value.map((item) => cartStore.remove(item.id)))
-    await cartStore.fetchAll().catch(() => {})
+    await cartStore.fetchAll().catch(() => {
+    })
 
     await router.push({
       name: 'order.success',
@@ -430,32 +432,34 @@ onMounted(loadInitialData)
             <div class="form-grid">
               <div class="form-group">
                 <label>Họ và tên <span>*</span></label>
-                <input v-model.trim="form.receiver_name" type="text" class="form-control" placeholder="Nhập họ và tên" />
+                <input v-model.trim="form.receiver_name" type="text" class="form-control" placeholder="Nhập họ và tên"/>
               </div>
 
               <div class="form-group">
                 <label>Số điện thoại <span>*</span></label>
-                <input v-model.trim="form.receiver_phone" type="text" class="form-control" placeholder="Nhập số điện thoại" />
+                <input v-model.trim="form.receiver_phone" type="text" class="form-control"
+                       placeholder="Nhập số điện thoại"/>
               </div>
 
               <div class="form-group">
                 <label>Tỉnh/Thành phố <span>*</span></label>
-                <input v-model.trim="form.province" type="text" class="form-control" placeholder="Nhập tỉnh/thành phố" />
+                <input v-model.trim="form.province" type="text" class="form-control" placeholder="Nhập tỉnh/thành phố"/>
               </div>
 
               <div class="form-group">
                 <label>Quận/Huyện <span>*</span></label>
-                <input v-model.trim="form.district" type="text" class="form-control" placeholder="Nhập quận/huyện" />
+                <input v-model.trim="form.district" type="text" class="form-control" placeholder="Nhập quận/huyện"/>
               </div>
 
               <div class="form-group">
                 <label>Phường/Xã <span>*</span></label>
-                <input v-model.trim="form.ward" type="text" class="form-control" placeholder="Nhập phường/xã" />
+                <input v-model.trim="form.ward" type="text" class="form-control" placeholder="Nhập phường/xã"/>
               </div>
 
               <div class="form-group">
                 <label>Địa chỉ cụ thể <span>*</span></label>
-                <input v-model.trim="form.address_detail" type="text" class="form-control" placeholder="Số nhà, tên đường, tòa nhà, căn hộ..." />
+                <input v-model.trim="form.address_detail" type="text" class="form-control"
+                       placeholder="Số nhà, tên đường, tòa nhà, căn hộ..."/>
               </div>
             </div>
 
@@ -503,7 +507,7 @@ onMounted(loadInitialData)
             </div>
           </div>
 
-          <PaymentMethod v-model="selectedPaymentMethod" />
+          <PaymentMethod v-model="selectedPaymentMethod"/>
         </div>
 
         <div class="checkout-right">

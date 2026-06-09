@@ -1,10 +1,10 @@
-import { defineStore } from 'pinia'
-import { brandService } from '@/services/brandService'
-import { categoryService } from '@/services/categoryService'
-import { orderService } from '@/services/orderService'
-import { paymentService } from '@/services/paymentService'
-import { productService } from '@/services/productService'
-import { userService } from '@/services/userService'
+import {defineStore} from 'pinia'
+import {brandService} from '@/services/brandService'
+import {categoryService} from '@/services/categoryService'
+import {orderService} from '@/services/orderService'
+import {paymentService} from '@/services/paymentService'
+import {productService} from '@/services/productService'
+import {userService} from '@/services/userService'
 
 const unwrapList = (response) => response?.data?.data ?? response?.data ?? []
 
@@ -76,12 +76,12 @@ export const useDashboardStore = defineStore('dashboard', {
                     categoriesResponse,
                     paymentsResponse,
                 ] = await Promise.all([
-                    productService.getAll({ per_page: 1 }),
-                    productService.getAll({ per_page: 1, status: 'active' }),
-                    productService.getAll({ per_page: 1, is_featured: 1 }),
-                    productService.getAll({ per_page: 4, sort: 'latest' }),
+                    productService.getAll({per_page: 1}),
+                    productService.getAll({per_page: 1, status: 'active'}),
+                    productService.getAll({per_page: 1, is_featured: 1}),
+                    productService.getAll({per_page: 4, sort: 'latest'}),
                     orderService.getAll(),
-                    userService.getAll({ per_page: 1 }),
+                    userService.getAll({per_page: 1}),
                     brandService.getAll(),
                     categoryService.getAll(),
                     paymentService.getAll(),
@@ -132,7 +132,7 @@ export const useDashboardStore = defineStore('dashboard', {
                 this.orders = [order, ...this.orders]
             } else {
                 const next = [...this.orders]
-                next.splice(index, 1, { ...next[index], ...order })
+                next.splice(index, 1, {...next[index], ...order})
                 this.orders = next
             }
 

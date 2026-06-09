@@ -1,6 +1,6 @@
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore.js'
+import {useRoute, useRouter} from 'vue-router'
+import {useAuthStore} from '@/stores/authStore.js'
 
 defineProps({
   isOpen: {

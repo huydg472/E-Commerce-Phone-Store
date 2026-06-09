@@ -10,29 +10,35 @@ class RoleController extends Controller
 {
     public function index()
     {
-        $role = Role::query()
+        $roles = Role::query()
+            ->with(['permissions:id'])
+            ->withCount('permissions')
             ->orderByDesc('id')
             ->get();
 
         return response()->json([
-            'data' => $role
+            'data' => $roles,
         ]);
     }
 
     public function store(StoreRoleRequest $request)
     {
         $role = Role::create($request->validated());
+        $role->permissions()->sync($request->input('permission_ids', []));
+        $role->load(['permissions:id']);
 
         return response()->json([
-            'message' => 'thÃªm thÃ nh cÃ´ng',
-            'data' => $role
+            'message' => 'thêm thành công',
+            'data' => $role,
         ]);
     }
 
     public function show(Role $role)
     {
+        $role->load(['permissions:id']);
+
         return response()->json([
-            'data' => $role
+            'data' => $role,
         ]);
     }
 
@@ -40,9 +46,15 @@ class RoleController extends Controller
     {
         $role->update($request->validated());
 
+        if ($request->has('permission_ids')) {
+            $role->permissions()->sync($request->input('permission_ids', []));
+        }
+
+        $role->load(['permissions:id']);
+
         return response()->json([
-            'message' => 'update thÃ nh cÃ´ng',
-            'data' => $role
+            'message' => 'update thành công',
+            'data' => $role,
         ]);
     }
 
@@ -51,7 +63,7 @@ class RoleController extends Controller
         $role->delete();
 
         return response()->json([
-            'message' => 'xÃ³a thÃ nh cÃ´ng',
+            'message' => 'xóa thành công',
         ]);
     }
 }

@@ -1,14 +1,14 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { useProductStore } from '@/stores/productStore.js'
-import { formatDate } from '@/utils/formatDate.js'
+import {computed, onMounted, ref} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {storeToRefs} from 'pinia'
+import {useProductStore} from '@/stores/productStore.js'
+import {formatDate} from '@/utils/formatDate.js'
 
 const route = useRoute()
 const router = useRouter()
 const productStore = useProductStore()
-const { item: product, loading } = storeToRefs(productStore)
+const {item: product, loading} = storeToRefs(productStore)
 
 const loadingError = ref('')
 
@@ -53,16 +53,20 @@ onMounted(loadProduct)
     </section>
 
     <section class="page-tabs">
-      <RouterLink :to="{ name: 'admin.products.show', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.show') }">
+      <RouterLink :to="{ name: 'admin.products.show', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.show') }">
         Thông tin
       </RouterLink>
-      <RouterLink :to="{ name: 'admin.products.variants', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.variants') }">
+      <RouterLink :to="{ name: 'admin.products.variants', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.variants') }">
         Biến thể
       </RouterLink>
-      <RouterLink :to="{ name: 'admin.products.specifications', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.specifications') }">
+      <RouterLink :to="{ name: 'admin.products.specifications', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.specifications') }">
         Thông số
       </RouterLink>
-      <RouterLink :to="{ name: 'admin.products.images', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.images') }">
+      <RouterLink :to="{ name: 'admin.products.images', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.images') }">
         Hình ảnh
       </RouterLink>
     </section>
@@ -80,7 +84,7 @@ onMounted(loadProduct)
     <div v-else class="detail-layout">
       <section class="hero-panel">
         <div class="hero-image">
-          <img :src="product?.thumbnail_url || '/images/default-product.png'" :alt="product?.name" />
+          <img :src="product?.thumbnail_url || '/images/default-product.png'" :alt="product?.name"/>
         </div>
 
         <div class="hero-body">
@@ -121,7 +125,8 @@ onMounted(loadProduct)
               <i class="bi bi-list-check"></i>
               Biến thể
             </RouterLink>
-            <RouterLink :to="{ name: 'admin.products.specifications', params: { id: productId } }" class="secondary-action">
+            <RouterLink :to="{ name: 'admin.products.specifications', params: { id: productId } }"
+                        class="secondary-action">
               <i class="bi bi-sliders"></i>
               Thông số
             </RouterLink>

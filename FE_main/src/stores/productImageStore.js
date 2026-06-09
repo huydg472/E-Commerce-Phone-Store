@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
-import { productImageService } from '@/services/productImageService'
+import {defineStore} from 'pinia'
+import {productImageService} from '@/services/productImageService'
 
 export const useProductImageStore = defineStore('productImage', {
     state: () => ({
@@ -54,7 +54,7 @@ export const useProductImageStore = defineStore('productImage', {
             if (updatedItem?.id) {
                 this.item = updatedItem
                 this.items = this.items.map((item) => (
-                    item.id === updatedItem.id ? { ...item, ...updatedItem } : item
+                    item.id === updatedItem.id ? {...item, ...updatedItem} : item
                 ))
             }
 

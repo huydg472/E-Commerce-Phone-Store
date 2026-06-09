@@ -1,12 +1,13 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
+import CartEmpty from '@/components/cart/CartEmpty.vue'
 import CartItem from '@/components/cart/CartItem.vue'
 import CartSummary from '@/components/cart/CartSummary.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
-import { useCartStore } from '@/stores/cartStore'
-import { useProductStore } from '@/stores/productStore'
-import { formatCurrency } from '@/utils/formatCurrency'
-import { buildProductCards, toNumberPrice } from '@/utils/productCardHelpers'
+import {useCartStore} from '@/stores/cartStore'
+import {useProductStore} from '@/stores/productStore'
+import {formatCurrency} from '@/utils/formatCurrency'
+import {buildProductCards, toNumberPrice} from '@/utils/productCardHelpers'
 
 const cartStore = useCartStore()
 const productStore = useProductStore()
@@ -333,12 +334,7 @@ onMounted(async () => {
               />
             </template>
 
-            <div v-else class="cart-empty-state">
-              <i class="bi bi-cart3"></i>
-              <h3>Giỏ hàng đang trống</h3>
-              <p>Hãy thêm sản phẩm bạn thích vào giỏ để xem tại đây.</p>
-              <RouterLink to="/products">Tiếp tục mua sắm</RouterLink>
-            </div>
+            <CartEmpty v-else />
 
             <div v-if="mappedCartItems.length" class="continue-shopping">
               <RouterLink to="/products">
@@ -536,47 +532,6 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.cart-empty-state {
-  padding: 42px 24px 48px;
-  text-align: center;
-}
-
-.cart-empty-state i {
-  color: #0d6efd;
-  font-size: 44px;
-}
-
-.cart-empty-state h3 {
-  margin: 14px 0 8px;
-  color: #111827;
-  font-size: 18px;
-  font-weight: 900;
-}
-
-.cart-empty-state p {
-  margin: 0;
-  color: #64748b;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.cart-empty-state a {
-  margin-top: 16px;
-  color: #0d6efd;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 180px;
-  min-height: 42px;
-  padding: 0 18px;
-  border: 1px solid #0d6efd;
-  border-radius: 8px;
-  background: #f8fbff;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 800;
 }
 
 .continue-shopping {

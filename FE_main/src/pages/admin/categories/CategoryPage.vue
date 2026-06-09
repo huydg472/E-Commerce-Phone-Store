@@ -1,15 +1,16 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useCategoryStore } from '@/stores/categoryStore.js'
-import { useProductStore } from '@/stores/productStore.js'
-import { formatDate } from '@/utils/formatDate.js'
+import {computed, onMounted, ref} from 'vue'
+import {storeToRefs} from 'pinia'
+import {useCategoryStore} from '@/stores/categoryStore.js'
+import {useProductStore} from '@/stores/productStore.js'
+import CategoryForm from '@/components/category/CategoryForm.vue'
+import CategoryTable from '@/components/category/CategoryTable.vue'
 
 const categoryStore = useCategoryStore()
 const productStore = useProductStore()
 
-const { items: categories, loading: categoryLoading } = storeToRefs(categoryStore)
-const { items: products } = storeToRefs(productStore)
+const {items: categories, loading: categoryLoading} = storeToRefs(categoryStore)
+const {items: products} = storeToRefs(productStore)
 
 const search = ref('')
 const selectedStatus = ref('all')
@@ -19,30 +20,12 @@ const saving = ref(false)
 const loadingError = ref('')
 const deletingId = ref(null)
 const formError = ref('')
-const fieldErrors = reactive({})
-const manualSlug = ref(false)
-
-const form = reactive({
-  name: '',
-  slug: '',
-  description: '',
-  status: 'active',
-})
+const fieldErrors = ref({})
 
 const normalize = (value) => {
   return String(value ?? '')
-    .trim()
-    .toLowerCase()
-}
-
-const slugify = (value) => {
-  return String(value ?? '')
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+      .trim()
+      .toLowerCase()
 }
 
 const displayCategories = computed(() => (Array.isArray(categories.value) ? categories.value : []))
@@ -80,40 +63,24 @@ const stats = computed(() => {
   const inactive = total - active
   const withProducts = displayCategories.value.filter((category) => (countsByCategory.value[String(category.id)] || 0) > 0).length
 
-  return { total, active, inactive, withProducts }
+  return {total, active, inactive, withProducts}
 })
 
 const clearFieldErrors = () => {
-  Object.keys(fieldErrors).forEach((key) => {
-    delete fieldErrors[key]
-  })
+  fieldErrors.value = {}
 }
 
 const setFieldErrors = (errors = {}) => {
-  clearFieldErrors()
+  const next = {}
 
   Object.entries(errors).forEach(([key, value]) => {
-    fieldErrors[key] = Array.isArray(value) ? value[0] : value
+    next[key] = Array.isArray(value) ? value[0] : value
   })
+
+  fieldErrors.value = next
 }
 
-const resetForm = () => {
-  form.name = ''
-  form.slug = ''
-  form.description = ''
-  form.status = 'active'
-  manualSlug.value = false
-  editingId.value = null
-}
-
-watch(
-  () => form.name,
-  (value) => {
-    if (!manualSlug.value) {
-      form.slug = slugify(value)
-    }
-  }
-)
+const selectedCategory = computed(() => displayCategories.value.find((category) => category?.id === editingId.value) || null)
 
 const loadData = async () => {
   loadingError.value = ''
@@ -121,7 +88,7 @@ const loadData = async () => {
   try {
     await Promise.all([
       categoryStore.fetchAll(),
-      productStore.fetchAll({ per_page: 1000, sort: 'latest' }),
+      productStore.fetchAll({per_page: 1000, sort: 'latest'}),
     ])
   } catch (error) {
     loadingError.value = error.response?.data?.message || 'Không tải được danh sách danh mục.'
@@ -129,20 +96,14 @@ const loadData = async () => {
 }
 
 const openCreateModal = () => {
-  resetForm()
   formError.value = ''
   clearFieldErrors()
+  editingId.value = null
   showModal.value = true
 }
 
 const openEditModal = (category) => {
-  resetForm()
-  form.name = category?.name ?? ''
-  form.slug = category?.slug ?? ''
-  form.description = category?.description ?? ''
-  form.status = category?.status || 'active'
   editingId.value = category?.id ?? null
-  manualSlug.value = true
   formError.value = ''
   clearFieldErrors()
   showModal.value = true
@@ -152,22 +113,15 @@ const closeModal = () => {
   showModal.value = false
   formError.value = ''
   clearFieldErrors()
-  resetForm()
+  editingId.value = null
 }
 
-const handleSubmit = async () => {
+const handleSubmit = async (payload) => {
   saving.value = true
   formError.value = ''
   clearFieldErrors()
 
   try {
-    const payload = {
-      name: form.name.trim(),
-      slug: form.slug.trim(),
-      description: form.description.trim() || null,
-      status: form.status,
-    }
-
     if (editingId.value) {
       await categoryStore.update(editingId.value, payload)
     } else {
@@ -192,7 +146,7 @@ const handleToggleStatus = async (category) => {
   loadingError.value = ''
 
   try {
-    await categoryStore.update(category.id, { status: nextStatus })
+    await categoryStore.update(category.id, {status: nextStatus})
   } catch (error) {
     category.status = previousStatus
     loadingError.value = error.response?.data?.message || 'Không cập nhật được trạng thái danh mục.'
@@ -292,7 +246,7 @@ onMounted(loadData)
     <section class="toolbar-card">
       <div class="search-box">
         <i class="bi bi-search"></i>
-        <input v-model.trim="search" type="search" placeholder="Tìm theo tên, slug, mô tả..." />
+        <input v-model.trim="search" type="search" placeholder="Tìm theo tên, slug, mô tả..."/>
       </div>
 
       <select v-model="selectedStatus" class="filter-select">
@@ -318,158 +272,25 @@ onMounted(loadData)
       <p>Đang tải danh mục...</p>
     </section>
 
-    <section v-else class="table-card">
-      <div class="table-header">
-        <div>
-          <h2>Danh sách danh mục</h2>
-          <p>Quản lý tên, slug và trạng thái của từng danh mục.</p>
-        </div>
-      </div>
+    <CategoryTable
+        v-else
+        :categories="filteredCategories"
+        :loading="categoryLoading"
+        :deleting-id="deletingId"
+        @edit="openEditModal"
+        @delete="handleDelete"
+        @toggle="handleToggleStatus"
+    />
 
-      <div v-if="loadingError" class="inline-alert">
-        <i class="bi bi-exclamation-circle"></i>
-        <span>{{ loadingError }}</span>
-      </div>
-
-      <div class="table-responsive">
-        <table class="table align-middle admin-table mb-0">
-          <thead>
-            <tr>
-              <th>Danh mục</th>
-              <th>Slug</th>
-              <th>Trạng thái</th>
-              <th>Cập nhật</th>
-              <th class="text-end">Thao tác</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr v-for="category in filteredCategories" :key="category.id">
-              <td>
-                <div class="category-cell">
-                  <div class="category-icon">
-                    <i class="bi bi-grid-3x3-gap"></i>
-                  </div>
-                  <div>
-                    <strong>{{ category.name }}</strong>
-                    <span>{{ category.description || 'Chưa có mô tả' }}</span>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span class="slug-pill">{{ category.slug }}</span>
-              </td>
-              <td>
-                <button
-                  type="button"
-                  class="status-pill"
-                  :class="category.status === 'active' ? 'is-active' : 'is-inactive'"
-                  @click="handleToggleStatus(category)"
-                  :title="category.status === 'active' ? 'Hoạt động' : 'Tạm ẩn'"
-                  :aria-label="category.status === 'active' ? 'Hoạt động' : 'Tạm ẩn'"
-                >
-                  <i :class="category.status === 'active' ? 'bi bi-toggle-on' : 'bi bi-toggle-off'"></i>
-                </button>
-              </td>
-              <td>{{ formatDate(category.updated_at || category.created_at) }}</td>
-              <td>
-                <div class="action-group">
-                  <button type="button" class="action-btn action-edit" title="Chỉnh sửa" @click="openEditModal(category)">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="action-btn action-delete"
-                    title="Xóa"
-                    :disabled="deletingId === category.id"
-                    @click="handleDelete(category)"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-
-            <tr v-if="!filteredCategories.length">
-              <td colspan="5">
-                <div class="empty-state">
-                  <i class="bi bi-folder2-open"></i>
-                  <p>Không có danh mục phù hợp với từ khóa tìm kiếm.</p>
-                  <button type="button" class="secondary-action" @click="search = ''">Xóa tìm kiếm</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <Teleport to="body">
-      <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
-        <div class="modal-card">
-          <div class="modal-header">
-            <div>
-              <p class="modal-kicker">{{ editingId ? 'Chỉnh sửa danh mục' : 'Tạo danh mục' }}</p>
-              <h3>{{ editingId ? 'Cập nhật danh mục' : 'Thêm danh mục mới' }}</h3>
-            </div>
-            <button type="button" class="modal-close" @click="closeModal">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-
-          <div v-if="formError" class="modal-alert">{{ formError }}</div>
-
-          <form class="modal-form" @submit.prevent="handleSubmit">
-            <div class="field">
-              <label>Tên danh mục</label>
-              <input v-model="form.name" class="control" :class="{ invalid: fieldErrors.name }" type="text" required />
-              <small v-if="fieldErrors.name" class="field-error">{{ fieldErrors.name }}</small>
-            </div>
-
-            <div class="field">
-              <label>Slug</label>
-              <input
-                v-model="form.slug"
-                class="control"
-                :class="{ invalid: fieldErrors.slug }"
-                type="text"
-                required
-                @input="manualSlug = true"
-              />
-              <small class="field-hint">Slug tự sinh từ tên nếu bạn chưa chỉnh tay.</small>
-              <small v-if="fieldErrors.slug" class="field-error">{{ fieldErrors.slug }}</small>
-            </div>
-
-            <div class="field">
-              <label>Mô tả</label>
-              <textarea
-                v-model="form.description"
-                class="control textarea"
-                :class="{ invalid: fieldErrors.description }"
-                rows="4"
-              />
-              <small v-if="fieldErrors.description" class="field-error">{{ fieldErrors.description }}</small>
-            </div>
-
-            <div class="field">
-              <label>Trạng thái</label>
-              <select v-model="form.status" class="control">
-                <option value="active">Đang hoạt động</option>
-                <option value="inactive">Tạm ẩn</option>
-              </select>
-            </div>
-
-            <div class="modal-actions">
-              <button type="button" class="secondary-action" @click="closeModal">Hủy</button>
-              <button type="submit" class="primary-action" :disabled="saving">
-                <i class="bi bi-check2"></i>
-                {{ saving ? 'Đang lưu...' : 'Lưu danh mục' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Teleport>
+    <CategoryForm
+        :visible="showModal"
+        :category="selectedCategory"
+        :saving="saving"
+        :form-error="formError"
+        :field-errors="fieldErrors"
+        @close="closeModal"
+        @submit="handleSubmit"
+    />
   </div>
 </template>
 
@@ -492,9 +313,8 @@ onMounted(loadData)
 
 .hero-card {
   padding: 24px;
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 30%),
-    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 30%),
+  linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.9fr);
   gap: 18px;
@@ -652,19 +472,32 @@ onMounted(loadData)
   width: 100%;
   border: none;
   outline: none;
+  background: transparent;
+  color: #0f172a;
   font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .filter-select {
   min-width: 180px;
   height: 46px;
-  padding: 0 14px;
+  padding: 0 42px 0 16px;
   border: 1px solid #dbe3ef;
-  border-radius: 14px;
-  background: #ffffff;
+  border-radius: 999px;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 7.5L10 12L14.5 7.5' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   color: #0f172a;
   font-size: 14px;
   font-weight: 600;
+  line-height: 1.2;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   outline: none;
 }
 
@@ -679,6 +512,7 @@ onMounted(loadData)
   gap: 8px;
   font-size: 13px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .state-card {

@@ -1,20 +1,20 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
-import { useProductStore } from '@/stores/productStore.js'
-import { useBrandStore } from '@/stores/brandStore.js'
-import { useCategoryStore } from '@/stores/categoryStore.js'
-import { formatDate } from '@/utils/formatDate.js'
+import {computed, onMounted, ref} from 'vue'
+import {storeToRefs} from 'pinia'
+import {useRouter} from 'vue-router'
+import {useProductStore} from '@/stores/productStore.js'
+import {useBrandStore} from '@/stores/brandStore.js'
+import {useCategoryStore} from '@/stores/categoryStore.js'
+import {formatDate} from '@/utils/formatDate.js'
 
 const router = useRouter()
 const productStore = useProductStore()
 const brandStore = useBrandStore()
 const categoryStore = useCategoryStore()
 
-const { items: productItems, loading: productLoading } = storeToRefs(productStore)
-const { items: brands } = storeToRefs(brandStore)
-const { items: categories } = storeToRefs(categoryStore)
+const {items: productItems, loading: productLoading} = storeToRefs(productStore)
+const {items: brands} = storeToRefs(brandStore)
+const {items: categories} = storeToRefs(categoryStore)
 
 const search = ref('')
 const selectedStatus = ref('')
@@ -26,8 +26,8 @@ const deletingId = ref(null)
 
 const normalize = (value) => {
   return String(value ?? '')
-    .trim()
-    .toLowerCase()
+      .trim()
+      .toLowerCase()
 }
 
 const displayProducts = computed(() => (Array.isArray(productItems.value) ? productItems.value : []))
@@ -44,16 +44,16 @@ const filteredProducts = computed(() => {
     const isFeatured = Boolean(product?.is_featured)
 
     const matchesSearch =
-      !query ||
-      [name, slug, brandName, categoryName, description].some((field) => field.includes(query))
+        !query ||
+        [name, slug, brandName, categoryName, description].some((field) => field.includes(query))
 
     const matchesStatus = !selectedStatus.value || product?.status === selectedStatus.value
     const matchesBrand = !selectedBrand.value || String(product?.brand_id) === String(selectedBrand.value)
     const matchesCategory =
-      !selectedCategory.value || String(product?.category_id) === String(selectedCategory.value)
+        !selectedCategory.value || String(product?.category_id) === String(selectedCategory.value)
     const matchesFeatured =
-      !selectedFeatured.value ||
-      (selectedFeatured.value === 'featured' ? isFeatured : !isFeatured)
+        !selectedFeatured.value ||
+        (selectedFeatured.value === 'featured' ? isFeatured : !isFeatured)
 
     return matchesSearch && matchesStatus && matchesBrand && matchesCategory && matchesFeatured
   })
@@ -65,7 +65,7 @@ const stats = computed(() => {
   const featured = displayProducts.value.filter((product) => product?.is_featured).length
   const inactive = total - active
 
-  return { total, active, featured, inactive }
+  return {total, active, featured, inactive}
 })
 
 const isLoading = computed(() => productLoading.value && !displayProducts.value.length)
@@ -118,7 +118,7 @@ const handleToggleStatus = async (product) => {
   loadingError.value = ''
 
   try {
-    await productStore.update(product.id, { status: nextStatus })
+    await productStore.update(product.id, {status: nextStatus})
 
     const matchedProduct = displayProducts.value.find((item) => item.id === product.id)
     if (matchedProduct) {
@@ -152,11 +152,11 @@ const handleDelete = async (product) => {
 }
 
 const openDetail = (product) => {
-  router.push({ name: 'admin.products.show', params: { id: product.id } })
+  router.push({name: 'admin.products.show', params: {id: product.id}})
 }
 
 const openEdit = (product) => {
-  router.push({ name: 'admin.products.edit', params: { id: product.id } })
+  router.push({name: 'admin.products.edit', params: {id: product.id}})
 }
 
 onMounted(async () => {
@@ -171,7 +171,8 @@ onMounted(async () => {
         <p class="eyebrow">Quản lý sản phẩm</p>
         <h1>Danh sách sản phẩm</h1>
         <p class="subtitle">
-          Quản lý toàn bộ sản phẩm trong hệ thống, theo dõi trạng thái, phân loại và cập nhật nhanh ngay trên một màn hình.
+          Quản lý toàn bộ sản phẩm trong hệ thống, theo dõi trạng thái, phân loại và cập nhật nhanh ngay trên một màn
+          hình.
         </p>
 
         <div class="hero-actions">
@@ -233,7 +234,7 @@ onMounted(async () => {
     <section class="toolbar-card">
       <div class="search-box">
         <i class="bi bi-search"></i>
-        <input v-model.trim="search" type="search" placeholder="Tìm theo tên, slug, thương hiệu, danh mục..." />
+        <input v-model.trim="search" type="search" placeholder="Tìm theo tên, slug, thương hiệu, danh mục..."/>
       </div>
 
       <div class="filter-row">
@@ -244,7 +245,7 @@ onMounted(async () => {
         </select>
 
         <select v-model="selectedFeatured" class="filter-select">
-          <option value="">Tất cả</option>
+          <option value="">Tất cả sản phẩm</option>
           <option value="featured">Sản phẩm nổi bật</option>
           <option value="normal">Sản phẩm thường</option>
         </select>
@@ -296,93 +297,93 @@ onMounted(async () => {
       <div class="table-responsive">
         <table class="table align-middle admin-table mb-0">
           <thead>
-            <tr>
-              <th>Sản phẩm</th>
-              <th>Thương hiệu</th>
-              <th>Danh mục</th>
-              <th>Trạng thái</th>
-              <th>Nổi bật</th>
-              <th>Cập nhật</th>
-              <th class="text-end">Thao tác</th>
-            </tr>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Thương hiệu</th>
+            <th>Danh mục</th>
+            <th>Trạng thái</th>
+            <th>Nổi bật</th>
+            <th>Cập nhật</th>
+            <th>Thao tác</th>
+          </tr>
           </thead>
 
           <tbody>
-            <tr v-for="product in filteredProducts" :key="product.id">
-              <td>
-                <div class="product-cell">
-                  <div class="product-thumb">
-                    <img
+          <tr v-for="product in filteredProducts" :key="product.id">
+            <td>
+              <div class="product-cell">
+                <div class="product-thumb">
+                  <img
                       :src="product.thumbnail_url || '/images/default-product.png'"
                       :alt="product.name"
-                    />
-                  </div>
-                  <div class="product-meta">
-                    <strong>{{ product.name }}</strong>
-                    <span>{{ product.slug }}</span>
-                  </div>
+                  />
                 </div>
-              </td>
-              <td>
-                <div class="info-stack">
-                  <strong>{{ product.brand?.name || 'Chưa có' }}</strong>
-                  <span>{{ product.brand?.slug || ' ' }}</span>
+                <div class="product-meta">
+                  <strong>{{ product.name }}</strong>
+                  <span>{{ product.slug }}</span>
                 </div>
-              </td>
-              <td>
-                <div class="info-stack">
-                  <strong>{{ product.category?.name || 'Chưa có' }}</strong>
-                  <span>{{ product.category?.slug || ' ' }}</span>
-                </div>
-              </td>
-              <td>
-                <button
+              </div>
+            </td>
+            <td>
+              <div class="info-stack">
+                <strong>{{ product.brand?.name || 'Chưa có' }}</strong>
+                <span>{{ product.brand?.slug || ' ' }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="info-stack">
+                <strong>{{ product.category?.name || 'Chưa có' }}</strong>
+                <span>{{ product.category?.slug || ' ' }}</span>
+              </div>
+            </td>
+            <td>
+              <button
                   type="button"
                   class="status-pill"
                   :class="product.status === 'active' ? 'is-active' : 'is-inactive'"
                   @click="handleToggleStatus(product)"
                   :title="product.status === 'active' ? 'Hoạt động' : 'Tạm ẩn'"
                   :aria-label="product.status === 'active' ? 'Hoạt động' : 'Tạm ẩn'"
-                >
-                  <i :class="product.status === 'active' ? 'bi bi-toggle-on' : 'bi bi-toggle-off'"></i>
-                </button>
-              </td>
-              <td>
+              >
+                <i :class="product.status === 'active' ? 'bi bi-toggle-on' : 'bi bi-toggle-off'"></i>
+              </button>
+            </td>
+            <td>
                 <span class="featured-pill" :class="{ active: product.is_featured }">
                   {{ product.is_featured ? 'Nổi bật' : 'Thường' }}
                 </span>
-              </td>
-              <td>{{ formatDate(product.updated_at || product.created_at) }}</td>
-              <td>
-                <div class="action-group">
-                  <button type="button" class="action-btn action-view" title="Xem chi tiết" @click="openDetail(product)">
-                    <i class="bi bi-eye"></i>
-                  </button>
-                  <button type="button" class="action-btn action-edit" title="Chỉnh sửa" @click="openEdit(product)">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button
+            </td>
+            <td>{{ formatDate(product.updated_at || product.created_at) }}</td>
+            <td>
+              <div class="action-group">
+                <button type="button" class="action-btn action-view" title="Xem chi tiết" @click="openDetail(product)">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button type="button" class="action-btn action-edit" title="Chỉnh sửa" @click="openEdit(product)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button
                     type="button"
                     class="action-btn action-delete"
                     title="Xóa"
                     :disabled="deletingId === product.id"
                     @click="handleDelete(product)"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
+                >
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
 
-            <tr v-if="!filteredProducts.length">
-              <td colspan="7">
-                <div class="empty-state">
-                  <i class="bi bi-box"></i>
-                  <p>Không có sản phẩm phù hợp với bộ lọc hiện tại.</p>
-                  <button type="button" class="secondary-action" @click="resetFilters">Xóa bộ lọc</button>
-                </div>
-              </td>
-            </tr>
+          <tr v-if="!filteredProducts.length">
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="bi bi-box"></i>
+                <p>Không có sản phẩm phù hợp với bộ lọc hiện tại.</p>
+                <button type="button" class="secondary-action" @click="resetFilters">Xóa bộ lọc</button>
+              </div>
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -409,9 +410,8 @@ onMounted(async () => {
 
 .hero-card {
   padding: 24px;
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 30%),
-    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.16), transparent 30%),
+  linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.9fr);
   gap: 18px;
@@ -565,7 +565,11 @@ onMounted(async () => {
   width: 100%;
   border: none;
   outline: none;
+  background: transparent;
+  color: #0f172a;
   font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .filter-row {
@@ -575,13 +579,23 @@ onMounted(async () => {
 }
 
 .filter-select {
-  min-height: 44px;
-  padding: 0 14px;
+  min-height: 46px;
+  padding: 0 42px 0 16px;
   border: 1px solid #dbe3ef;
-  border-radius: 12px;
-  background: #ffffff;
+  border-radius: 999px;
+  background-color: #ffffff;
+  background-image: url("data:image/svg+xml,%3Csvg width='14' height='14' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 7.5L10 12L14.5 7.5' stroke='%230f172a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 14px 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   color: #0f172a;
   font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   outline: none;
 }
 
@@ -640,6 +654,7 @@ onMounted(async () => {
   gap: 8px;
   font-size: 13px;
   font-weight: 800;
+  white-space: nowrap;
 }
 
 .inline-alert {
@@ -783,7 +798,7 @@ onMounted(async () => {
 
 .action-group {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
 }
 

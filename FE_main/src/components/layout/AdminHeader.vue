@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import {computed, onMounted} from 'vue'
 import {useRouter} from 'vue-router'
 import {useAuthStore} from '@/stores/authStore.js'
-import { useDashboardStore } from '@/stores/dashboardStore'
+import {useDashboardStore} from '@/stores/dashboardStore'
 
 const emit = defineEmits(['open-sidebar'])
 
@@ -46,16 +46,16 @@ const formatTime = (value) => {
 
 const pendingOrders = computed(() => {
   return dashboardStore.orders
-    .filter((order) => order.order_status === 'pending')
-    .slice(0, 5)
-    .map((order) => ({
-      orderId: order.id,
-      id: order.order_code || `#${order.id}`,
-      title: 'Đơn hàng mới cần xác nhận',
-      description: `${order.receiver_name || order.user?.name || 'Khách hàng'} · ${formatMoney(order.total_amount)} đ`,
-      time: formatTime(order.ordered_at || order.created_at),
-      actionLabel: 'Xác nhận ngay',
-    }))
+      .filter((order) => order.order_status === 'pending')
+      .slice(0, 5)
+      .map((order) => ({
+        orderId: order.id,
+        id: order.order_code || `#${order.id}`,
+        title: 'Đơn hàng mới cần xác nhận',
+        description: `${order.receiver_name || order.user?.name || 'Khách hàng'} · ${formatMoney(order.total_amount)} đ`,
+        time: formatTime(order.ordered_at || order.created_at),
+        actionLabel: 'Xác nhận ngay',
+      }))
 })
 
 const notifications = computed(() => {
@@ -100,7 +100,8 @@ const handleLogout = async () => {
 
     <div class="header-right">
       <div class="dropdown notification-dropdown">
-        <button class="notification-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Thông báo">
+        <button class="notification-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                aria-label="Thông báo">
           <i class="bi bi-bell"></i>
           <span v-if="notificationCount">{{ notificationCount }}</span>
         </button>

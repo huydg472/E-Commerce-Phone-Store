@@ -1,9 +1,9 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useOrderStore } from '@/stores/orderStore'
-import { formatCurrency } from '@/utils/formatCurrency'
-import { formatDate } from '@/utils/formatDate'
+import {computed, onMounted, ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {useOrderStore} from '@/stores/orderStore'
+import {formatCurrency} from '@/utils/formatCurrency'
+import {formatDate} from '@/utils/formatDate'
 
 const router = useRouter()
 const orderStore = useOrderStore()
@@ -14,11 +14,11 @@ const pageLoading = ref(true)
 const errorMessage = ref('')
 
 const statusMap = {
-  pending: { label: 'Chờ xác nhận', className: 'pending' },
-  confirmed: { label: 'Đã xác nhận', className: 'confirmed' },
-  shipping: { label: 'Đang giao', className: 'shipping' },
-  completed: { label: 'Hoàn thành', className: 'completed' },
-  cancelled: { label: 'Đã hủy', className: 'cancelled' },
+  pending: {label: 'Chờ xác nhận', className: 'pending'},
+  confirmed: {label: 'Đã xác nhận', className: 'confirmed'},
+  shipping: {label: 'Đang giao', className: 'shipping'},
+  completed: {label: 'Hoàn thành', className: 'completed'},
+  cancelled: {label: 'Đã hủy', className: 'cancelled'},
 }
 
 const orders = computed(() => {
@@ -91,11 +91,11 @@ const orderSummary = computed(() => [
 ])
 
 const orderTabs = [
-  { key: 'all', label: 'Tất cả' },
-  { key: 'pending', label: 'Chờ xác nhận' },
-  { key: 'shipping', label: 'Đang giao' },
-  { key: 'completed', label: 'Hoàn thành' },
-  { key: 'cancelled', label: 'Đã hủy' },
+  {key: 'all', label: 'Tất cả'},
+  {key: 'pending', label: 'Chờ xác nhận'},
+  {key: 'shipping', label: 'Đang giao'},
+  {key: 'completed', label: 'Hoàn thành'},
+  {key: 'cancelled', label: 'Đã hủy'},
 ]
 
 const loadOrders = async () => {
@@ -106,7 +106,7 @@ const loadOrders = async () => {
     await orderStore.fetchAll()
   } catch (error) {
     if (error.response?.status === 401) {
-      await router.replace({ name: 'login' })
+      await router.replace({name: 'login'})
       return
     }
 
@@ -117,7 +117,7 @@ const loadOrders = async () => {
 }
 
 const handleViewDetail = (order) => {
-  router.push({ name: 'orders.show', params: { id: order.id } })
+  router.push({name: 'orders.show', params: {id: order.id}})
 }
 
 onMounted(loadOrders)
@@ -237,7 +237,7 @@ onMounted(loadOrders)
 
               <div class="order-card-body">
                 <div class="product-info">
-                  <img :src="order.product.image" :alt="order.product.name" />
+                  <img :src="order.product.image" :alt="order.product.name"/>
 
                   <div class="product-text">
                     <h3>{{ order.product.name }}</h3>
@@ -256,7 +256,8 @@ onMounted(loadOrders)
                     Xem chi tiết
                   </button>
 
-                  <button v-if="order.status === 'pending'" type="button" class="action-btn primary-btn" @click="handleViewDetail(order)">
+                  <button v-if="order.status === 'pending'" type="button" class="action-btn primary-btn"
+                          @click="handleViewDetail(order)">
                     Xem đơn chờ thanh toán
                   </button>
 

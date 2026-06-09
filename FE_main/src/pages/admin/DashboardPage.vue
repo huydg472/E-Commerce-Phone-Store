@@ -1,40 +1,40 @@
 <script setup>
-import { computed, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
-import { useDashboardStore } from '@/stores/dashboardStore'
+import {computed, onMounted} from 'vue'
+import {storeToRefs} from 'pinia'
+import {useRouter} from 'vue-router'
+import {useDashboardStore} from '@/stores/dashboardStore'
 
 const router = useRouter()
 const dashboardStore = useDashboardStore()
-const { loading, error, lastUpdated } = storeToRefs(dashboardStore)
+const {loading, error, lastUpdated} = storeToRefs(dashboardStore)
 
 const numberFormatter = new Intl.NumberFormat('vi-VN')
 const revenueFormatter = new Intl.NumberFormat('vi-VN', {
-    maximumFractionDigits: 0,
+  maximumFractionDigits: 0,
 })
 
 const paymentMethodMap = {
-    cod: 'COD',
-    bank_transfer: 'Chuyển khoản',
-    vnpay: 'VNPAY',
-    momo: 'MoMo',
+  cod: 'COD',
+  bank_transfer: 'Chuyển khoản',
+  vnpay: 'VNPAY',
+  momo: 'MoMo',
 }
 
 const orderStatusMap = {
-    pending: 'Chờ xác nhận',
-    confirmed: 'Đã xác nhận',
-    processing: 'Đang xử lý',
-    shipping: 'Đang giao',
-    completed: 'Hoàn thành',
-    cancelled: 'Đã hủy',
+  pending: 'Chờ xác nhận',
+  confirmed: 'Đã xác nhận',
+  processing: 'Đang xử lý',
+  shipping: 'Đang giao',
+  completed: 'Hoàn thành',
+  cancelled: 'Đã hủy',
 }
 
 const paymentStatusMap = {
-    pending: 'Chưa thanh toán',
-    paid: 'Đã thanh toán',
-    failed: 'Thất bại',
-    cancelled: 'Đã hủy',
-    refunded: 'Hoàn tiền',
+  pending: 'Chưa thanh toán',
+  paid: 'Đã thanh toán',
+  failed: 'Thất bại',
+  cancelled: 'Đã hủy',
+  refunded: 'Hoàn tiền',
 }
 
 const formatNumber = (value) => numberFormatter.format(Math.round(Number(value) || 0))
@@ -42,17 +42,17 @@ const formatNumber = (value) => numberFormatter.format(Math.round(Number(value) 
 const formatCurrency = (value) => `${revenueFormatter.format(Math.round(Number(value) || 0))} đ`
 
 const formatDateTime = (value) => {
-    if (!value) {
-        return 'Vừa xong'
-    }
+  if (!value) {
+    return 'Vừa xong'
+  }
 
-    return new Intl.DateTimeFormat('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit',
-        day: '2-digit',
-        month: '2-digit',
-        year: '2-digit',
-    }).format(new Date(value))
+  return new Intl.DateTimeFormat('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+  }).format(new Date(value))
 }
 
 const formatMethod = (value) => paymentMethodMap[value] || value || 'Không rõ'
@@ -62,189 +62,189 @@ const formatOrderStatus = (value) => orderStatusMap[value] || value || 'Không r
 const formatPaymentStatus = (value) => paymentStatusMap[value] || value || 'Không rõ'
 
 const monthBuckets = (orders) => {
-    const buckets = []
-    const now = new Date()
+  const buckets = []
+  const now = new Date()
 
-    for (let index = 5; index >= 0; index -= 1) {
-        const date = new Date(now.getFullYear(), now.getMonth() - index, 1)
+  for (let index = 5; index >= 0; index -= 1) {
+    const date = new Date(now.getFullYear(), now.getMonth() - index, 1)
 
-        buckets.push({
-            key: `${date.getFullYear()}-${date.getMonth()}`,
-            label: `T${date.getMonth() + 1}`,
-            total: 0,
-        })
+    buckets.push({
+      key: `${date.getFullYear()}-${date.getMonth()}`,
+      label: `T${date.getMonth() + 1}`,
+      total: 0,
+    })
+  }
+
+  orders.forEach((order) => {
+    const sourceDate = order.ordered_at || order.completed_at || order.created_at
+
+    if (!sourceDate) {
+      return
     }
 
-    orders.forEach((order) => {
-        const sourceDate = order.ordered_at || order.completed_at || order.created_at
+    const date = new Date(sourceDate)
+    const bucket = buckets.find((item) => item.key === `${date.getFullYear()}-${date.getMonth()}`)
 
-        if (!sourceDate) {
-            return
-        }
+    if (bucket) {
+      bucket.total += Number(order.total_amount || 0)
+    }
+  })
 
-        const date = new Date(sourceDate)
-        const bucket = buckets.find((item) => item.key === `${date.getFullYear()}-${date.getMonth()}`)
+  const maxTotal = Math.max(...buckets.map((item) => item.total), 1)
 
-        if (bucket) {
-            bucket.total += Number(order.total_amount || 0)
-        }
-    })
-
-    const maxTotal = Math.max(...buckets.map((item) => item.total), 1)
-
-    return buckets.map((item) => ({
-        ...item,
-        height: Math.max(16, Math.round((item.total / maxTotal) * 100)),
-        amount: formatCurrency(item.total),
-    }))
+  return buckets.map((item) => ({
+    ...item,
+    height: Math.max(16, Math.round((item.total / maxTotal) * 100)),
+    amount: formatCurrency(item.total),
+  }))
 }
 
 const topProducts = computed(() => {
-    const productMap = new Map()
+  const productMap = new Map()
 
-    dashboardStore.orders.forEach((order) => {
-        const orderItems = Array.isArray(order?.orderItems)
-            ? order.orderItems
-            : Array.isArray(order?.order_items)
-                ? order.order_items
-                : []
+  dashboardStore.orders.forEach((order) => {
+    const orderItems = Array.isArray(order?.orderItems)
+        ? order.orderItems
+        : Array.isArray(order?.order_items)
+            ? order.order_items
+            : []
 
-        orderItems.forEach((item) => {
-            const variant = item.productVariant || item.product_variant || {}
-            const product = variant.product || variant.product || {}
-            const key = variant.id || item.product_variant_id || `${item.product_name}-${item.variant_name}`
-            const current = productMap.get(key) || {
-                name: product.name || item.product_name || 'Sản phẩm',
-                variant: item.variant_name || variant.name || 'Biến thể',
-                sold: 0,
-                revenue: 0,
-            }
+    orderItems.forEach((item) => {
+      const variant = item.productVariant || item.product_variant || {}
+      const product = variant.product || variant.product || {}
+      const key = variant.id || item.product_variant_id || `${item.product_name}-${item.variant_name}`
+      const current = productMap.get(key) || {
+        name: product.name || item.product_name || 'Sản phẩm',
+        variant: item.variant_name || variant.name || 'Biến thể',
+        sold: 0,
+        revenue: 0,
+      }
 
-            current.sold += Number(item.quantity || 0)
-            current.revenue += Number(item.total_price || 0)
-            productMap.set(key, current)
-        })
+      current.sold += Number(item.quantity || 0)
+      current.revenue += Number(item.total_price || 0)
+      productMap.set(key, current)
     })
+  })
 
-    const items = [...productMap.values()]
-        .sort((left, right) => right.revenue - left.revenue)
-        .slice(0, 4)
+  const items = [...productMap.values()]
+      .sort((left, right) => right.revenue - left.revenue)
+      .slice(0, 4)
 
-    const maxRevenue = Math.max(...items.map((item) => item.revenue), 1)
+  const maxRevenue = Math.max(...items.map((item) => item.revenue), 1)
 
-    return items.map((item) => ({
-        ...item,
-        percent: Math.max(18, Math.round((item.revenue / maxRevenue) * 100)),
-    }))
+  return items.map((item) => ({
+    ...item,
+    percent: Math.max(18, Math.round((item.revenue / maxRevenue) * 100)),
+  }))
 })
 
 const recentOrders = computed(() => {
-    return dashboardStore.orders.slice(0, 5).map((order) => ({
-        id: order.order_code || `#${order.id}`,
-        customer: order.receiver_name || order.user?.name || 'Khách hàng',
-        total: formatCurrency(order.total_amount),
-        statusKey: order.order_status || 'pending',
-        status: formatOrderStatus(order.order_status),
-        paymentStatusKey: order.payment?.payment_status || order.payment_status || 'pending',
-        paymentStatus: formatPaymentStatus(order.payment?.payment_status || order.payment_status),
-        paymentMethod: formatMethod(order.payment?.payment_method || order.payment_method),
-        time: formatDateTime(order.ordered_at || order.created_at),
-    }))
+  return dashboardStore.orders.slice(0, 5).map((order) => ({
+    id: order.order_code || `#${order.id}`,
+    customer: order.receiver_name || order.user?.name || 'Khách hàng',
+    total: formatCurrency(order.total_amount),
+    statusKey: order.order_status || 'pending',
+    status: formatOrderStatus(order.order_status),
+    paymentStatusKey: order.payment?.payment_status || order.payment_status || 'pending',
+    paymentStatus: formatPaymentStatus(order.payment?.payment_status || order.payment_status),
+    paymentMethod: formatMethod(order.payment?.payment_method || order.payment_method),
+    time: formatDateTime(order.ordered_at || order.created_at),
+  }))
 })
 
 const revenueSeries = computed(() => monthBuckets(dashboardStore.orders))
 
 const activities = computed(() => {
-    const items = []
+  const items = []
 
-    const latestOrder = dashboardStore.orders[0]
-    if (latestOrder) {
-        items.push({
-            icon: 'bi bi-bag-check',
-            title: `Đơn hàng ${latestOrder.order_code || `#${latestOrder.id}`}`,
-            detail: `${latestOrder.receiver_name || latestOrder.user?.name || 'Khách hàng'} · ${formatCurrency(latestOrder.total_amount)}`,
-            time: formatDateTime(latestOrder.ordered_at || latestOrder.created_at),
-            tone: 'blue',
-        })
-    }
+  const latestOrder = dashboardStore.orders[0]
+  if (latestOrder) {
+    items.push({
+      icon: 'bi bi-bag-check',
+      title: `Đơn hàng ${latestOrder.order_code || `#${latestOrder.id}`}`,
+      detail: `${latestOrder.receiver_name || latestOrder.user?.name || 'Khách hàng'} · ${formatCurrency(latestOrder.total_amount)}`,
+      time: formatDateTime(latestOrder.ordered_at || latestOrder.created_at),
+      tone: 'blue',
+    })
+  }
 
-    const latestPayment = dashboardStore.payments[0]
-    if (latestPayment) {
-        items.push({
-            icon: 'bi bi-credit-card',
-            title: `Thanh toán ${formatPaymentStatus(latestPayment.payment_status)}`,
-            detail: `${formatMethod(latestPayment.payment_method)} · ${formatCurrency(latestPayment.amount)}`,
-            time: formatDateTime(latestPayment.created_at),
-            tone: 'orange',
-        })
-    }
+  const latestPayment = dashboardStore.payments[0]
+  if (latestPayment) {
+    items.push({
+      icon: 'bi bi-credit-card',
+      title: `Thanh toán ${formatPaymentStatus(latestPayment.payment_status)}`,
+      detail: `${formatMethod(latestPayment.payment_method)} · ${formatCurrency(latestPayment.amount)}`,
+      time: formatDateTime(latestPayment.created_at),
+      tone: 'orange',
+    })
+  }
 
-    const latestProduct = dashboardStore.latestProducts[0]
-    if (latestProduct) {
-        items.push({
-            icon: 'bi bi-phone',
-            title: `Sản phẩm ${latestProduct.name}`,
-            detail: `${latestProduct.brand?.name || 'Chưa có thương hiệu'} · ${latestProduct.category?.name || 'Chưa có danh mục'}`,
-            time: formatDateTime(latestProduct.updated_at || latestProduct.created_at),
-            tone: 'green',
-        })
-    }
+  const latestProduct = dashboardStore.latestProducts[0]
+  if (latestProduct) {
+    items.push({
+      icon: 'bi bi-phone',
+      title: `Sản phẩm ${latestProduct.name}`,
+      detail: `${latestProduct.brand?.name || 'Chưa có thương hiệu'} · ${latestProduct.category?.name || 'Chưa có danh mục'}`,
+      time: formatDateTime(latestProduct.updated_at || latestProduct.created_at),
+      tone: 'green',
+    })
+  }
 
-    const latestBrand = dashboardStore.brands[0]
-    if (latestBrand) {
-        items.push({
-            icon: 'bi bi-award',
-            title: `Thương hiệu ${latestBrand.name}`,
-            detail: latestBrand.status === 'active' ? 'Đang hoạt động' : 'Tạm ẩn',
-            time: formatDateTime(latestBrand.updated_at || latestBrand.created_at),
-            tone: 'slate',
-        })
-    }
+  const latestBrand = dashboardStore.brands[0]
+  if (latestBrand) {
+    items.push({
+      icon: 'bi bi-award',
+      title: `Thương hiệu ${latestBrand.name}`,
+      detail: latestBrand.status === 'active' ? 'Đang hoạt động' : 'Tạm ẩn',
+      time: formatDateTime(latestBrand.updated_at || latestBrand.created_at),
+      tone: 'slate',
+    })
+  }
 
-    return items
+  return items
 })
 
 const stats = computed(() => [
-    {
-        title: 'Tổng doanh thu',
-        value: formatCurrency(dashboardStore.revenue),
-        icon: 'bi bi-cash-stack',
-        tone: 'blue',
-        desc: `${formatNumber(dashboardStore.completedOrders)} đơn hoàn tất`,
-    },
-    {
-        title: 'Tổng đơn hàng',
-        value: formatNumber(dashboardStore.totalOrders),
-        icon: 'bi bi-receipt',
-        tone: 'orange',
-        desc: `${formatNumber(dashboardStore.pendingOrders)} đơn chờ xác nhận`,
-    },
-    {
-        title: 'Sản phẩm hoạt động',
-        value: formatNumber(dashboardStore.activeProducts),
-        icon: 'bi bi-box-seam',
-        tone: 'green',
-        desc: `${formatNumber(dashboardStore.featuredProducts)} sản phẩm nổi bật`,
-    },
-    {
-        title: 'Người dùng',
-        value: formatNumber(dashboardStore.totalUsers),
-        icon: 'bi bi-people',
-        tone: 'slate',
-        desc: `${formatNumber(dashboardStore.totalBrands)} thương hiệu, ${formatNumber(dashboardStore.totalCategories)} danh mục`,
-    },
+  {
+    title: 'Tổng doanh thu',
+    value: formatCurrency(dashboardStore.revenue),
+    icon: 'bi bi-cash-stack',
+    tone: 'blue',
+    desc: `${formatNumber(dashboardStore.completedOrders)} đơn hoàn tất`,
+  },
+  {
+    title: 'Tổng đơn hàng',
+    value: formatNumber(dashboardStore.totalOrders),
+    icon: 'bi bi-receipt',
+    tone: 'orange',
+    desc: `${formatNumber(dashboardStore.pendingOrders)} đơn chờ xác nhận`,
+  },
+  {
+    title: 'Sản phẩm hoạt động',
+    value: formatNumber(dashboardStore.activeProducts),
+    icon: 'bi bi-box-seam',
+    tone: 'green',
+    desc: `${formatNumber(dashboardStore.featuredProducts)} sản phẩm nổi bật`,
+  },
+  {
+    title: 'Người dùng',
+    value: formatNumber(dashboardStore.totalUsers),
+    icon: 'bi bi-people',
+    tone: 'slate',
+    desc: `${formatNumber(dashboardStore.totalBrands)} thương hiệu, ${formatNumber(dashboardStore.totalCategories)} danh mục`,
+  },
 ])
 
 const refreshDashboard = () => {
-    dashboardStore.fetchDashboard()
+  dashboardStore.fetchDashboard()
 }
 
 const goToOrders = () => {
-    router.push({ name: 'admin.orders.index' })
+  router.push({name: 'admin.orders.index'})
 }
 
 onMounted(() => {
-    dashboardStore.fetchDashboard()
+  dashboardStore.fetchDashboard()
 })
 </script>
 
@@ -255,7 +255,8 @@ onMounted(() => {
         <p class="eyebrow">TỔNG QUAN QUẢN TRỊ</p>
         <h1>Dashboard dữ liệu thật</h1>
         <p class="hero-description">
-          Toàn bộ số liệu được tổng hợp trực tiếp từ sản phẩm, đơn hàng, thanh toán, thương hiệu và người dùng trong hệ thống.
+          Toàn bộ số liệu được tổng hợp trực tiếp từ sản phẩm, đơn hàng, thanh toán, thương hiệu và người dùng trong hệ
+          thống.
         </p>
 
         <p v-if="lastUpdated" class="hero-updated">
@@ -401,7 +402,8 @@ onMounted(() => {
             </div>
 
             <div class="order-meta">
-              <span class="status-badge" :class="`status-${order.paymentStatus === 'Đã thanh toán' ? 'success' : 'warning'}`">
+              <span class="status-badge"
+                    :class="`status-${order.paymentStatus === 'Đã thanh toán' ? 'success' : 'warning'}`">
                 {{ order.paymentStatus }}
               </span>
 
@@ -435,9 +437,8 @@ onMounted(() => {
   padding: 24px;
   border: 1px solid #e5eaf3;
   border-radius: 20px;
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 34%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 248, 255, 0.92));
+  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 34%),
+  linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(243, 248, 255, 0.92));
   box-shadow: 0 14px 36px rgba(37, 99, 235, 0.08);
   display: grid;
   grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.95fr);

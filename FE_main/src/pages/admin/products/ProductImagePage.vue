@@ -1,20 +1,21 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { useProductStore } from '@/stores/productStore.js'
-import { useProductVariantStore } from '@/stores/productVariantStore.js'
-import { useProductImageStore } from '@/stores/productImageStore.js'
-import { formatDate } from '@/utils/formatDate.js'
+import {computed, onMounted, reactive, ref, watch} from 'vue'
+import {useRoute} from 'vue-router'
+import {storeToRefs} from 'pinia'
+import {useProductStore} from '@/stores/productStore.js'
+import {useProductVariantStore} from '@/stores/productVariantStore.js'
+import {useProductImageStore} from '@/stores/productImageStore.js'
+import {formatDate} from '@/utils/formatDate.js'
+import ProductImageUpload from '@/components/product/ProductImageUpload.vue'
 
 const route = useRoute()
 const productStore = useProductStore()
 const variantStore = useProductVariantStore()
 const imageStore = useProductImageStore()
 
-const { item: product, loading: productLoading } = storeToRefs(productStore)
-const { items: variants } = storeToRefs(variantStore)
-const { items: images, loading: imageLoading } = storeToRefs(imageStore)
+const {item: product, loading: productLoading} = storeToRefs(productStore)
+const {items: variants} = storeToRefs(variantStore)
+const {items: images, loading: imageLoading} = storeToRefs(imageStore)
 
 const loadingError = ref('')
 const formError = ref('')
@@ -30,8 +31,8 @@ const isActiveTab = (name) => route.name === name
 const currentVariants = computed(() => {
   const list = Array.isArray(variants.value) ? variants.value : []
   return list
-    .filter((variant) => String(variant?.product_id) === String(productId.value))
-    .sort((left, right) => Number(left?.id ?? 0) - Number(right?.id ?? 0))
+      .filter((variant) => String(variant?.product_id) === String(productId.value))
+      .sort((left, right) => Number(left?.id ?? 0) - Number(right?.id ?? 0))
 })
 
 const currentVariant = computed(() => {
@@ -41,8 +42,8 @@ const currentVariant = computed(() => {
 const filteredImages = computed(() => {
   const list = Array.isArray(images.value) ? images.value : []
   return list
-    .filter((image) => String(image?.product_variant_id ?? image?.productVariant?.id) === String(selectedVariantId.value))
-    .sort((left, right) => Number(left?.sort_order ?? 0) - Number(right?.sort_order ?? 0))
+      .filter((image) => String(image?.product_variant_id ?? image?.productVariant?.id) === String(selectedVariantId.value))
+      .sort((left, right) => Number(left?.sort_order ?? 0) - Number(right?.sort_order ?? 0))
 })
 
 const summary = computed(() => {
@@ -108,7 +109,7 @@ watch(currentVariants, (nextVariants) => {
   if (!selectedVariantId.value || !nextVariants.some((variant) => String(variant.id) === String(selectedVariantId.value))) {
     selectedVariantId.value = String(nextVariants[0].id)
   }
-}, { immediate: true })
+}, {immediate: true})
 
 watch(selectedVariantId, () => {
   if (!selectedVariantId.value) {
@@ -116,7 +117,7 @@ watch(selectedVariantId, () => {
   }
 
   form.product_variant_id = String(selectedVariantId.value)
-}, { immediate: true })
+}, {immediate: true})
 
 const openCreateModal = () => {
   if (!selectedVariantId.value) {
@@ -227,10 +228,18 @@ onMounted(loadData)
     </section>
 
     <section class="page-tabs">
-      <RouterLink :to="{ name: 'admin.products.show', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.show') }">Thông tin</RouterLink>
-      <RouterLink :to="{ name: 'admin.products.variants', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.variants') }">Biến thể</RouterLink>
-      <RouterLink :to="{ name: 'admin.products.specifications', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.specifications') }">Thông số</RouterLink>
-      <RouterLink :to="{ name: 'admin.products.images', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.images') }">Hình ảnh</RouterLink>
+      <RouterLink :to="{ name: 'admin.products.show', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.show') }">Thông tin
+      </RouterLink>
+      <RouterLink :to="{ name: 'admin.products.variants', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.variants') }">Biến thể
+      </RouterLink>
+      <RouterLink :to="{ name: 'admin.products.specifications', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.specifications') }">Thông số
+      </RouterLink>
+      <RouterLink :to="{ name: 'admin.products.images', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.images') }">Hình ảnh
+      </RouterLink>
     </section>
 
     <section v-if="loadingError && !currentVariants.length" class="notice-card error">
@@ -299,74 +308,87 @@ onMounted(loadData)
         <div class="table-responsive">
           <table class="table align-middle admin-table mb-0">
             <thead>
-              <tr>
-                <th>Ảnh</th>
-                <th>Mô tả</th>
-                <th>Thứ tự</th>
-                <th>Cập nhật</th>
-                <th class="text-end">Thao tác</th>
-              </tr>
+            <tr>
+              <th>Ảnh</th>
+              <th>Mô tả</th>
+              <th>Thứ tự</th>
+              <th>Cập nhật</th>
+              <th class="text-end">Thao tác</th>
+            </tr>
             </thead>
             <tbody>
-              <tr v-for="image in filteredImages" :key="image.id">
-                <td>
-                  <div class="image-thumb">
-                    <img :src="image.image_url" :alt="image.alt_text || 'Ảnh biến thể'" />
-                  </div>
-                </td>
-                <td>
-                  <div class="image-meta">
-                    <strong>{{ image.alt_text || 'Không có mô tả' }}</strong>
-                    <span>{{ image.image_url }}</span>
-                  </div>
-                </td>
-                <td>
-                  <span class="order-pill">{{ image.sort_order ?? 0 }}</span>
-                </td>
-                <td>{{ formatDate(image.updated_at || image.created_at) }}</td>
-                <td>
-                  <div class="action-group">
-                    <button type="button" class="action-btn action-edit" title="Chỉnh sửa" @click="openEditModal(image)">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button
+            <tr v-for="image in filteredImages" :key="image.id">
+              <td>
+                <div class="image-thumb">
+                  <img :src="image.image_url" :alt="image.alt_text || 'Ảnh biến thể'"/>
+                </div>
+              </td>
+              <td>
+                <div class="image-meta">
+                  <strong>{{ image.alt_text || 'Không có mô tả' }}</strong>
+                  <span>{{ image.image_url }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="order-pill">{{ image.sort_order ?? 0 }}</span>
+              </td>
+              <td>{{ formatDate(image.updated_at || image.created_at) }}</td>
+              <td>
+                <div class="action-group">
+                  <button type="button" class="action-btn action-edit" title="Chỉnh sửa" @click="openEditModal(image)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button
                       type="button"
                       class="action-btn action-delete"
                       title="Xóa"
                       :disabled="deletingId === image.id"
                       @click="handleDelete(image)"
-                    >
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
 
-              <tr v-if="!selectedVariantId">
-                <td colspan="5">
-                  <div class="empty-state">
-                    <i class="bi bi-arrow-down-circle"></i>
-                    <p>Hãy chọn một biến thể để xem và quản lý ảnh.</p>
-                  </div>
-                </td>
-              </tr>
+            <tr v-if="!selectedVariantId">
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="bi bi-arrow-down-circle"></i>
+                  <p>Hãy chọn một biến thể để xem và quản lý ảnh.</p>
+                </div>
+              </td>
+            </tr>
 
-              <tr v-else-if="!filteredImages.length">
-                <td colspan="5">
-                  <div class="empty-state">
-                    <i class="bi bi-images"></i>
-                    <p>Biến thể này chưa có ảnh nào.</p>
-                    <button type="button" class="secondary-action" @click="openCreateModal">Thêm ảnh</button>
-                  </div>
-                </td>
-              </tr>
+            <tr v-else-if="!filteredImages.length">
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="bi bi-images"></i>
+                  <p>Biến thể này chưa có ảnh nào.</p>
+                  <button type="button" class="secondary-action" @click="openCreateModal">Thêm ảnh</button>
+                </div>
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
       </section>
     </template>
 
-    <Teleport to="body">
+    <ProductImageUpload
+      :visible="showModal"
+      :title="editingImageId ? 'Chỉnh sửa ảnh' : 'Thêm ảnh'"
+      :product-name="product?.name || ''"
+      :form="form"
+      :variants="currentVariants"
+      :field-errors="fieldErrors"
+      :form-error="formError"
+      :saving="saving"
+      @close="closeModal"
+      @submit="handleSubmit"
+    />
+
+    <Teleport v-if="false" to="body">
       <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
         <div class="modal-card">
           <div class="modal-header">
@@ -384,30 +406,35 @@ onMounted(loadData)
           <form class="modal-form" @submit.prevent="handleSubmit">
             <div class="field">
               <label>Biến thể</label>
-              <select v-model="form.product_variant_id" class="control" :class="{ invalid: fieldErrors.product_variant_id }">
+              <select v-model="form.product_variant_id" class="control"
+                      :class="{ invalid: fieldErrors.product_variant_id }">
                 <option value="">-- Chọn biến thể --</option>
                 <option v-for="variant in currentVariants" :key="variant.id" :value="String(variant.id)">
                   {{ variant.color }} · {{ variant.storage }} · {{ variant.ram }}
                 </option>
               </select>
-              <small v-if="fieldErrors.product_variant_id" class="field-error">{{ fieldErrors.product_variant_id }}</small>
+              <small v-if="fieldErrors.product_variant_id" class="field-error">{{
+                  fieldErrors.product_variant_id
+                }}</small>
             </div>
 
             <div class="field">
               <label>Đường dẫn ảnh</label>
-              <input v-model="form.image_url" type="url" class="control" :class="{ invalid: fieldErrors.image_url }" placeholder="https://..." />
+              <input v-model="form.image_url" type="url" class="control" :class="{ invalid: fieldErrors.image_url }"
+                     placeholder="https://..."/>
               <small v-if="fieldErrors.image_url" class="field-error">{{ fieldErrors.image_url }}</small>
             </div>
 
             <div class="field">
               <label>Mô tả ảnh</label>
-              <input v-model="form.alt_text" type="text" class="control" :class="{ invalid: fieldErrors.alt_text }" />
+              <input v-model="form.alt_text" type="text" class="control" :class="{ invalid: fieldErrors.alt_text }"/>
               <small v-if="fieldErrors.alt_text" class="field-error">{{ fieldErrors.alt_text }}</small>
             </div>
 
             <div class="field">
               <label>Thứ tự hiển thị</label>
-              <input v-model="form.sort_order" type="number" min="0" class="control" :class="{ invalid: fieldErrors.sort_order }" />
+              <input v-model="form.sort_order" type="number" min="0" class="control"
+                     :class="{ invalid: fieldErrors.sort_order }"/>
               <small v-if="fieldErrors.sort_order" class="field-error">{{ fieldErrors.sort_order }}</small>
             </div>
 

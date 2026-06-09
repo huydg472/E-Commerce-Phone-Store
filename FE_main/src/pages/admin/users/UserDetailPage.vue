@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/userStore'
-import { formatDate } from '@/utils/formatDate'
+import {computed, onMounted, ref} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {useUserStore} from '@/stores/userStore'
+import {formatDate} from '@/utils/formatDate'
 
 const route = useRoute()
 const router = useRouter()

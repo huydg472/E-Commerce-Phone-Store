@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import {ref} from 'vue'
 import AdminHeader from '@/components/layout/AdminHeader.vue'
 import AdminSidebar from '@/components/layout/AdminSidebar.vue'
 
@@ -11,10 +11,10 @@ const sidebarOpen = ref(false)
     <AdminSidebar :is-open="sidebarOpen" @close="sidebarOpen = false"/>
 
     <div class="admin-main">
-      <AdminHeader @open-sidebar="sidebarOpen = true" />
+      <AdminHeader @open-sidebar="sidebarOpen = true"/>
 
       <main class="admin-content">
-        <RouterView />
+        <RouterView/>
       </main>
     </div>
   </div>

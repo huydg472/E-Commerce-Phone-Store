@@ -1,6 +1,6 @@
 import {defineStore} from 'pinia'
 import {orderService} from '@/services/orderService'
-import { useDashboardStore } from '@/stores/dashboardStore'
+import {useDashboardStore} from '@/stores/dashboardStore'
 
 export const useOrderStore = defineStore('order', {
     state: () => ({
@@ -53,10 +53,10 @@ export const useOrderStore = defineStore('order', {
                 const existing = this.item?.id === id
                     ? this.item
                     : this.items.find((item) => item.id === id) || null
-                const merged = existing ? { ...existing, ...updated, ...payload } : { ...updated, ...payload }
+                const merged = existing ? {...existing, ...updated, ...payload} : {...updated, ...payload}
 
                 this.item = merged
-                this.items = this.items.map((item) => (item.id === id ? { ...item, ...updated, ...payload } : item))
+                this.items = this.items.map((item) => (item.id === id ? {...item, ...updated, ...payload} : item))
                 useDashboardStore().upsertOrder(merged)
             }
             return response

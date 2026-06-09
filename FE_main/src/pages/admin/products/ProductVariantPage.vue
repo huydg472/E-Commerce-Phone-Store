@@ -1,17 +1,18 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute } from 'vue-router'
-import { storeToRefs } from 'pinia'
-import { useProductStore } from '@/stores/productStore.js'
-import { useProductVariantStore } from '@/stores/productVariantStore.js'
-import { formatCurrency } from '@/utils/formatCurrency.js'
-import { formatDate } from '@/utils/formatDate.js'
+import {computed, onMounted, reactive, ref} from 'vue'
+import {useRoute} from 'vue-router'
+import {storeToRefs} from 'pinia'
+import {useProductStore} from '@/stores/productStore.js'
+import {useProductVariantStore} from '@/stores/productVariantStore.js'
+import {formatCurrency} from '@/utils/formatCurrency.js'
+import {formatDate} from '@/utils/formatDate.js'
+import ProductVariantForm from '@/components/product/ProductVariantForm.vue'
 
 const route = useRoute()
 const productStore = useProductStore()
 const variantStore = useProductVariantStore()
 
-const { item: product, loading: productLoading } = storeToRefs(productStore)
+const {item: product, loading: productLoading} = storeToRefs(productStore)
 
 const loadingError = ref('')
 const formError = ref('')
@@ -192,7 +193,7 @@ const handleToggleStatus = async (variant) => {
   loadingError.value = ''
 
   try {
-    await variantStore.update(variant.id, { status: nextStatus })
+    await variantStore.update(variant.id, {status: nextStatus})
   } catch (error) {
     variant.status = previousStatus
     loadingError.value = error.response?.data?.message || 'Không cập nhật được trạng thái biến thể.'
@@ -230,16 +231,20 @@ onMounted(loadData)
     </section>
 
     <section class="page-tabs">
-      <RouterLink :to="{ name: 'admin.products.show', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.show') }">
+      <RouterLink :to="{ name: 'admin.products.show', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.show') }">
         Thông tin
       </RouterLink>
-      <RouterLink :to="{ name: 'admin.products.variants', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.variants') }">
+      <RouterLink :to="{ name: 'admin.products.variants', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.variants') }">
         Biến thể
       </RouterLink>
-      <RouterLink :to="{ name: 'admin.products.specifications', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.specifications') }">
+      <RouterLink :to="{ name: 'admin.products.specifications', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.specifications') }">
         Thông số
       </RouterLink>
-      <RouterLink :to="{ name: 'admin.products.images', params: { id: productId } }" class="tab-link" :class="{ active: isActiveTab('admin.products.images') }">
+      <RouterLink :to="{ name: 'admin.products.images', params: { id: productId } }" class="tab-link"
+                  :class="{ active: isActiveTab('admin.products.images') }">
         Hình ảnh
       </RouterLink>
     </section>
@@ -298,82 +303,95 @@ onMounted(loadData)
         <div class="table-responsive">
           <table class="table align-middle admin-table mb-0">
             <thead>
-              <tr>
-                <th>Biến thể</th>
-                <th>SKU</th>
-                <th>Giá</th>
-                <th>Sale</th>
-                <th>Tồn kho</th>
-                <th>Trạng thái</th>
-                <th>Cập nhật</th>
-                <th class="text-end">Thao tác</th>
-              </tr>
+            <tr>
+              <th>Biến thể</th>
+              <th>SKU</th>
+              <th>Giá</th>
+              <th>Sale</th>
+              <th>Tồn kho</th>
+              <th>Trạng thái</th>
+              <th>Cập nhật</th>
+              <th class="text-end">Thao tác</th>
+            </tr>
             </thead>
             <tbody>
-              <tr v-for="variant in variantRows" :key="variant.id">
-                <td>
-                  <div class="variant-meta">
-                    <strong>{{ variant.color }}</strong>
-                    <span>{{ variant.storage }} · {{ variant.ram }}</span>
-                  </div>
-                </td>
-                <td>
-                  <span class="sku-pill">{{ variant.sku }}</span>
-                </td>
-                <td>{{ formatMoney(variant.price) }}</td>
-                <td>{{ formatMoney(variant.sale_price) }}</td>
-                <td>
+            <tr v-for="variant in variantRows" :key="variant.id">
+              <td>
+                <div class="variant-meta">
+                  <strong>{{ variant.color }}</strong>
+                  <span>{{ variant.storage }} · {{ variant.ram }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="sku-pill">{{ variant.sku }}</span>
+              </td>
+              <td>{{ formatMoney(variant.price) }}</td>
+              <td>{{ formatMoney(variant.sale_price) }}</td>
+              <td>
                   <span class="stock-pill" :class="{ low: Number(variant.quantity || 0) <= 5 }">
                     {{ variant.quantity || 0 }}
                   </span>
-                </td>
-                <td>
-                  <button
+              </td>
+              <td>
+                <button
                     type="button"
                     class="status-pill"
                     :class="variant.status === 'active' ? 'is-active' : 'is-inactive'"
                     @click="handleToggleStatus(variant)"
                     :title="variant.status === 'active' ? 'Hoạt động' : 'Tạm ẩn'"
                     :aria-label="variant.status === 'active' ? 'Hoạt động' : 'Tạm ẩn'"
-                  >
-                    <i :class="variant.status === 'active' ? 'bi bi-toggle-on' : 'bi bi-toggle-off'"></i>
+                >
+                  <i :class="variant.status === 'active' ? 'bi bi-toggle-on' : 'bi bi-toggle-off'"></i>
+                </button>
+              </td>
+              <td>{{ formatDate(variant.updated_at || variant.created_at) }}</td>
+              <td>
+                <div class="action-group">
+                  <button type="button" class="action-btn action-edit" title="Chỉnh sửa"
+                          @click="openEditModal(variant)">
+                    <i class="bi bi-pencil"></i>
                   </button>
-                </td>
-                <td>{{ formatDate(variant.updated_at || variant.created_at) }}</td>
-                <td>
-                  <div class="action-group">
-                    <button type="button" class="action-btn action-edit" title="Chỉnh sửa" @click="openEditModal(variant)">
-                      <i class="bi bi-pencil"></i>
-                    </button>
-                    <button
+                  <button
                       type="button"
                       class="action-btn action-delete"
                       title="Xóa"
                       :disabled="deletingId === variant.id"
                       @click="handleDelete(variant)"
-                    >
-                      <i class="bi bi-trash"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
 
-              <tr v-if="!variantRows.length">
-                <td colspan="8">
-                  <div class="empty-state">
-                    <i class="bi bi-layers"></i>
-                    <p>Chưa có biến thể nào cho sản phẩm này.</p>
-                    <button type="button" class="secondary-action" @click="openCreateModal">Thêm biến thể</button>
-                  </div>
-                </td>
-              </tr>
+            <tr v-if="!variantRows.length">
+              <td colspan="8">
+                <div class="empty-state">
+                  <i class="bi bi-layers"></i>
+                  <p>Chưa có biến thể nào cho sản phẩm này.</p>
+                  <button type="button" class="secondary-action" @click="openCreateModal">Thêm biến thể</button>
+                </div>
+              </td>
+            </tr>
             </tbody>
           </table>
         </div>
       </section>
     </template>
 
-    <Teleport to="body">
+    <ProductVariantForm
+      :visible="showModal"
+      :title="editingVariantId ? 'Chỉnh sửa biến thể' : 'Thêm biến thể'"
+      :product-name="product?.name || ''"
+      :form="form"
+      :field-errors="fieldErrors"
+      :form-error="formError"
+      :saving="saving"
+      @close="closeModal"
+      @submit="handleSubmit"
+    />
+
+    <Teleport v-if="false" to="body">
       <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
         <div class="modal-card">
           <div class="modal-header">
@@ -392,12 +410,13 @@ onMounted(loadData)
             <div class="grid-2">
               <div class="field">
                 <label>Màu sắc</label>
-                <input v-model="form.color" type="text" class="control" :class="{ invalid: fieldErrors.color }" />
+                <input v-model="form.color" type="text" class="control" :class="{ invalid: fieldErrors.color }"/>
                 <small v-if="fieldErrors.color" class="field-error">{{ fieldErrors.color }}</small>
               </div>
               <div class="field">
                 <label>Dung lượng</label>
-                <input v-model="form.storage" type="text" class="control" :class="{ invalid: fieldErrors.storage }" placeholder="128GB" />
+                <input v-model="form.storage" type="text" class="control" :class="{ invalid: fieldErrors.storage }"
+                       placeholder="128GB"/>
                 <small v-if="fieldErrors.storage" class="field-error">{{ fieldErrors.storage }}</small>
               </div>
             </div>
@@ -405,12 +424,13 @@ onMounted(loadData)
             <div class="grid-2">
               <div class="field">
                 <label>RAM</label>
-                <input v-model="form.ram" type="text" class="control" :class="{ invalid: fieldErrors.ram }" placeholder="8GB" />
+                <input v-model="form.ram" type="text" class="control" :class="{ invalid: fieldErrors.ram }"
+                       placeholder="8GB"/>
                 <small v-if="fieldErrors.ram" class="field-error">{{ fieldErrors.ram }}</small>
               </div>
               <div class="field">
                 <label>SKU</label>
-                <input v-model="form.sku" type="text" class="control" :class="{ invalid: fieldErrors.sku }" />
+                <input v-model="form.sku" type="text" class="control" :class="{ invalid: fieldErrors.sku }"/>
                 <small v-if="fieldErrors.sku" class="field-error">{{ fieldErrors.sku }}</small>
               </div>
             </div>
@@ -418,17 +438,20 @@ onMounted(loadData)
             <div class="grid-3">
               <div class="field">
                 <label>Giá nhập</label>
-                <input v-model="form.import_price" type="number" min="0" class="control" :class="{ invalid: fieldErrors.import_price }" />
+                <input v-model="form.import_price" type="number" min="0" class="control"
+                       :class="{ invalid: fieldErrors.import_price }"/>
                 <small v-if="fieldErrors.import_price" class="field-error">{{ fieldErrors.import_price }}</small>
               </div>
               <div class="field">
                 <label>Giá bán</label>
-                <input v-model="form.price" type="number" min="0" class="control" :class="{ invalid: fieldErrors.price }" required />
+                <input v-model="form.price" type="number" min="0" class="control"
+                       :class="{ invalid: fieldErrors.price }" required/>
                 <small v-if="fieldErrors.price" class="field-error">{{ fieldErrors.price }}</small>
               </div>
               <div class="field">
                 <label>Giá sale</label>
-                <input v-model="form.sale_price" type="number" min="0" class="control" :class="{ invalid: fieldErrors.sale_price }" />
+                <input v-model="form.sale_price" type="number" min="0" class="control"
+                       :class="{ invalid: fieldErrors.sale_price }"/>
                 <small v-if="fieldErrors.sale_price" class="field-error">{{ fieldErrors.sale_price }}</small>
               </div>
             </div>
@@ -436,7 +459,8 @@ onMounted(loadData)
             <div class="grid-2">
               <div class="field">
                 <label>Số lượng</label>
-                <input v-model="form.quantity" type="number" min="0" class="control" :class="{ invalid: fieldErrors.quantity }" />
+                <input v-model="form.quantity" type="number" min="0" class="control"
+                       :class="{ invalid: fieldErrors.quantity }"/>
                 <small v-if="fieldErrors.quantity" class="field-error">{{ fieldErrors.quantity }}</small>
               </div>
               <div class="field">
@@ -451,7 +475,7 @@ onMounted(loadData)
 
             <div class="field">
               <label>Mô tả</label>
-              <textarea v-model="form.description" class="control textarea" rows="4" />
+              <textarea v-model="form.description" class="control textarea" rows="4"/>
             </div>
 
             <div class="modal-actions">

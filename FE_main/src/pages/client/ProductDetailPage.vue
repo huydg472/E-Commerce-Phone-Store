@@ -192,7 +192,7 @@ const currentVariantInStock = computed(() => {
   return isVariantInStock(currentSelectedVariant.value)
 })
 
-const handleAddToCart = async ({ productVariantId, quantity }) => {
+const handleAddToCart = async ({productVariantId, quantity}) => {
   if (!productVariantId || !currentVariantInStock.value) {
     return
   }

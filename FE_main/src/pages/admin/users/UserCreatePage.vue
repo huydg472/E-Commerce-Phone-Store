@@ -1,8 +1,9 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useRoleStore } from '@/stores/roleStore'
-import { useUserStore } from '@/stores/userStore'
+import {computed, onMounted, reactive, ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {useRoleStore} from '@/stores/roleStore'
+import {useUserStore} from '@/stores/userStore'
+import UserForm from '@/components/user/UserForm.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -88,71 +89,19 @@ onMounted(async () => {
       <p>Đang tải danh sách vai trò...</p>
     </div>
 
-    <div v-else class="form-card">
-      <div v-if="loadingError" class="alert alert-danger mb-3">
-        {{ loadingError }}
-      </div>
-
-      <form @submit.prevent="handleSubmit">
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Vai trò</label>
-            <select v-model="form.role_id" class="form-select" required>
-              <option value="">Chọn vai trò</option>
-              <option v-for="role in roles" :key="role.id" :value="String(role.id)">
-                {{ role.display_name || role.name }}
-              </option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Trạng thái</label>
-            <select v-model="form.status" class="form-select" required>
-              <option value="active">Hoạt động</option>
-              <option value="inactive">Không hoạt động</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label>Họ tên</label>
-            <input v-model.trim="form.name" type="text" class="form-control" required />
-          </div>
-
-          <div class="form-group">
-            <label>Email</label>
-            <input v-model.trim="form.email" type="email" class="form-control" required />
-          </div>
-
-          <div class="form-group">
-            <label>Số điện thoại</label>
-            <input v-model.trim="form.phone" type="text" class="form-control" required />
-          </div>
-
-          <div class="form-group">
-            <label>Username</label>
-            <input v-model.trim="form.username" type="text" class="form-control" required />
-          </div>
-
-          <div class="form-group">
-            <label>Mật khẩu</label>
-            <input v-model="form.password" type="password" class="form-control" required />
-          </div>
-
-          <div class="form-group">
-            <label>Xác nhận mật khẩu</label>
-            <input v-model="form.password_confirmation" type="password" class="form-control" required />
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="secondary-action" @click="$router.back()">Hủy</button>
-          <button type="submit" class="primary-action" :disabled="isSubmitting">
-            <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
-            Tạo mới
-          </button>
-        </div>
-      </form>
-    </div>
+    <UserForm
+      v-else
+      :form="form"
+      :roles="roles"
+      :error-message="loadingError"
+      :submitting="isSubmitting"
+      submit-label="Tạo mới"
+      cancel-to="/admin/users"
+      :show-password-fields="true"
+      :show-email-verified-at="false"
+      :password-required="true"
+      @submit="handleSubmit"
+    />
   </div>
 </template>
 
@@ -211,8 +160,7 @@ onMounted(async () => {
   color: #ffffff;
 }
 
-.state-card,
-.form-card {
+.state-card {
   border: 1px solid #e5eaf3;
   border-radius: 16px;
   background: #ffffff;
@@ -229,50 +177,9 @@ onMounted(async () => {
   color: #475569;
 }
 
-.form-card {
-  padding: 22px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  margin-bottom: 6px;
-  color: #0f172a;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.form-control,
-.form-select {
-  height: 44px;
-  border: 1px solid #dbe3ef;
-  border-radius: 10px;
-  box-shadow: none;
-}
-
-.form-actions {
-  margin-top: 18px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
 @media (max-width: 992px) {
   .page-head {
     flex-direction: column;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>

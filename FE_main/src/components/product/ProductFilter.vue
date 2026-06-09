@@ -305,11 +305,10 @@ watch(
 .collapse-enter-active,
 .collapse-leave-active {
   overflow: hidden;
-  transition:
-      max-height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 0.28s ease,
-      transform 0.28s ease,
-      padding 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: max-height 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+  opacity 0.28s ease,
+  transform 0.28s ease,
+  padding 0.38s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .collapse-enter-from,

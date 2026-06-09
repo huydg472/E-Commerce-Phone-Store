@@ -1,10 +1,10 @@
 <script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
-import { useCartStore } from '@/stores/cartStore'
-import { formatCurrency } from '@/utils/formatCurrency'
-import { toNumberPrice } from '@/utils/productCardHelpers'
+import {computed} from 'vue'
+import {useRouter} from 'vue-router'
+import {useAuthStore} from '@/stores/authStore'
+import {useCartStore} from '@/stores/cartStore'
+import {formatCurrency} from '@/utils/formatCurrency'
+import {toNumberPrice} from '@/utils/productCardHelpers'
 
 const props = defineProps({
   image: {
@@ -204,14 +204,13 @@ const handleQuickAdd = () => {
   opacity: 0;
   visibility: hidden;
   transform: translateY(-4px) scale(0.94);
-  transition:
-      opacity 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-      visibility 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-      transform 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-      border-color 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-      color 0.26s cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+  visibility 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+  transform 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+  border-color 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+  background-color 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+  color 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+  box-shadow 0.26s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
   z-index: 3;
 }

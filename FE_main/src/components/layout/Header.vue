@@ -44,7 +44,7 @@ const refreshCart = async () => {
 
 watch(isLoggedIn, () => {
   refreshCart()
-}, { immediate: true })
+}, {immediate: true})
 </script>
 <template>
   <header class="site-header">
