@@ -10,10 +10,6 @@ export const useAuthStore = defineStore('auth', {
     }),
 
     getters: {
-        roleName: (state) => {
-            return state.user?.role?.name || state.user?.role_name || null
-        },
-
         isLoggedIn: (state) => Boolean(state.token),
 
         isAdmin: (state) => state.user?.role?.name === 'admin' || state.user?.role_name === 'admin',

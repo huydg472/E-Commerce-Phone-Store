@@ -112,10 +112,6 @@ const handleQuickAdd = () => {
 <template>
   <div class="product-card">
     <div class="product-image-wrap">
-      <button class="card-action-btn wishlist-btn" type="button" aria-label="Yêu thích">
-        <i class="bi bi-heart"></i>
-      </button>
-
       <RouterLink :to="to" class="product-image">
         <img
             :src="image || fallbackImage"
@@ -221,16 +217,6 @@ const handleQuickAdd = () => {
   visibility: visible;
   transform: translateY(0) scale(1);
   pointer-events: auto;
-}
-
-.wishlist-btn {
-  right: 8px;
-  color: #64748b;
-}
-
-.wishlist-btn:hover {
-  color: #ef4444;
-  border-color: #ef4444;
 }
 
 .quick-cart-btn {

@@ -110,12 +110,6 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
     Route::put('/product-images/{productVariantImage}', [ProductVariantImageController::class, 'update']);
     Route::delete('/product-images/{productVariantImage}', [ProductVariantImageController::class, 'destroy']);
 
-    Route::get('/product-variant-images', [ProductVariantImageController::class, 'index']);
-    Route::post('/product-variant-images', [ProductVariantImageController::class, 'store']);
-    Route::get('/product-variant-images/{productVariantImage}', [ProductVariantImageController::class, 'show']);
-    Route::put('/product-variant-images/{productVariantImage}', [ProductVariantImageController::class, 'update']);
-    Route::delete('/product-variant-images/{productVariantImage}', [ProductVariantImageController::class, 'destroy']);
-
     Route::get('/roles', [RoleController::class, 'index']);
     Route::post('/roles', [RoleController::class, 'store']);
     Route::get('/roles/{role}', [RoleController::class, 'show']);

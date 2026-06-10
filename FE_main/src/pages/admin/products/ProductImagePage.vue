@@ -387,68 +387,6 @@ onMounted(loadData)
       @close="closeModal"
       @submit="handleSubmit"
     />
-
-    <Teleport v-if="false" to="body">
-      <div v-if="showModal" class="modal-backdrop" @click.self="closeModal">
-        <div class="modal-card">
-          <div class="modal-header">
-            <div>
-              <p class="modal-kicker">{{ editingImageId ? 'Chỉnh sửa ảnh' : 'Thêm ảnh' }}</p>
-              <h3>{{ product?.name }}</h3>
-            </div>
-            <button type="button" class="modal-close" @click="closeModal">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-
-          <div v-if="formError" class="modal-alert">{{ formError }}</div>
-
-          <form class="modal-form" @submit.prevent="handleSubmit">
-            <div class="field">
-              <label>Biến thể</label>
-              <select v-model="form.product_variant_id" class="control"
-                      :class="{ invalid: fieldErrors.product_variant_id }">
-                <option value="">-- Chọn biến thể --</option>
-                <option v-for="variant in currentVariants" :key="variant.id" :value="String(variant.id)">
-                  {{ variant.color }} · {{ variant.storage }} · {{ variant.ram }}
-                </option>
-              </select>
-              <small v-if="fieldErrors.product_variant_id" class="field-error">{{
-                  fieldErrors.product_variant_id
-                }}</small>
-            </div>
-
-            <div class="field">
-              <label>Đường dẫn ảnh</label>
-              <input v-model="form.image_url" type="url" class="control" :class="{ invalid: fieldErrors.image_url }"
-                     placeholder="https://..."/>
-              <small v-if="fieldErrors.image_url" class="field-error">{{ fieldErrors.image_url }}</small>
-            </div>
-
-            <div class="field">
-              <label>Mô tả ảnh</label>
-              <input v-model="form.alt_text" type="text" class="control" :class="{ invalid: fieldErrors.alt_text }"/>
-              <small v-if="fieldErrors.alt_text" class="field-error">{{ fieldErrors.alt_text }}</small>
-            </div>
-
-            <div class="field">
-              <label>Thứ tự hiển thị</label>
-              <input v-model="form.sort_order" type="number" min="0" class="control"
-                     :class="{ invalid: fieldErrors.sort_order }"/>
-              <small v-if="fieldErrors.sort_order" class="field-error">{{ fieldErrors.sort_order }}</small>
-            </div>
-
-            <div class="modal-actions">
-              <button type="button" class="secondary-action" @click="closeModal">Hủy</button>
-              <button type="submit" class="primary-action" :disabled="saving">
-                <i class="bi bi-check2"></i>
-                {{ saving ? 'Đang lưu...' : 'Lưu ảnh' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>
 

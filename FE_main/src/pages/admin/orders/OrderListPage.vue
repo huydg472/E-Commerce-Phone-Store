@@ -5,10 +5,12 @@ import {storeToRefs} from 'pinia'
 import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
 import OrderTable from '@/components/order/OrderTable.vue'
 import {useOrderStore} from '@/stores/orderStore'
+import {useDashboardStore} from '@/stores/dashboardStore'
 import {useClientPagination} from '@/composables/useClientPagination.js'
 
 const router = useRouter()
 const orderStore = useOrderStore()
+const dashboardStore = useDashboardStore()
 const {items: orders, loading: orderLoading} = storeToRefs(orderStore)
 
 const search = ref('')
@@ -147,6 +149,7 @@ const handleStatusChange = async (order, nextStatus) => {
 
   try {
     await orderStore.update(order.id, {order_status: nextStatus})
+    await dashboardStore.fetchDashboard().catch(() => {})
   } catch (error) {
     if (order.raw) order.raw.order_status = previousStatus
     order.orderStatus = previousStatus

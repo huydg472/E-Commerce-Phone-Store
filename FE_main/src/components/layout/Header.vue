@@ -86,14 +86,14 @@ watch(isLoggedIn, () => {
 
             <ul class="dropdown-menu account-menu">
               <li>
-                <RouterLink class="dropdown-item" to="/profile">
+                <RouterLink class="dropdown-item" :to="{ name: 'profile' }">
                   <i class="bi bi-person me-2"></i>
                   Tài khoản của tôi
                 </RouterLink>
               </li>
 
               <li>
-                <RouterLink class="dropdown-item" to="/orders">
+                <RouterLink class="dropdown-item" :to="{ name: 'orders.history' }">
                   <i class="bi bi-bag-check me-2"></i>
                   Đơn hàng của tôi
                 </RouterLink>
@@ -111,11 +111,6 @@ watch(isLoggedIn, () => {
               </li>
             </ul>
           </div>
-
-          <RouterLink to="/yeu-thich" class="header-action">
-            <i class="bi bi-heart"></i>
-            <span>Yêu thích</span>
-          </RouterLink>
 
           <RouterLink to="/cart" class="header-action cart-action">
             <i class="bi bi-cart3"></i>

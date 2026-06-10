@@ -30,6 +30,7 @@ const orderStatusMap = {
 }
 
 const paymentStatusMap = {
+  unpaid: 'Chưa thanh toán',
   pending: 'Chưa thanh toán',
   paid: 'Đã thanh toán',
   failed: 'Thất bại',
@@ -145,8 +146,8 @@ const recentOrders = computed(() => {
     total: formatCurrency(order.total_amount),
     statusKey: order.order_status || 'pending',
     status: formatOrderStatus(order.order_status),
-    paymentStatusKey: order.payment?.payment_status || order.payment_status || 'pending',
-    paymentStatus: formatPaymentStatus(order.payment?.payment_status || order.payment_status),
+    paymentStatusKey: order.payment_status || order.payment?.payment_status || 'pending',
+    paymentStatus: formatPaymentStatus(order.payment_status || order.payment?.payment_status),
     paymentMethod: formatMethod(order.payment?.payment_method || order.payment_method),
     time: formatDateTime(order.ordered_at || order.created_at),
   }))
@@ -403,7 +404,7 @@ onMounted(() => {
 
             <div class="order-meta">
               <span class="status-badge"
-                    :class="`status-${order.paymentStatus === 'Đã thanh toán' ? 'success' : 'warning'}`">
+                    :class="`status-${order.paymentStatusKey === 'paid' ? 'success' : 'warning'}`">
                 {{ order.paymentStatus }}
               </span>
 

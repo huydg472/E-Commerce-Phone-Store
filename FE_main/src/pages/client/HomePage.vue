@@ -17,7 +17,6 @@ const placeholder = {
   hero: 'https://placehold.co/1800x420/e8f0fb/2563eb?text=Hero+Banner',
   product: 'https://placehold.co/300x180/f1f5f9/2563eb?text=Phone',
   accessories: 'https://placehold.co/900x180/e8f0fb/2563eb?text=Accessories',
-  tradeIn: 'https://placehold.co/900x180/f1ecfb/2563eb?text=Trade+In',
 }
 
 const selectedBrand = ref('')
@@ -147,8 +146,8 @@ onMounted(() => {
           <img :src="placeholder.accessories" alt="Accessories placeholder"/>
         </RouterLink>
 
-        <RouterLink to="/thu-cu-doi-moi" class="promo-placeholder-card">
-          <img :src="placeholder.tradeIn" alt="Trade in placeholder"/>
+        <RouterLink to="/san-pham" class="promo-placeholder-card">
+          <img :src="placeholder.product" alt="Products placeholder"/>
         </RouterLink>
       </div>
     </section>

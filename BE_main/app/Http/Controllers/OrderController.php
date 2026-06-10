@@ -138,10 +138,14 @@ class OrderController extends Controller
                     'completed_at' => $order->completed_at ?? now(),
                 ]);
 
-                $order->payment()?->update([
-                    'payment_status' => 'paid',
-                    'paid_at' => $order->payment?->paid_at ?? now(),
-                ]);
+                $payment = $order->payment()->first();
+
+                if ($payment) {
+                    $payment->update([
+                        'payment_status' => 'paid',
+                        'paid_at' => $payment->paid_at ?? now(),
+                    ]);
+                }
             }
         });
 

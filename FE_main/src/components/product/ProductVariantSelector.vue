@@ -204,11 +204,6 @@ const handleAddToCart = () => {
         <i class="bi bi-cart3"></i>
         Thêm vào giỏ hàng
       </button>
-
-      <button type="button" class="favorite-btn">
-        <i class="bi bi-heart"></i>
-        Yêu thích
-      </button>
     </div>
   </div>
 </template>
@@ -362,12 +357,11 @@ const handleAddToCart = () => {
 .action-row {
   margin-top: 12px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
-.cart-btn,
-.favorite-btn {
+.cart-btn {
   height: 42px;
   border-radius: 8px;
   background: #ffffff;
@@ -384,16 +378,6 @@ const handleAddToCart = () => {
 .cart-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
-}
-
-.favorite-btn {
-  color: #111827;
-  border-color: #dbe3ef;
-}
-
-.favorite-btn:hover {
-  color: #ef4444;
-  border-color: #ef4444;
 }
 
 @media (max-width: 576px) {

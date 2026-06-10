@@ -21,6 +21,11 @@ const statusMap = {
   cancelled: {label: 'Đã hủy', className: 'cancelled'},
 }
 
+const toNumber = (value) => {
+  const numericValue = Number(value)
+  return Number.isFinite(numericValue) ? numericValue : 0
+}
+
 const orders = computed(() => {
   const source = Array.isArray(orderStore.items) ? orderStore.items : []
 
@@ -46,11 +51,6 @@ const orders = computed(() => {
     }
   })
 })
-
-const toNumber = (value) => {
-  const numericValue = Number(value)
-  return Number.isFinite(numericValue) ? numericValue : 0
-}
 
 const filteredOrders = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase()
@@ -124,183 +124,155 @@ onMounted(loadOrders)
 </script>
 
 <template>
-  <main class="order-history-page">
-    <div class="order-history-container">
-      <div class="breadcrumb-wrap">
-        <span>Trang chủ</span>
-        <span>/</span>
-        <strong>Đơn hàng của tôi</strong>
-      </div>
+  <section class="order-history-page">
+    <nav class="breadcrumb-wrap mb-2">
+      <span>Trang chủ</span>
+      <span>/</span>
+      <strong>Đơn hàng của tôi</strong>
+    </nav>
 
-      <h1 class="page-title">Đơn hàng của tôi</h1>
-
-      <div class="account-layout">
-        <aside class="account-sidebar">
-          <RouterLink
-              v-for="item in [
-                { key: 'overview', label: 'Tổng quan', icon: 'bi bi-house-door', to: '/tai-khoan' },
-                { key: 'profile', label: 'Thông tin cá nhân', icon: 'bi bi-person', to: '/tai-khoan/thong-tin-ca-nhan' },
-                { key: 'address', label: 'Sổ địa chỉ', icon: 'bi bi-geo-alt', to: '/tai-khoan/so-dia-chi' },
-                { key: 'password', label: 'Đổi mật khẩu', icon: 'bi bi-lock', to: '/tai-khoan/doi-mat-khau' },
-                { key: 'orders', label: 'Đơn hàng của tôi', icon: 'bi bi-bag', to: '/orders' },
-              ]"
-              :key="item.key"
-              :to="item.to"
-              class="sidebar-link"
-              :class="{ active: item.key === 'orders' }"
-          >
-            <i :class="item.icon"></i>
-            <span>{{ item.label }}</span>
-          </RouterLink>
-        </aside>
-
-        <section class="orders-content">
-          <div class="top-row">
-            <div class="filter-card">
-              <div class="filter-row">
-                <div class="input-box">
-                  <input
-                      v-model.trim="searchKeyword"
-                      type="text"
-                      placeholder="Tìm theo mã đơn hàng, sản phẩm hoặc địa chỉ"
-                  />
-                  <i class="bi bi-search"></i>
-                </div>
-
-                <select v-model="selectedStatus" class="status-select">
-                  <option value="all">Tất cả trạng thái</option>
-                  <option v-for="tab in orderTabs.slice(1)" :key="tab.key" :value="tab.key">
-                    {{ tab.label }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="tabs">
-                <button
-                    v-for="tab in orderTabs"
-                    :key="tab.key"
-                    type="button"
-                    class="tab-btn"
-                    :class="{ active: selectedStatus === tab.key }"
-                    @click="selectedStatus = tab.key"
-                >
-                  {{ tab.label }}
-                </button>
-              </div>
-            </div>
-
-            <div class="summary-card">
-              <div
-                  v-for="item in orderSummary"
-                  :key="item.label"
-                  class="summary-item"
-              >
-                <div class="summary-icon">
-                  <i :class="item.icon"></i>
-                </div>
-                <span>{{ item.label }}</span>
-                <strong>{{ item.value }}</strong>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="pageLoading" class="loading-card">
-            <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-            <p>Đang tải đơn hàng...</p>
-          </div>
-
-          <p v-else-if="errorMessage" class="error-message">
-            {{ errorMessage }}
-          </p>
-
-          <div v-else class="orders-list">
-            <article
-                v-for="order in filteredOrders"
-                :key="order.id"
-                class="order-card"
-            >
-              <div class="order-card-header">
-                <div class="order-code">
-                  <span>Mã đơn hàng:</span>
-                  <strong>{{ order.code }}</strong>
-                </div>
-
-                <div class="order-date">
-                  <span>Ngày đặt:</span>
-                  <strong>{{ order.orderDate }}</strong>
-                </div>
-
-                <span class="status-badge" :class="statusMap[order.status]?.className || 'pending'">
-                  {{ statusMap[order.status]?.label || order.status }}
-                </span>
-              </div>
-
-              <div class="order-card-body">
-                <div class="product-info">
-                  <img :src="order.product.image" :alt="order.product.name"/>
-
-                  <div class="product-text">
-                    <h3>{{ order.product.name }}</h3>
-                    <p v-if="order.product.color">Phiên bản: {{ order.product.color }}</p>
-                    <p>Số lượng: {{ order.product.quantity }}</p>
-                  </div>
-                </div>
-
-                <div class="order-total">
-                  <span>Tổng tiền</span>
-                  <strong>{{ formatCurrency(order.total) }}</strong>
-                </div>
-
-                <div class="order-actions">
-                  <button type="button" class="action-btn outline-btn" @click="handleViewDetail(order)">
-                    Xem chi tiết
-                  </button>
-
-                  <button v-if="order.status === 'pending'" type="button" class="action-btn primary-btn"
-                          @click="handleViewDetail(order)">
-                    Xem đơn chờ thanh toán
-                  </button>
-
-                  <button v-if="order.status !== 'pending'" type="button" class="text-action blue">
-                    <i class="bi bi-arrow-clockwise"></i>
-                    Mua lại
-                  </button>
-                </div>
-              </div>
-
-              <div class="order-address">
-                <span>Địa chỉ nhận hàng</span>
-                <p>
-                  <i class="bi bi-geo-alt"></i>
-                  {{ order.address || 'Chưa có địa chỉ' }}
-                </p>
-              </div>
-            </article>
-
-            <div v-if="filteredOrders.length === 0" class="empty-card">
-              <i class="bi bi-bag-x"></i>
-              <h3>Không tìm thấy đơn hàng</h3>
-              <p>Hãy thử thay đổi từ khóa hoặc bộ lọc trạng thái.</p>
-            </div>
-          </div>
-        </section>
+    <div class="page-head">
+      <div>
+        <h1 class="page-title">Đơn hàng của tôi</h1>
+        <p class="page-subtitle mb-0">Tra cứu trạng thái, xem chi tiết và mua lại các đơn hàng trước đây.</p>
       </div>
     </div>
-  </main>
+
+    <div class="top-row">
+      <div class="filter-card">
+        <div class="filter-row">
+          <div class="input-box">
+            <input
+                v-model.trim="searchKeyword"
+                type="text"
+                placeholder="Tìm theo mã đơn hàng, sản phẩm hoặc địa chỉ"
+            />
+            <i class="bi bi-search"></i>
+          </div>
+
+          <select v-model="selectedStatus" class="status-select">
+            <option value="all">Tất cả trạng thái</option>
+            <option v-for="tab in orderTabs.slice(1)" :key="tab.key" :value="tab.key">
+              {{ tab.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="tabs">
+          <button
+              v-for="tab in orderTabs"
+              :key="tab.key"
+              type="button"
+              class="tab-btn"
+              :class="{ active: selectedStatus === tab.key }"
+              @click="selectedStatus = tab.key"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div
+            v-for="item in orderSummary"
+            :key="item.label"
+            class="summary-item"
+        >
+          <div class="summary-icon">
+            <i :class="item.icon"></i>
+          </div>
+          <span>{{ item.label }}</span>
+          <strong>{{ item.value }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="pageLoading" class="loading-card">
+      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+      <p>Đang tải đơn hàng...</p>
+    </div>
+
+    <p v-else-if="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </p>
+
+    <div v-else class="orders-list">
+      <article
+          v-for="order in filteredOrders"
+          :key="order.id"
+          class="order-card"
+      >
+        <div class="order-card-header">
+          <div class="order-code">
+            <span>Mã đơn hàng:</span>
+            <strong>{{ order.code }}</strong>
+          </div>
+
+          <div class="order-date">
+            <span>Ngày đặt:</span>
+            <strong>{{ order.orderDate }}</strong>
+          </div>
+
+          <span class="status-badge" :class="statusMap[order.status]?.className || 'pending'">
+            {{ statusMap[order.status]?.label || order.status }}
+          </span>
+        </div>
+
+        <div class="order-card-body">
+          <div class="product-info">
+            <img :src="order.product.image" :alt="order.product.name"/>
+
+            <div class="product-text">
+              <h3>{{ order.product.name }}</h3>
+              <p v-if="order.product.color">Phiên bản: {{ order.product.color }}</p>
+              <p>Số lượng: {{ order.product.quantity }}</p>
+            </div>
+          </div>
+
+          <div class="order-total">
+            <span>Tổng tiền</span>
+            <strong>{{ formatCurrency(order.total) }}</strong>
+          </div>
+
+          <div class="order-actions">
+            <button type="button" class="action-btn outline-btn" @click="handleViewDetail(order)">
+              Xem chi tiết
+            </button>
+
+            <button v-if="order.status === 'pending'" type="button" class="action-btn primary-btn"
+                    @click="handleViewDetail(order)">
+              Xem đơn chờ thanh toán
+            </button>
+
+            <button v-if="order.status !== 'pending'" type="button" class="text-action blue">
+              <i class="bi bi-arrow-clockwise"></i>
+              Mua lại
+            </button>
+          </div>
+        </div>
+
+        <div class="order-address">
+          <span>Địa chỉ nhận hàng</span>
+          <p>
+            <i class="bi bi-geo-alt"></i>
+            {{ order.address || 'Chưa có địa chỉ' }}
+          </p>
+        </div>
+      </article>
+
+      <div v-if="filteredOrders.length === 0" class="empty-card">
+        <i class="bi bi-bag-x"></i>
+        <h3>Không tìm thấy đơn hàng</h3>
+        <p>Hãy thử thay đổi từ khóa hoặc bộ lọc trạng thái.</p>
+      </div>
+    </div>
+  </section>
 </template>
 
 <style scoped>
 .order-history-page {
-  background: #ffffff;
   color: #111827;
   font-size: 14px;
-}
-
-.order-history-container {
-  width: 100%;
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 22px 20px 36px;
 }
 
 .breadcrumb-wrap {
@@ -316,63 +288,19 @@ onMounted(loadOrders)
   font-weight: 600;
 }
 
+.page-head {
+  margin-bottom: 18px;
+}
+
 .page-title {
-  margin: 0 0 18px;
+  margin: 0 0 6px;
   color: #111827;
   font-size: 26px;
   font-weight: 750;
 }
 
-.account-layout {
-  display: grid;
-  grid-template-columns: 220px minmax(0, 1fr);
-  gap: 18px;
-  align-items: flex-start;
-}
-
-.account-sidebar {
-  min-height: 220px;
-  padding: 16px 14px;
-  border: 1px solid #e5e7eb;
-  border-radius: 7px;
-  background: #ffffff;
-}
-
-.sidebar-link {
-  width: 100%;
-  height: 40px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #4b5563;
-  font-weight: 600;
-  text-decoration: none;
-  transition: 0.2s ease;
-}
-
-.sidebar-link i {
-  width: 18px;
-  color: #8a94a6;
-  font-size: 16px;
-}
-
-.sidebar-link:hover,
-.sidebar-link.active {
-  background: #edf4ff;
-  color: #2563eb;
-}
-
-.sidebar-link:hover i,
-.sidebar-link.active i {
-  color: #2563eb;
-}
-
-.orders-content {
-  min-width: 0;
+.page-subtitle {
+  color: #64748b;
 }
 
 .top-row {
@@ -388,7 +316,7 @@ onMounted(loadOrders)
 .empty-card,
 .loading-card {
   border: 1px solid #e5e7eb;
-  border-radius: 7px;
+  border-radius: 14px;
   background: #ffffff;
 }
 
@@ -411,7 +339,7 @@ onMounted(loadOrders)
   width: 100%;
   height: 36px;
   border: 1px solid #d8dee9;
-  border-radius: 5px;
+  border-radius: 8px;
   outline: none;
   background: #ffffff;
   color: #374151;
@@ -537,7 +465,7 @@ onMounted(loadOrders)
 .error-message {
   padding: 14px 16px;
   border: 1px solid #fecaca;
-  border-radius: 7px;
+  border-radius: 12px;
   background: #fef2f2;
   color: #b91c1c;
 }
@@ -578,7 +506,7 @@ onMounted(loadOrders)
 
 .status-badge {
   padding: 5px 12px;
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
 }
@@ -627,7 +555,7 @@ onMounted(loadOrders)
 .product-info img {
   width: 82px;
   height: 82px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #e5e7eb;
   background: #f3f4f6;
   object-fit: cover;
@@ -683,7 +611,7 @@ onMounted(loadOrders)
   width: 100%;
   height: 36px;
   border: 1px solid #2563eb;
-  border-radius: 5px;
+  border-radius: 8px;
   background: #ffffff;
   color: #2563eb;
   font-size: 14px;
@@ -720,10 +648,6 @@ onMounted(loadOrders)
 
 .text-action.blue {
   color: #2563eb;
-}
-
-.text-action.red {
-  color: #dc2626;
 }
 
 .order-address {
@@ -773,24 +697,12 @@ onMounted(loadOrders)
 }
 
 @media (max-width: 1200px) {
-  .order-history-container {
-    max-width: 1080px;
-  }
-
   .top-row {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 992px) {
-  .account-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .account-sidebar {
-    min-height: auto;
-  }
-
   .filter-row {
     grid-template-columns: 1fr;
   }
@@ -815,10 +727,6 @@ onMounted(loadOrders)
 }
 
 @media (max-width: 768px) {
-  .order-history-container {
-    padding: 18px 14px 30px;
-  }
-
   .page-title {
     font-size: 23px;
   }

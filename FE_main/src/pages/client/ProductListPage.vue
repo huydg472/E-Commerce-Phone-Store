@@ -19,6 +19,8 @@ const selectedSort = ref('newest')
 const selectedPageSize = ref(12)
 const currentPage = ref(1)
 const initialBrandSlug = computed(() => String(route.query.brand ?? ''))
+const initialCategorySlug = computed(() => String(route.query.category ?? ''))
+const selectedCategorySlug = ref('')
 
 const handleSelectedBrands = (brandIds) => {
   selectedBrands.value = brandIds
@@ -69,13 +71,18 @@ const filteredProducts = computed(() => {
         !selectedBrands.value.length ||
         selectedBrands.value.includes(productCard.brandId)
 
+    const categoryOk =
+        !selectedCategorySlug.value ||
+        normalizeText(productCard.categorySlug) === normalizeText(selectedCategorySlug.value) ||
+        normalizeText(productCard.categoryName) === normalizeText(selectedCategorySlug.value)
+
     const romOk =
         !selectedStorages.value.length ||
         selectedStorages.value.some((storage) => {
           return normalizeText(storage) === normalizeText(productCard.rom)
         })
 
-    return brandOk && romOk && matchesPriceRange(productCard.price)
+    return brandOk && categoryOk && romOk && matchesPriceRange(productCard.price)
   })
 })
 
@@ -113,6 +120,17 @@ watch(
     [selectedBrands, selectedPriceRange, selectedStorages, selectedSort, selectedPageSize],
     resetPage,
     {deep: true}
+)
+
+watch(
+    initialCategorySlug,
+    (nextCategorySlug) => {
+      if (nextCategorySlug) {
+        selectedCategorySlug.value = nextCategorySlug
+        resetPage()
+      }
+    },
+    {immediate: true}
 )
 
 watch(totalPages, (nextTotalPages) => {

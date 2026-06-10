@@ -120,7 +120,7 @@ onMounted(loadOrder)
               </div>
               <div>
                 <span>Thanh toán</span>
-                <strong :class="paymentStatusMap[order.payment_status]?.className || 'unpaid'">
+                <strong class="payment-status" :class="paymentStatusMap[order.payment_status]?.className || 'unpaid'">
                   {{ paymentStatusMap[order.payment_status]?.label || order.payment_status }}
                 </strong>
               </div>

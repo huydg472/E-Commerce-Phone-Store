@@ -305,6 +305,18 @@ const getProductBrandName = (product) => {
     return String(product?.brand?.name ?? '')
 }
 
+const getProductCategoryId = (product) => {
+    return String(product?.category?.id ?? product?.category_id ?? '')
+}
+
+const getProductCategorySlug = (product) => {
+    return String(product?.category?.slug ?? product?.category_slug ?? '')
+}
+
+const getProductCategoryName = (product) => {
+    return String(product?.category?.name ?? product?.category_name ?? '')
+}
+
 const createRomProductCard = (product, rom, variants, placeholderImage = '') => {
     const bestVariant = getBestVariantByRom(variants)
     const price = getVariantPrice(bestVariant) || getProductFallbackPrice(product)
@@ -322,6 +334,9 @@ const createRomProductCard = (product, rom, variants, placeholderImage = '') => 
         brandId: getProductBrandId(product),
         brandSlug: getProductBrandSlug(product),
         brandName: getProductBrandName(product),
+        categoryId: getProductCategoryId(product),
+        categorySlug: getProductCategorySlug(product),
+        categoryName: getProductCategoryName(product),
         name: buildCardName(product, rom),
         image:
             getVariantImage(bestVariant) ||

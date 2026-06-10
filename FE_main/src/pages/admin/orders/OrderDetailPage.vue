@@ -8,10 +8,12 @@ import OrderTimeline from '@/components/order/OrderTimeline.vue'
 import PaymentStatusBadge from '@/components/payment/PaymentStatusBadge.vue'
 import {formatCurrency} from '@/utils/formatCurrency'
 import {formatDate} from '@/utils/formatDate'
+import {useDashboardStore} from '@/stores/dashboardStore'
 
 const route = useRoute()
 const router = useRouter()
 const orderStore = useOrderStore()
+const dashboardStore = useDashboardStore()
 
 const pageLoading = ref(true)
 const errorMessage = ref('')
@@ -159,6 +161,7 @@ const saveChanges = async () => {
       order_status: form.order_status,
       note: form.note.trim() || null,
     })
+    await dashboardStore.fetchDashboard().catch(() => {})
   } catch (error) {
     errorMessage.value = error.response?.data?.message || 'Không cập nhật được đơn hàng.'
   } finally {
