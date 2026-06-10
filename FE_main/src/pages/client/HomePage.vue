@@ -83,7 +83,7 @@ watch(
 )
 
 onMounted(() => {
-  productStore.fetchAll()
+  productStore.fetchAll({status: 'active'})
   brandStore.fetchAll()
 })
 </script>

@@ -12,6 +12,9 @@ const searchKeyword = ref('')
 const selectedStatus = ref('all')
 const pageLoading = ref(true)
 const errorMessage = ref('')
+const detailModalOpen = ref(false)
+const detailLoading = ref(false)
+const detailError = ref('')
 
 const statusMap = {
   pending: {label: 'Chờ xác nhận', className: 'pending'},
@@ -26,14 +29,86 @@ const toNumber = (value) => {
   return Number.isFinite(numericValue) ? numericValue : 0
 }
 
+const unwrapOrderItems = (order) => {
+  const sources = [
+    order?.orderItems,
+    order?.order_items,
+    order?.items,
+    order?.order?.orderItems,
+    order?.order?.order_items,
+  ]
+
+  for (const source of sources) {
+    if (Array.isArray(source) && source.length > 0) {
+      return source
+    }
+  }
+
+  return []
+}
+
+const getItemName = (item) =>
+  item?.product_name ||
+  item?.productName ||
+  item?.name ||
+  item?.productVariant?.product?.name ||
+  item?.product_variant?.product?.name ||
+  item?.product?.name ||
+  item?.variant?.product?.name ||
+  'Sản phẩm'
+
+const getItemVariantName = (item) =>
+  item?.variant_name ||
+  item?.variantName ||
+  item?.productVariant?.name ||
+  item?.product_variant?.name ||
+  item?.variant?.name ||
+  ''
+
+const getItemQuantity = (item) => {
+  const quantity = toNumber(item?.quantity ?? item?.qty ?? item?.count ?? 0)
+  return quantity > 0 ? quantity : 1
+}
+
+const getItemImage = (item) =>
+  item?.productVariant?.product?.thumbnail_url ||
+  item?.productVariant?.product?.thumbnailUrl ||
+  item?.productVariant?.product?.image ||
+  item?.product_variant?.product?.thumbnail_url ||
+  item?.product_variant?.product?.thumbnailUrl ||
+  item?.product_variant?.product?.image ||
+  item?.product?.thumbnail_url ||
+  item?.product?.thumbnailUrl ||
+  item?.product?.image ||
+  '/images/default-product.png'
+
+const selectedOrder = computed(() => orderStore.item ?? null)
+const selectedOrderItems = computed(() => {
+  const source = selectedOrder.value?.orderItems ?? selectedOrder.value?.order_items ?? []
+  return Array.isArray(source) ? source : []
+})
+
 const orders = computed(() => {
   const source = Array.isArray(orderStore.items) ? orderStore.items : []
 
   return source.map((order) => {
-    const firstItem = Array.isArray(order.orderItems) ? order.orderItems[0] : null
+    const items = unwrapOrderItems(order)
+    const firstItem = items[0] || null
     const variant = firstItem?.productVariant ?? firstItem?.product_variant ?? null
     const product = variant?.product ?? null
-    const image = product?.thumbnail_url || product?.thumbnailUrl || product?.image || '/images/default-product.png'
+    const image = getItemImage(firstItem)
+    const totalQuantity = items.length > 0
+      ? items.reduce((sum, item) => sum + getItemQuantity(item), 0)
+      : getItemQuantity(firstItem)
+    const previewProducts = items.length > 0
+      ? items.slice(0, 2).map((item) => ({
+          name: getItemName(item),
+          image: getItemImage(item),
+        }))
+      : [{
+          name: getItemName(firstItem),
+          image,
+        }]
 
     return {
       id: order.id,
@@ -43,10 +118,12 @@ const orders = computed(() => {
       total: toNumber(order.total_amount),
       address: order.shipping_address_text || '',
       product: {
-        name: firstItem?.product_name || product?.name || 'Sản phẩm',
-        color: firstItem?.variant_name || '',
-        quantity: firstItem?.quantity || 0,
+        name: getItemName(firstItem),
+        color: getItemVariantName(firstItem),
+        quantity: totalQuantity,
+        extraCount: items.length > 1 ? items.length - 1 : 0,
         image,
+        previewProducts,
       },
     }
   })
@@ -117,7 +194,22 @@ const loadOrders = async () => {
 }
 
 const handleViewDetail = (order) => {
-  router.push({name: 'orders.show', params: {id: order.id}})
+  detailModalOpen.value = true
+  detailLoading.value = true
+  detailError.value = ''
+
+  orderStore.fetchById(order.id)
+    .catch((error) => {
+      detailError.value = error?.response?.data?.message || 'Không tải được chi tiết đơn hàng.'
+    })
+    .finally(() => {
+      detailLoading.value = false
+    })
+}
+
+const closeDetailModal = () => {
+  detailModalOpen.value = false
+  detailError.value = ''
 }
 
 onMounted(loadOrders)
@@ -220,13 +312,24 @@ onMounted(loadOrders)
 
         <div class="order-card-body">
           <div class="product-info">
-            <img :src="order.product.image" :alt="order.product.name"/>
+            <div class="product-preview">
+              <img
+                  v-for="(preview, index) in order.product.previewProducts"
+                  :key="`${order.id}-${index}`"
+                  :src="preview.image"
+                  :alt="preview.name"
+                  :class="{ stacked: order.product.previewProducts.length > 1 && index > 0 }"
+              />
+            </div>
 
             <div class="product-text">
               <h3>{{ order.product.name }}</h3>
               <p v-if="order.product.color">Phiên bản: {{ order.product.color }}</p>
-              <p>Số lượng: {{ order.product.quantity }}</p>
-            </div>
+              <p>
+              Số lượng: {{ order.product.quantity }}
+              <span v-if="order.product.extraCount">+ {{ order.product.extraCount }} sản phẩm khác</span>
+            </p>
+          </div>
           </div>
 
           <div class="order-total">
@@ -266,6 +369,122 @@ onMounted(loadOrders)
         <p>Hãy thử thay đổi từ khóa hoặc bộ lọc trạng thái.</p>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div v-if="detailModalOpen" class="order-detail-overlay" @click.self="closeDetailModal">
+        <section class="order-detail-popup" role="dialog" aria-modal="true" aria-label="Chi tiết đơn hàng">
+          <button type="button" class="popup-close" @click="closeDetailModal">
+            <i class="bi bi-x-lg"></i>
+          </button>
+
+          <div v-if="detailLoading" class="popup-loading">
+            <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+            <p>Đang tải chi tiết đơn hàng...</p>
+          </div>
+
+          <p v-else-if="detailError" class="popup-error">
+            {{ detailError }}
+          </p>
+
+          <template v-else-if="selectedOrder">
+            <div class="popup-header">
+              <div>
+                <nav class="popup-breadcrumb">
+                  <span>Đơn hàng của tôi</span>
+                  <span>/</span>
+                  <strong>Chi tiết đơn hàng</strong>
+                </nav>
+
+                <h2>Chi tiết đơn hàng</h2>
+                <p>Mã đơn hàng: <strong>{{ selectedOrder.order_code || `#${selectedOrder.id}` }}</strong></p>
+              </div>
+
+              <div class="popup-header-actions">
+                <span class="status-badge" :class="statusMap[selectedOrder.order_status]?.className || 'pending'">
+                  {{ statusMap[selectedOrder.order_status]?.label || selectedOrder.order_status }}
+                </span>
+              </div>
+            </div>
+
+            <div class="popup-layout">
+              <section class="detail-card">
+                <h3>Thông tin đơn hàng</h3>
+                <div class="popup-info-grid">
+                  <div>
+                    <span>Ngày đặt</span>
+                    <strong>{{ formatDate(selectedOrder.ordered_at || selectedOrder.created_at) }}</strong>
+                  </div>
+                  <div>
+                    <span>Thanh toán</span>
+                    <strong class="payment-status" :class="selectedOrder.payment_status === 'paid' ? 'paid' : 'unpaid'">
+                      {{ selectedOrder.payment_status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Người nhận</span>
+                    <strong>{{ selectedOrder.receiver_name }}</strong>
+                  </div>
+                  <div>
+                    <span>Số điện thoại</span>
+                    <strong>{{ selectedOrder.receiver_phone }}</strong>
+                  </div>
+                </div>
+
+                <div class="address-box">
+                  <span>Địa chỉ giao hàng</span>
+                  <p>{{ selectedOrder.shipping_address_text || 'Chưa có địa chỉ' }}</p>
+                </div>
+
+                <div v-if="selectedOrder.note" class="note-box">
+                  <span>Ghi chú</span>
+                  <p>{{ selectedOrder.note }}</p>
+                </div>
+              </section>
+
+              <section class="detail-card">
+                <h3>Sản phẩm</h3>
+                <div v-if="selectedOrderItems.length" class="popup-item-list">
+                  <article v-for="item in selectedOrderItems" :key="item.id" class="popup-item-row">
+                    <img
+                      :src="item.productVariant?.product?.thumbnail_url || item.productVariant?.product?.image || '/images/default-product.png'"
+                      :alt="item.product_name"
+                    />
+                    <div class="popup-item-info">
+                      <h4>{{ item.product_name }}</h4>
+                      <p>{{ item.variant_name }}</p>
+                    </div>
+                    <div class="popup-item-meta">
+                      <span>{{ item.quantity }} x {{ formatCurrency(item.unit_price) }}</span>
+                      <strong>{{ formatCurrency(item.total_price) }}</strong>
+                    </div>
+                  </article>
+                </div>
+              </section>
+
+              <aside class="detail-card summary-card popup-summary">
+                <h3>Tóm tắt</h3>
+                <div class="summary-line">
+                  <span>Tạm tính</span>
+                  <strong>{{ formatCurrency(selectedOrder.subtotal || 0) }}</strong>
+                </div>
+                <div class="summary-line">
+                  <span>Phí vận chuyển</span>
+                  <strong>{{ formatCurrency(selectedOrder.shipping_fee || 0) }}</strong>
+                </div>
+                <div class="summary-line">
+                  <span>Giảm giá</span>
+                  <strong class="discount">{{ formatCurrency(selectedOrder.discount_amount || 0) }}</strong>
+                </div>
+                <div class="summary-total">
+                  <span>Tổng cộng</span>
+                  <strong>{{ formatCurrency(selectedOrder.total_amount || 0) }}</strong>
+                </div>
+              </aside>
+            </div>
+          </template>
+        </section>
+      </div>
+    </Teleport>
   </section>
 </template>
 
@@ -546,19 +765,35 @@ onMounted(loadOrders)
 
 .product-info {
   display: grid;
-  grid-template-columns: 82px minmax(0, 1fr);
+  grid-template-columns: 86px minmax(0, 1fr);
   gap: 16px;
   align-items: center;
   min-width: 0;
 }
 
-.product-info img {
+.product-preview {
+  width: 86px;
+  height: 86px;
+  position: relative;
+}
+
+.product-preview img {
+  position: absolute;
   width: 82px;
   height: 82px;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   background: #f3f4f6;
   object-fit: cover;
+  top: 0;
+  left: 0;
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
+}
+
+.product-preview img.stacked {
+  top: 4px;
+  left: 12px;
+  opacity: 0.92;
 }
 
 .product-text {
@@ -577,6 +812,10 @@ onMounted(loadOrders)
   margin: 0 0 3px;
   color: #64748b;
   line-height: 1.4;
+}
+
+.product-text p span {
+  color: #94a3b8;
 }
 
 .order-total {
@@ -696,9 +935,250 @@ onMounted(loadOrders)
   margin: 0;
 }
 
+.order-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(10px);
+  overflow: auto;
+}
+
+.order-detail-popup {
+  position: relative;
+  width: min(100%, 1360px);
+  min-height: calc(100vh - 40px);
+  margin: 0 auto;
+  padding: 24px 24px 28px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 32px 90px rgba(15, 23, 42, 0.28);
+}
+
+.popup-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #1d4ed8;
+  display: grid;
+  place-items: center;
+}
+
+.popup-loading,
+.popup-error {
+  min-height: 260px;
+  display: grid;
+  place-items: center;
+  color: #64748b;
+}
+
+.popup-loading p {
+  margin: 12px 0 0;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  padding-right: 52px;
+}
+
+.popup-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.popup-breadcrumb strong {
+  color: #2563eb;
+}
+
+.popup-header h2 {
+  margin: 0 0 6px;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.popup-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.popup-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.popup-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.detail-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #e5edf8;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.detail-card h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 21px;
+  font-weight: 850;
+}
+
+.popup-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.popup-info-grid div {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #e5edf8;
+  background: #fafcff;
+}
+
+.popup-info-grid span {
+  display: block;
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.popup-info-grid strong {
+  color: #111827;
+}
+
+.popup-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.popup-item-row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid #e5edf8;
+  background: #fff;
+  min-width: 0;
+}
+
+.popup-item-row img {
+  width: 92px;
+  height: 92px;
+  border-radius: 14px;
+  object-fit: cover;
+  background: #f3f4f6;
+}
+
+.popup-item-info h4 {
+  margin: 0 0 6px;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 800;
+  word-break: break-word;
+}
+
+.popup-item-info p {
+  margin: 0 0 3px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.popup-item-meta {
+  text-align: right;
+  min-width: 0;
+}
+
+.popup-item-meta span {
+  display: block;
+  margin-bottom: 6px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.popup-item-meta strong {
+  color: #2563eb;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.popup-summary {
+  background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+}
+
+.popup-summary .summary-line,
+.popup-summary .summary-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid #e5edf8;
+  background: #fff;
+}
+
+.popup-summary .summary-line span,
+.popup-summary .summary-total span {
+  color: #64748b;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.popup-summary .summary-line strong,
+.popup-summary .summary-total strong {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.popup-summary .summary-total {
+  margin-top: auto;
+  border-color: #cfe0ff;
+  background: linear-gradient(180deg, #eef4ff 0%, #dfeaff 100%);
+}
+
 @media (max-width: 1200px) {
   .top-row {
     grid-template-columns: 1fr;
+  }
+
+  .popup-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-card {
+    padding: 18px;
   }
 }
 
@@ -723,6 +1203,24 @@ onMounted(loadOrders)
 
   .order-actions {
     width: 100%;
+  }
+
+  .popup-item-row {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .popup-item-row img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .popup-item-meta {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+
+  .popup-info-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -755,16 +1253,40 @@ onMounted(loadOrders)
   }
 
   .product-info {
-    grid-template-columns: 72px minmax(0, 1fr);
+    grid-template-columns: 76px minmax(0, 1fr);
   }
 
-  .product-info img {
+  .product-preview {
+    width: 76px;
+    height: 76px;
+  }
+
+  .product-preview img {
     width: 72px;
     height: 72px;
   }
 
   .product-text h3 {
     font-size: 15px;
+  }
+
+  .order-detail-overlay {
+    padding: 8px;
+  }
+
+  .order-detail-popup {
+    min-height: calc(100vh - 16px);
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .popup-header {
+    flex-direction: column;
+    padding-right: 0;
+  }
+
+  .popup-layout {
+    gap: 14px;
   }
 }
 </style>

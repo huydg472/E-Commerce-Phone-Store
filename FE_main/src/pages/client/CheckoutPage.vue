@@ -351,12 +351,23 @@ const handleSubmitOrder = async () => {
     await cartStore.fetchAll().catch(() => {
     })
 
-    await router.push({
-      name: 'order.success',
-      query: {
-        order_id: createdOrder?.id ?? '',
-      },
-    })
+    const nextRoute = ['vnpay', 'momo'].includes(selectedPaymentMethod.value)
+      ? {
+          name: 'payment.demo',
+          query: {
+            gateway: selectedPaymentMethod.value,
+            order_id: createdOrder?.id ?? '',
+            amount: String(totalValue.value),
+          },
+        }
+      : {
+          name: 'order.success',
+          query: {
+            order_id: createdOrder?.id ?? '',
+          },
+        }
+
+    await router.push(nextRoute)
   } catch (error) {
     if (error.response?.status === 422) {
       const errors = error.response.data?.errors

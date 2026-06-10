@@ -77,7 +77,8 @@ onMounted(loadOrder)
 
 <template>
   <main class="order-detail-page">
-    <div class="detail-container">
+    <div class="detail-backdrop">
+      <section class="detail-modal">
       <div class="breadcrumb-wrap">
         <RouterLink to="/">Trang chủ</RouterLink>
         <span>/</span>
@@ -199,20 +200,47 @@ onMounted(loadOrder)
           </aside>
         </div>
       </template>
+      </section>
     </div>
   </main>
 </template>
 
 <style scoped>
 .order-detail-page {
-  background: #ffffff;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.06), transparent 30%),
+    #eff4fb;
   color: #111827;
 }
 
-.detail-container {
-  width: min(100% - 36px, 1180px);
+.detail-backdrop {
+  min-height: 100vh;
+  width: 100%;
+  display: block;
+  padding: 0;
+}
+
+.detail-modal {
+  width: 100%;
+  min-height: 100vh;
   margin: 0 auto;
-  padding: 22px 0 36px;
+  padding: 28px 32px 36px;
+  border-radius: 0;
+  border: 0;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: none;
+  overflow: auto;
+}
+
+.detail-modal::-webkit-scrollbar {
+  width: 10px;
+}
+
+.detail-modal::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.55);
 }
 
 .breadcrumb-wrap {
@@ -314,15 +342,18 @@ onMounted(loadOrder)
 
 .detail-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.1fr) 320px;
-  gap: 14px;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 1.25fr) minmax(300px, 0.92fr);
+  gap: 18px;
+  align-items: start;
 }
 
 .detail-card {
-  padding: 18px;
+  padding: 20px;
   border: 1px solid #e5e7eb;
-  border-radius: 14px;
+  border-radius: 18px;
   background: #ffffff;
+  min-width: 0;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.04);
 }
 
 .detail-card h2 {
@@ -409,41 +440,55 @@ onMounted(loadOrder)
 
 .item-row {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr) auto;
-  gap: 14px;
-  align-items: center;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
   padding: 12px;
   border: 1px solid #eef2f7;
-  border-radius: 10px;
+  border-radius: 14px;
+  background: #ffffff;
 }
 
 .item-row img {
-  width: 76px;
-  height: 76px;
-  border-radius: 10px;
+  width: 96px;
+  height: 96px;
+  border-radius: 14px;
   object-fit: cover;
   background: #f3f4f6;
+  flex-shrink: 0;
 }
 
 .item-info h3 {
   margin: 0 0 5px;
   font-size: 15px;
   font-weight: 800;
+  line-height: 1.35;
+  word-break: normal;
 }
 
 .item-info p {
   margin: 0 0 2px;
   color: #64748b;
   font-size: 13px;
+  line-height: 1.45;
+  word-break: normal;
 }
 
 .item-meta {
-  text-align: right;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin-top: 4px;
+  min-width: 0;
+  grid-column: 2;
+  text-align: left;
 }
 
 .item-meta span {
-  display: block;
-  margin-bottom: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: #64748b;
   font-size: 13px;
 }
@@ -452,6 +497,11 @@ onMounted(loadOrder)
   color: #0d6efd;
   font-size: 15px;
   font-weight: 850;
+}
+
+.item-meta strong:last-child {
+  margin-left: auto;
+  font-size: 16px;
 }
 
 .empty-state {
@@ -467,6 +517,7 @@ onMounted(loadOrder)
 
 .summary-card {
   align-self: start;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
 }
 
 .summary-line + .summary-line {
@@ -483,8 +534,8 @@ onMounted(loadOrder)
 
 .summary-total {
   margin-top: 14px;
-  border-color: #dbeafe;
-  background: #eff6ff;
+  border-color: #bfdbfe;
+  background: linear-gradient(135deg, #eff6ff 0%, #e0f2fe 100%);
 }
 
 .summary-total strong {
@@ -500,8 +551,18 @@ onMounted(loadOrder)
 }
 
 @media (max-width: 768px) {
-  .detail-container {
-    width: min(100% - 24px, 1180px);
+  .order-detail-page {
+    padding: 0;
+  }
+
+  .detail-backdrop {
+    padding: 0;
+  }
+
+  .detail-modal {
+    width: 100%;
+    min-height: 100vh;
+    padding: 16px;
   }
 
   .page-header {
@@ -516,9 +577,16 @@ onMounted(loadOrder)
     grid-template-columns: 72px minmax(0, 1fr);
   }
 
+  .item-row img {
+    width: 72px;
+    height: 72px;
+  }
+
   .item-meta {
     grid-column: 1 / -1;
     text-align: left;
+    align-self: auto;
+    justify-content: flex-start;
   }
 }
 </style>

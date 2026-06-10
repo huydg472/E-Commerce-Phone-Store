@@ -263,7 +263,7 @@ onMounted(async () => {
   try {
     await Promise.allSettled([
       cartStore.fetchAll(),
-      productStore.fetchAll(),
+      productStore.fetchAll({status: 'active'}),
     ])
     syncInitialSelection()
   } finally {

@@ -472,7 +472,7 @@ const loadProduct = async () => {
   notFound.value = false
 
   try {
-    await productStore.fetchAll()
+    await productStore.fetchAll({status: 'active'})
 
     const matchedProduct = productStore.items.find(
         (item) =>
@@ -489,6 +489,12 @@ const loadProduct = async () => {
 
     await productStore.fetchById(matchedProduct.id)
     currentProduct.value = productStore.item ?? matchedProduct
+
+    if (String(currentProduct.value?.status ?? '').toLowerCase() !== 'active') {
+      currentProduct.value = null
+      notFound.value = true
+      return
+    }
 
     const variants = getVariants(currentProduct.value)
     const selectedVariant =

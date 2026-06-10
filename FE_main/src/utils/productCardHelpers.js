@@ -30,6 +30,10 @@ export const normalizeText = (value) => {
     return String(value ?? '').replace(/\s+/g, '').toLowerCase()
 }
 
+const isActiveStatus = (value) => {
+    return String(value ?? '').trim().toLowerCase() === 'active'
+}
+
 export const slugifyText = (value) => {
     return String(value ?? '')
         .normalize('NFD')
@@ -108,6 +112,10 @@ const getProductVariants = (product) => {
         []
 
     return Array.isArray(variants) ? variants : []
+}
+
+const getVisibleProductVariants = (product) => {
+    return getProductVariants(product).filter((variant) => isActiveStatus(variant?.status))
 }
 
 const getVariantRom = (variant) => {
@@ -255,7 +263,9 @@ const getVariantImage = (variant) => {
 }
 
 const getBestVariantByRom = (variants) => {
-    const availableVariants = variants.filter((variant) => Number(variant?.quantity ?? 0) > 0)
+    const availableVariants = variants.filter((variant) => {
+        return isActiveStatus(variant?.status) && Number(variant?.quantity ?? 0) > 0
+    })
     const source = availableVariants.length ? availableVariants : variants
 
     return [...source].sort((a, b) => {
@@ -359,10 +369,15 @@ const createRomProductCard = (product, rom, variants, placeholderImage = '') => 
 }
 
 const groupProductByRom = (product, placeholderImage = '') => {
-    const variants = getProductVariants(product)
+    const allVariants = getProductVariants(product)
+    const variants = getVisibleProductVariants(product)
+
+    if (!allVariants.length) {
+      return [createRomProductCard(product, '', [], placeholderImage)]
+    }
 
     if (!variants.length) {
-        return [createRomProductCard(product, '', [], placeholderImage)]
+      return []
     }
 
     const romGroups = new Map()
@@ -388,5 +403,7 @@ const groupProductByRom = (product, placeholderImage = '') => {
 
 export const buildProductCards = (products, placeholderImage = '') => {
     const list = Array.isArray(products) ? products : []
-    return list.flatMap((product) => groupProductByRom(product, placeholderImage))
+    return list
+        .filter((product) => isActiveStatus(product?.status))
+        .flatMap((product) => groupProductByRom(product, placeholderImage))
 }

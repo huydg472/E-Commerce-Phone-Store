@@ -140,7 +140,7 @@ watch(totalPages, (nextTotalPages) => {
 })
 
 onMounted(() => {
-  productStore.fetchAll()
+  productStore.fetchAll({status: 'active'})
 })
 </script>
 

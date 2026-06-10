@@ -118,6 +118,50 @@ class OrderController extends Controller
         ], 200);
     }
 
+    public function mockPayment(Request $request, Order $order): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user->isAdminOrStaff() && $order->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden.',
+            ], 403);
+        }
+
+        $data = $request->validate([
+            'payment_method' => ['nullable', 'string', 'max:50'],
+            'transaction_code' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        DB::transaction(function () use ($order, $data) {
+            $order->update([
+                'payment_status' => 'paid',
+                'order_status' => 'completed',
+                'completed_at' => $order->completed_at ?? now(),
+            ]);
+
+            $payment = $order->payment()->first();
+
+            if ($payment) {
+                $payment->update([
+                    'payment_method' => $data['payment_method'] ?? $payment->payment_method,
+                    'payment_status' => 'paid',
+                    'transaction_code' => $data['transaction_code'] ?? $payment->transaction_code ?? ('MOCK-' . now()->format('YmdHis')),
+                    'paid_at' => $payment->paid_at ?? now(),
+                ]);
+            }
+        });
+
+        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật thanh toán thành công',
+            'data' => $order,
+        ], 200);
+    }
+
     public function update(UpdateOrderRequest $request, Order $order): JsonResponse
     {
         if (!$request->user()->isAdminOrStaff()) {

@@ -54,6 +54,11 @@ export default [
                 meta: {requiresAuth: true},
             },
             {
+                path: 'demo-thanh-toan',
+                name: 'payment.demo',
+                component: () => import('@/pages/client/PaymentGatewayDemoPage.vue'),
+            },
+            {
                 path: 'order-success',
                 name: 'order.success',
                 component: () => import('@/pages/client/OrderSuccessPage.vue'),

@@ -80,7 +80,7 @@ const stats = computed(() => {
   const failed = payments.value.filter((item) => item.payment_status === 'failed').length
 
   return [
-    {label: 'Tổng thanh toán', value: total, icon: 'bi-wallet2', color: 'blue'},
+    {label: 'Tổng thanh toán', value: total, icon: 'bi-cash-stack', color: 'blue'},
     {label: 'Đã thanh toán', value: paid, icon: 'bi-check-circle-fill', color: 'green'},
     {label: 'Chờ xử lý', value: pending, icon: 'bi-hourglass-split', color: 'orange'},
     {label: 'Thất bại', value: failed, icon: 'bi-x-circle-fill', color: 'slate'},
@@ -199,7 +199,7 @@ onMounted(loadPage)
 
     <div v-else class="table-card">
       <div v-if="!filteredPayments.length" class="empty-state">
-        <i class="bi bi-wallet2"></i>
+        <i class="bi bi-cash-stack"></i>
         <p>Chưa có thanh toán nào phù hợp bộ lọc.</p>
       </div>
 
