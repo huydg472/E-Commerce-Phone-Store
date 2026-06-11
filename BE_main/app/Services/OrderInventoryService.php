@@ -25,7 +25,7 @@ class OrderInventoryService
         $variantIds = $groupedItems->keys()->map(fn ($value) => (int) $value)->values()->all();
 
         $variants = ProductVariant::query()
-            ->with('product')
+            ->with(['product.brand', 'product.category'])
             ->whereIn('id', $variantIds)
             ->lockForUpdate()
             ->get()
@@ -43,9 +43,14 @@ class OrderInventoryService
                 ]);
             }
 
-            if ($variant->status !== 'active') {
+            if (
+                $variant->status !== 'active' ||
+                $variant->product?->status !== 'active' ||
+                $variant->product?->brand?->status !== 'active' ||
+                $variant->product?->category?->status !== 'active'
+            ) {
                 throw ValidationException::withMessages([
-                    "items.$variantId.product_variant_id" => ['Biến thể sản phẩm này hiện không còn bán.'],
+                    "items.$variantId.product_variant_id" => ['Sản phẩm này hiện không còn bán.'],
                 ]);
             }
 

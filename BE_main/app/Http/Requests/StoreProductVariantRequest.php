@@ -27,11 +27,12 @@ class StoreProductVariantRequest extends FormRequest
                     ->where('color', $this->color)
                     ->where('storage', $this->storage),
             ],
-            'sku' => ['required', 'string', 'max:100', 'unique:product_variants,sku'],
+            'sku' => ['nullable', 'string', 'max:100', 'unique:product_variants,sku'],
             'import_price' => ['nullable', 'numeric', 'min:0'],
             'price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['nullable', 'numeric', 'min:0', 'lte:price'],
             'quantity' => ['sometimes', 'integer', 'min:0'],
+            'status' => ['sometimes', 'string', 'in:active,inactive'],
             'description' => ['nullable', 'string'],
         ];
     }

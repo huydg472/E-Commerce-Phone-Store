@@ -84,6 +84,15 @@ const resolveVersion = (variant) => {
   ).trim()
 }
 
+const resolveAvailableQuantity = (variant) => {
+  return Number(
+      variant?.available_quantity ??
+      variant?.availableQuantity ??
+      variant?.quantity ??
+      0
+  )
+}
+
 const resolveImage = (product, variant) => {
   const firstVariantImage =
       variant?.productVariantImages?.[0] ??
@@ -149,6 +158,7 @@ const mappedCartItems = computed(() => {
       priceValue,
       totalValue,
       quantity,
+      maxQuantity: resolveAvailableQuantity(variant),
     }
   })
 })
@@ -222,8 +232,14 @@ const handleIncrease = async (item) => {
   try {
     const liveItem = getLiveCartItem(item.id) ?? item
     const currentQuantity = Number(liveItem.quantity ?? 1)
+    const maxQuantity = Number(item.maxQuantity ?? 0)
+
+    if (maxQuantity > 0 && currentQuantity >= maxQuantity) {
+      return
+    }
+
     await cartStore.update(item.id, {
-      quantity: currentQuantity + 1,
+      quantity: maxQuantity > 0 ? Math.min(currentQuantity + 1, maxQuantity) : currentQuantity + 1,
     })
   } catch (error) {
     console.error('Không thể tăng số lượng giỏ hàng:', error)
@@ -326,6 +342,7 @@ onMounted(async () => {
                   :price="item.price"
                   :total="item.total"
                   :quantity="item.quantity"
+                  :max-quantity="item.maxQuantity"
                   :selected="isSelected(item.id)"
                   @toggle="(checked) => toggleItem(item.id, checked)"
                   @increase="handleIncrease(item)"

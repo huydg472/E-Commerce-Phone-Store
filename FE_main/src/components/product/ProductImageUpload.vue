@@ -34,7 +34,7 @@ defineProps({
   },
 })
 
-defineEmits(['close', 'submit'])
+defineEmits(['close', 'submit', 'image-change'])
 </script>
 
 <template>
@@ -67,7 +67,18 @@ defineEmits(['close', 'submit'])
 
           <div class="field">
             <label>Đường dẫn ảnh</label>
-            <input v-model="form.image_url" type="url" class="control" :class="{ invalid: fieldErrors.image_url }" placeholder="https://...">
+            <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                class="control file-control"
+                :class="{ invalid: fieldErrors.image_file }"
+                @change="$emit('image-change', $event)"
+            >
+            <small class="field-hint">Chon anh tu may tinh de luu vao project.</small>
+            <small v-if="fieldErrors.image_file" class="field-error">{{ fieldErrors.image_file }}</small>
+            <div v-if="form.image_preview_url || form.image_url" class="image-preview">
+              <img :src="form.image_preview_url || form.image_url" :alt="form.alt_text || 'Xem truoc anh'">
+            </div>
             <small v-if="fieldErrors.image_url" class="field-error">{{ fieldErrors.image_url }}</small>
           </div>
 
@@ -195,6 +206,30 @@ defineEmits(['close', 'submit'])
   color: #0f172a;
   font-size: 14px;
   outline: none;
+}
+
+.file-control {
+  padding: 9px 14px;
+}
+
+.field-hint {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.image-preview {
+  width: 120px;
+  height: 120px;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .control.invalid {

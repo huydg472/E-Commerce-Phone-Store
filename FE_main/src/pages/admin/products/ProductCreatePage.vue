@@ -19,7 +19,6 @@ const {items: categories} = storeToRefs(categoryStore)
 const saving = ref(false)
 const formError = ref('')
 const fieldErrors = reactive({})
-const manualSlug = ref(false)
 
 const form = reactive({
   brand_id: '',
@@ -27,6 +26,8 @@ const form = reactive({
   name: '',
   slug: '',
   thumbnail_url: '',
+  thumbnail_file: null,
+  thumbnail_preview_url: '',
   short_description: '',
   description: '',
   is_featured: false,
@@ -59,20 +60,57 @@ const setFieldErrors = (errors = {}) => {
 
 const submitLabel = computed(() => (saving.value ? 'Đang lưu...' : 'Tạo sản phẩm'))
 
+const buildPayload = () => {
+  const payload = {
+    brand_id: Number(form.brand_id),
+    category_id: Number(form.category_id),
+    name: form.name.trim(),
+    slug: form.slug.trim(),
+    thumbnail_url: form.thumbnail_url.trim() || null,
+    short_description: form.short_description.trim() || null,
+    description: form.description.trim() || null,
+    is_featured: form.is_featured ? 1 : 0,
+    status: form.status,
+  }
+
+  if (!form.thumbnail_file) {
+    return payload
+  }
+
+  const formData = new FormData()
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== null && value !== undefined) {
+      formData.append(key, value)
+    }
+  })
+  formData.append('thumbnail_file', form.thumbnail_file)
+
+  return formData
+}
+
+const handleThumbnailChange = (event) => {
+  const file = event.target.files?.[0] || null
+  form.thumbnail_file = file
+
+  if (form.thumbnail_preview_url) {
+    URL.revokeObjectURL(form.thumbnail_preview_url)
+  }
+
+  form.thumbnail_preview_url = file ? URL.createObjectURL(file) : ''
+}
+
 watch(
     () => form.name,
     (value) => {
-      if (!manualSlug.value) {
-        form.slug = slugify(value)
-      }
+      form.slug = slugify(value)
     }
 )
 
 const loadInitialData = async () => {
   try {
     await Promise.all([
-      brandStore.fetchAll(),
-      categoryStore.fetchAll(),
+      brandStore.fetchAll({status: 'active'}),
+      categoryStore.fetchAll({status: 'active'}),
     ])
   } catch (error) {
     formError.value = error.response?.data?.message || 'Không tải được dữ liệu khởi tạo.'
@@ -85,19 +123,7 @@ const handleSubmit = async () => {
   clearFieldErrors()
 
   try {
-    const payload = {
-      brand_id: Number(form.brand_id),
-      category_id: Number(form.category_id),
-      name: form.name.trim(),
-      slug: form.slug.trim(),
-      thumbnail_url: form.thumbnail_url.trim() || null,
-      short_description: form.short_description.trim() || null,
-      description: form.description.trim() || null,
-      is_featured: form.is_featured,
-      status: form.status,
-    }
-
-    const response = await productStore.create(payload)
+    const response = await productStore.create(buildPayload())
     const created = response.data?.data ?? response.data ?? null
 
     if (created?.id) {
@@ -149,7 +175,7 @@ onMounted(loadInitialData)
       :submit-label="submitLabel"
       cancel-to="/admin/products"
       @submit="handleSubmit"
-      @slug-manual="manualSlug = true"
+      @thumbnail-change="handleThumbnailChange"
     />
   </div>
 </template>

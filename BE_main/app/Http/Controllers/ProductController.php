@@ -8,9 +8,37 @@ use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
+    private function storeThumbnailFile(StoreProductRequest|UpdateProductRequest $request): ?string
+    {
+        if (! $request->hasFile('thumbnail_file')) {
+            return null;
+        }
+
+        $path = $request->file('thumbnail_file')->store('products', 'public');
+
+        return $request->getSchemeAndHttpHost() . '/storage/' . $path;
+    }
+
+    private function deleteStoredImage(?string $url): void
+    {
+        if (! $url) {
+            return;
+        }
+
+        $path = parse_url($url, PHP_URL_PATH) ?: $url;
+        $storagePrefix = '/storage/';
+
+        if (! str_starts_with($path, $storagePrefix)) {
+            return;
+        }
+
+        Storage::disk('public')->delete(substr($path, strlen($storagePrefix)));
+    }
+
     private function attachDisplayPrice(Product $product): Product
     {
         $variant = $product->productVariants->first(function ($variant) {
@@ -25,8 +53,16 @@ class ProductController extends Controller
 
     public function index(Request $request)
     {
+        $activeOnly = $request->filled('status') && $request->status === 'active';
+
         $query = Product::query()
-            ->with(['brand', 'category', 'productVariants.images'])
+            ->with([
+                'brand',
+                'category',
+                'productVariants' => fn ($query) => $query
+                    ->when($activeOnly, fn ($variantQuery) => $variantQuery->where('status', 'active'))
+                    ->with('images'),
+            ])
             ->latest();
 
         if ($request->filled('is_featured')) {
@@ -35,6 +71,13 @@ class ProductController extends Controller
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+        }
+
+        if ($activeOnly) {
+            $query
+                ->whereHas('brand', fn ($q) => $q->where('status', 'active'))
+                ->whereHas('category', fn ($q) => $q->where('status', 'active'))
+                ->whereHas('productVariants', fn ($q) => $q->where('status', 'active')->where('quantity', '>', 0));
         }
 
         if ($request->filled('brand')) {
@@ -62,12 +105,20 @@ class ProductController extends Controller
 
     public function store(StoreProductRequest $request)
     {
+        $data = $request->validated();
+
+        if ($thumbnailUrl = $this->storeThumbnailFile($request)) {
+            $data['thumbnail_url'] = $thumbnailUrl;
+        }
+
+        unset($data['thumbnail_file']);
+
         $product = Product::create([
             'brand_id' => $request->brand_id,
             'category_id' => $request->category_id,
             'name' => $request->name,
             'slug' => $request->slug,
-            'thumbnail_url' => $request->thumbnail_url,
+            'thumbnail_url' => $data['thumbnail_url'] ?? null,
             'short_description' => $request->short_description,
             'description' => $request->description,
             'is_featured' => $request->is_featured,
@@ -97,7 +148,16 @@ class ProductController extends Controller
 
     public function update(UpdateProductRequest $request, Product $product)
     {
-        $product->update($request->validated());
+        $data = $request->validated();
+
+        if ($thumbnailUrl = $this->storeThumbnailFile($request)) {
+            $this->deleteStoredImage($product->thumbnail_url);
+            $data['thumbnail_url'] = $thumbnailUrl;
+        }
+
+        unset($data['thumbnail_file']);
+
+        $product->update($data);
 
         $product->load(['brand', 'category', 'productVariants.images']);
         $this->attachDisplayPrice($product);
@@ -112,6 +172,7 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         try {
+            $this->deleteStoredImage($product->thumbnail_url);
             $product->delete();
 
             return response()->json([
@@ -150,7 +211,17 @@ class ProductController extends Controller
     public function showBySlug(string $slug): JsonResponse
     {
         $product = Product::where('slug', $slug)
-            ->with(['brand', 'category', 'productVariants.images'])
+            ->where('status', 'active')
+            ->whereHas('brand', fn ($q) => $q->where('status', 'active'))
+            ->whereHas('category', fn ($q) => $q->where('status', 'active'))
+            ->whereHas('productVariants', fn ($q) => $q->where('status', 'active')->where('quantity', '>', 0))
+            ->with([
+                'brand',
+                'category',
+                'productVariants' => fn ($query) => $query
+                    ->where('status', 'active')
+                    ->with('images'),
+            ])
             ->firstOrFail();
 
         $this->attachDisplayPrice($product);

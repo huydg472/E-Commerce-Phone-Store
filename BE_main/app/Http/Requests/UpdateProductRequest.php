@@ -28,8 +28,8 @@ class UpdateProductRequest extends FormRequest
         $productId = is_object($product) ? $product->id : $product;
 
         return [
-            'brand_id' => ['sometimes', 'required', 'integer', 'exists:brands,id'],
-            'category_id' => ['sometimes', 'required', 'integer', 'exists:categories,id'],
+            'brand_id' => ['sometimes', 'required', 'integer', Rule::exists('brands', 'id')->where('status', 'active')],
+            'category_id' => ['sometimes', 'required', 'integer', Rule::exists('categories', 'id')->where('status', 'active')],
             'name' => [
                 'sometimes',
                 'required',
@@ -45,6 +45,7 @@ class UpdateProductRequest extends FormRequest
                 Rule::unique('products', 'slug')->ignore($productId),
             ],
             'thumbnail_url' => ['nullable', 'url', 'max:500'],
+            'thumbnail_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'short_description' => ['nullable', 'string'],
             'description' => ['nullable', 'string'],
             'is_featured' => ['sometimes', 'boolean'],

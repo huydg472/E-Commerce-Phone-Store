@@ -56,6 +56,8 @@ const summary = computed(() => {
 const form = reactive({
   product_variant_id: '',
   image_url: '',
+  image_file: null,
+  image_preview_url: '',
   alt_text: '',
   sort_order: '',
 })
@@ -77,9 +79,48 @@ const setFieldErrors = (errors = {}) => {
 const resetForm = () => {
   form.product_variant_id = String(selectedVariantId.value || '')
   form.image_url = ''
+  form.image_file = null
+  if (form.image_preview_url) {
+    URL.revokeObjectURL(form.image_preview_url)
+  }
+  form.image_preview_url = ''
   form.alt_text = ''
   form.sort_order = ''
   editingImageId.value = null
+}
+
+const buildPayload = () => {
+  const payload = {
+    product_variant_id: Number(form.product_variant_id || selectedVariantId.value),
+    image_url: form.image_url.trim(),
+    alt_text: form.alt_text.trim() || null,
+    sort_order: form.sort_order === '' ? null : Number(form.sort_order),
+  }
+
+  if (!form.image_file) {
+    return payload
+  }
+
+  const formData = new FormData()
+  Object.entries(payload).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== '') {
+      formData.append(key, value)
+    }
+  })
+  formData.append('image_file', form.image_file)
+
+  return formData
+}
+
+const handleImageChange = (event) => {
+  const file = event.target.files?.[0] || null
+  form.image_file = file
+
+  if (form.image_preview_url) {
+    URL.revokeObjectURL(form.image_preview_url)
+  }
+
+  form.image_preview_url = file ? URL.createObjectURL(file) : ''
 }
 
 const loadData = async () => {
@@ -136,6 +177,8 @@ const openEditModal = (image) => {
   editingImageId.value = image?.id ?? null
   form.product_variant_id = String(image?.product_variant_id ?? image?.productVariant?.id ?? selectedVariantId.value ?? '')
   form.image_url = image?.image_url ?? ''
+  form.image_file = null
+  form.image_preview_url = ''
   form.alt_text = image?.alt_text ?? ''
   form.sort_order = image?.sort_order ?? ''
   formError.value = ''
@@ -156,17 +199,10 @@ const handleSubmit = async () => {
   clearFieldErrors()
 
   try {
-    const payload = {
-      product_variant_id: Number(form.product_variant_id || selectedVariantId.value),
-      image_url: form.image_url.trim(),
-      alt_text: form.alt_text.trim() || null,
-      sort_order: form.sort_order === '' ? null : Number(form.sort_order),
-    }
-
     if (editingImageId.value) {
-      await imageStore.update(editingImageId.value, payload)
+      await imageStore.update(editingImageId.value, buildPayload())
     } else {
-      await imageStore.create(payload)
+      await imageStore.create(buildPayload())
     }
 
     await imageStore.fetchAll()
@@ -386,6 +422,7 @@ onMounted(loadData)
       :saving="saving"
       @close="closeModal"
       @submit="handleSubmit"
+      @image-change="handleImageChange"
     />
   </div>
 </template>

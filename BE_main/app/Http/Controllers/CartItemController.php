@@ -66,12 +66,18 @@ class CartItemController extends Controller
         $user = $request->user();
         $quantity = max((int) ($request->quantity ?? 1), 1);
 
-        $variant = ProductVariant::findOrFail($request->product_variant_id);
+        $variant = ProductVariant::with(['product.brand', 'product.category'])
+            ->findOrFail($request->product_variant_id);
 
-        if ($variant->status !== 'active') {
+        if (
+            $variant->status !== 'active' ||
+            $variant->product?->status !== 'active' ||
+            $variant->product?->brand?->status !== 'active' ||
+            $variant->product?->category?->status !== 'active'
+        ) {
             return response()->json([
                 'status' => false,
-                'message' => 'Biến thể sản phẩm này hiện không còn bán.'
+                'message' => 'Sản phẩm này hiện không còn bán.'
             ], 400);
         }
 
@@ -129,7 +135,7 @@ class CartItemController extends Controller
 
     public function show(Request $request, CartItem $cartItem): JsonResponse
     {
-        $cartItem->load(['cart', 'productVariant.product']);
+        $cartItem->load(['cart', 'productVariant.product.brand', 'productVariant.product.category']);
 
         if (!$request->user()->isAdminOrStaff() && $cartItem->cart?->user_id !== $request->user()->id) {
             return response()->json([
@@ -156,7 +162,30 @@ class CartItemController extends Controller
             ], 403);
         }
 
-        $cartItem->update($updateRequest->validated());
+        $data = $updateRequest->validated();
+        $variant = $cartItem->productVariant;
+
+        if (
+            !$variant ||
+            $variant->status !== 'active' ||
+            $variant->product?->status !== 'active' ||
+            $variant->product?->brand?->status !== 'active' ||
+            $variant->product?->category?->status !== 'active'
+        ) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Sản phẩm này hiện không còn bán.',
+            ], 400);
+        }
+
+        if ((int) $variant->available_quantity < (int) $data['quantity']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Số lượng tồn kho không đủ.',
+            ], 400);
+        }
+
+        $cartItem->update($data);
         $cartItem->load(['cart', 'productVariant.product']);
 
         return response()->json([

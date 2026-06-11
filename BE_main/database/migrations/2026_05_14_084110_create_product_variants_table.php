@@ -24,6 +24,7 @@ return new class extends Migration
             $table->decimal('price', 12, 2);
             $table->decimal('sale_price', 12, 2)->nullable();
             $table->integer('quantity')->default(0);
+            $table->integer('reserved_quantity')->default(0);
             $table->string('status', 20)->default('active');
             $table->text('description')->nullable();
             $table->timestamps();
@@ -37,6 +38,8 @@ return new class extends Migration
             CHECK (
                 price >= 0
                 AND quantity >= 0
+                AND reserved_quantity >= 0
+                AND quantity >= reserved_quantity
                 AND (
                     sale_price IS NULL
                     OR (

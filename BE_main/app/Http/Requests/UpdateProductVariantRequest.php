@@ -37,8 +37,7 @@ class UpdateProductVariantRequest extends FormRequest
                     ->ignore($variantId),
             ],
             'sku' => [
-                'sometimes',
-                'required',
+                'nullable',
                 'string',
                 'max:100',
                 Rule::unique('product_variants', 'sku')->ignore($variantId),

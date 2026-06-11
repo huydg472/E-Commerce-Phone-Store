@@ -17,12 +17,13 @@ class StoreProductVariantImageRequest extends FormRequest
         return [
             'product_variant_id' => ['required', 'integer', 'exists:product_variants,id'],
             'image_url' => [
-                'required',
+                'required_without:image_file',
                 'url',
                 'max:500',
                 Rule::unique('product_variant_images')
                     ->where('product_variant_id', $this->product_variant_id),
             ],
+            'image_file' => ['required_without:image_url', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'alt_text' => ['nullable', 'string', 'max:225'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ];

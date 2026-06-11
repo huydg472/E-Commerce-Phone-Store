@@ -39,6 +39,18 @@ export const useProductStore = defineStore('product', {
             }
         },
 
+        async fetchBySlug(slug) {
+            this.loading = true
+
+            try {
+                const response = await productService.getBySlug(slug)
+                this.item = response.data?.data ?? response.data
+                return response
+            } finally {
+                this.loading = false
+            }
+        },
+
         async create(payload) {
             const response = await productService.create(payload)
             await this.fetchAll()

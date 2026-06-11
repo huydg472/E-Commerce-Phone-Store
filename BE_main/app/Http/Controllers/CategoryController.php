@@ -7,15 +7,19 @@ use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $categories = Category::latest()->get();
+        $categories = Category::query()
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->status))
+            ->latest()
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -99,7 +103,9 @@ class CategoryController extends Controller
 
     public function showBySlug(string $slug): JsonResponse
     {
-        $category = Category::where('slug', $slug)->firstOrFail();
+        $category = Category::where('slug', $slug)
+            ->where('status', 'active')
+            ->firstOrFail();
 
         return response()->json([
             'status' => true,

@@ -5,9 +5,37 @@ namespace App\Http\Controllers;
 use App\Models\ProductVariantImage;
 use App\Http\Requests\StoreProductVariantImageRequest;
 use App\Http\Requests\UpdateProductVariantImageRequest;
+use Illuminate\Support\Facades\Storage;
 
 class ProductVariantImageController extends Controller
 {
+    private function storeImageFile(StoreProductVariantImageRequest|UpdateProductVariantImageRequest $request): ?string
+    {
+        if (! $request->hasFile('image_file')) {
+            return null;
+        }
+
+        $path = $request->file('image_file')->store('product-variants', 'public');
+
+        return $request->getSchemeAndHttpHost() . '/storage/' . $path;
+    }
+
+    private function deleteStoredImage(?string $url): void
+    {
+        if (! $url) {
+            return;
+        }
+
+        $path = parse_url($url, PHP_URL_PATH) ?: $url;
+        $storagePrefix = '/storage/';
+
+        if (! str_starts_with($path, $storagePrefix)) {
+            return;
+        }
+
+        Storage::disk('public')->delete(substr($path, strlen($storagePrefix)));
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -43,6 +71,11 @@ class ProductVariantImageController extends Controller
     public function store(StoreProductVariantImageRequest $request)
     {
         $data = $request->validated();
+        unset($data['image_file']);
+
+        if ($imageUrl = $this->storeImageFile($request)) {
+            $data['image_url'] = $imageUrl;
+        }
 
         // Nếu người dùng không nhập sort_order
         // thì hệ thống tự tính theo từng biến thể sản phẩm
@@ -66,6 +99,12 @@ class ProductVariantImageController extends Controller
     public function update(UpdateProductVariantImageRequest $request, ProductVariantImage $productVariantImage)
     {
         $data = $request->validated();
+        unset($data['image_file']);
+
+        if ($imageUrl = $this->storeImageFile($request)) {
+            $this->deleteStoredImage($productVariantImage->image_url);
+            $data['image_url'] = $imageUrl;
+        }
 
         $productVariantImage->update($data);
 
@@ -81,6 +120,7 @@ class ProductVariantImageController extends Controller
 
     public function destroy(ProductVariantImage $productVariantImage)
     {
+        $this->deleteStoredImage($productVariantImage->image_url);
         $productVariantImage->delete();
 
         return response()->json([

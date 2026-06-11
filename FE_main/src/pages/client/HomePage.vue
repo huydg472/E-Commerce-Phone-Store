@@ -20,6 +20,7 @@ const placeholder = {
 }
 
 const selectedBrand = ref('')
+const featuredScrollRef = ref(null)
 const brandPriority = ['Apple', 'Samsung', 'OPPO', 'Xiaomi', 'Vivo', 'Realme']
 
 const productList = computed(() => Array.isArray(products.value) ? products.value : [])
@@ -63,7 +64,7 @@ const matchesBrand = (productCard) => {
 
 const featuredProducts = computed(() => {
   const featured = productCards.value.filter((product) => product.isFeatured)
-  return (featured.length ? featured : productCards.value).slice(0, 5)
+  return (featured.length ? featured : productCards.value).slice(0, 20)
 })
 
 const brandProducts = computed(() => {
@@ -71,6 +72,20 @@ const brandProducts = computed(() => {
       .filter(matchesBrand)
       .slice(0, 8)
 })
+
+const scrollFeaturedProducts = (direction) => {
+  const element = featuredScrollRef.value
+
+  if (!element) {
+    return
+  }
+
+  const cardWidth = element.querySelector('.product-card-shell')?.offsetWidth || 260
+  element.scrollBy({
+    left: direction * (cardWidth + 16) * 2,
+    behavior: 'smooth',
+  })
+}
 
 watch(
     brandList,
@@ -83,8 +98,8 @@ watch(
 )
 
 onMounted(() => {
-  productStore.fetchAll({status: 'active'})
-  brandStore.fetchAll()
+  productStore.fetchAll({status: 'active', per_page: 500})
+  brandStore.fetchAll({status: 'active'})
 })
 </script>
 
@@ -109,32 +124,32 @@ onMounted(() => {
       </div>
 
       <div class="product-slider-wrap">
-        <button class="product-nav product-nav-left" type="button">
+        <button class="product-nav product-nav-left" type="button" @click="scrollFeaturedProducts(-1)">
           <i class="bi bi-chevron-left"></i>
         </button>
 
-        <div class="product-grid">
+        <div ref="featuredScrollRef" class="product-grid featured-product-track">
           <div v-if="productLoading" class="loading-state">
             Đang tải sản phẩm...
           </div>
 
-          <ProductCard
-              v-for="product in featuredProducts"
-              :key="product.id"
-              :image="product.image"
-              :name="product.name"
-              :colors="product.colors"
-              :price="product.price"
-              :old-price="product.oldPrice || ''"
-              :to="product.to"
-              :product-id="product.productId"
-              :variant-id="product.variantId"
-              :cart-quantity="1"
-              :stock-quantity="product.stockQuantity"
-          />
+          <div v-for="product in featuredProducts" :key="product.id" class="product-card-shell">
+            <ProductCard
+                :image="product.image"
+                :name="product.name"
+                :colors="product.colors"
+                :price="product.price"
+                :old-price="product.oldPrice || ''"
+                :to="product.to"
+                :product-id="product.productId"
+                :variant-id="product.variantId"
+                :cart-quantity="1"
+                :stock-quantity="product.stockQuantity"
+            />
+          </div>
         </div>
 
-        <button class="product-nav product-nav-right" type="button">
+        <button class="product-nav product-nav-right" type="button" @click="scrollFeaturedProducts(1)">
           <i class="bi bi-chevron-right"></i>
         </button>
       </div>
@@ -267,6 +282,25 @@ onMounted(() => {
   gap: 16px;
 }
 
+.featured-product-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 2px 2px 8px;
+}
+
+.featured-product-track::-webkit-scrollbar {
+  display: none;
+}
+
+.product-card-shell {
+  flex: 0 0 calc((100% - 64px) / 5);
+  min-width: 220px;
+  scroll-snap-align: start;
+}
+
 .loading-state {
   grid-column: 1 / -1;
   padding: 16px 0;
@@ -381,6 +415,10 @@ onMounted(() => {
     grid-template-columns: repeat(3, 1fr);
   }
 
+  .product-card-shell {
+    flex-basis: calc((100% - 32px) / 3);
+  }
+
   .brand-product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -395,10 +433,14 @@ onMounted(() => {
     height: 260px;
   }
 
-  .product-grid,
   .brand-product-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 18px;
+  }
+
+  .product-card-shell {
+    flex-basis: calc((100% - 18px) / 2);
+    min-width: 210px;
   }
 
   .promo-placeholder-card {
@@ -424,9 +466,13 @@ onMounted(() => {
     height: 210px;
   }
 
-  .product-grid,
   .brand-product-grid {
     grid-template-columns: 1fr;
+  }
+
+  .product-card-shell {
+    flex-basis: 88%;
+    min-width: 240px;
   }
 
   .section-heading h2 {

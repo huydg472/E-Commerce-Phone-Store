@@ -33,6 +33,7 @@ class UpdateProductVariantImageRequest extends FormRequest
                     ->where('product_variant_id', $variantId)
                     ->ignore($imageId),
             ],
+            'image_file' => ['sometimes', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'alt_text' => ['nullable', 'string', 'max:225'],
             'sort_order' => ['sometimes', 'integer', 'min:0'],
         ];

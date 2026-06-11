@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, reactive, ref} from 'vue'
+import {computed, onMounted, reactive, ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
 import {storeToRefs} from 'pinia'
 import {useProductStore} from '@/stores/productStore.js'
@@ -25,6 +25,41 @@ const fieldErrors = reactive({})
 const productId = computed(() => route.params.id)
 const isActiveTab = (name) => route.name === name
 const variantRows = computed(() => product.value?.productVariants || product.value?.product_variants || [])
+
+const codePart = (value) => {
+  const code = String(value ?? '')
+      .trim()
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^A-Z0-9]+/g, '')
+
+  return code || 'NA'
+}
+
+const productCode = computed(() => {
+  const source = String(product.value?.slug || product.value?.name || `SP${productId.value}`)
+      .trim()
+      .toUpperCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+
+  const tokens = source.split(/[^A-Z0-9]+/).filter(Boolean)
+  const code = tokens
+      .map((token) => (/\d/.test(token) ? token : token.slice(0, 1)))
+      .join('')
+
+  return code || `SP${productId.value}`
+})
+
+const generateSku = () => {
+  return [
+    productCode.value,
+    codePart(form.color),
+    codePart(form.storage),
+    codePart(form.ram),
+  ].join('-')
+}
 
 const summary = computed(() => {
   const variants = variantRows.value
@@ -52,6 +87,13 @@ const form = reactive({
   description: '',
 })
 
+watch(
+    () => [productCode.value, form.color, form.storage, form.ram],
+    () => {
+      form.sku = generateSku()
+    }
+)
+
 const clearFieldErrors = () => {
   Object.keys(fieldErrors).forEach((key) => {
     delete fieldErrors[key]
@@ -71,7 +113,7 @@ const resetForm = () => {
   form.color = ''
   form.storage = ''
   form.ram = ''
-  form.sku = ''
+  form.sku = generateSku()
   form.import_price = ''
   form.price = ''
   form.sale_price = ''
@@ -105,7 +147,7 @@ const openEditModal = (variant) => {
   form.color = variant?.color ?? ''
   form.storage = variant?.storage ?? ''
   form.ram = variant?.ram ?? ''
-  form.sku = variant?.sku ?? ''
+  form.sku = generateSku()
   form.import_price = variant?.import_price ?? ''
   form.price = variant?.price ?? ''
   form.sale_price = variant?.sale_price ?? ''

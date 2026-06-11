@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import {computed} from 'vue'
+
+const props = defineProps({
   form: {
     type: Object,
     required: true,
@@ -34,7 +36,21 @@ defineProps({
   },
 })
 
-defineEmits(['submit', 'slug-manual'])
+defineEmits(['submit', 'thumbnail-change'])
+
+const isSelected = (item, field) => {
+  return String(item?.id ?? '') === String(props.form?.[field] ?? '')
+}
+
+const isInactive = (item) => String(item?.status ?? '').toLowerCase() === 'inactive'
+
+const visibleBrands = computed(() => {
+  return props.brands.filter((brand) => !isInactive(brand) || isSelected(brand, 'brand_id'))
+})
+
+const visibleCategories = computed(() => {
+  return props.categories.filter((category) => !isInactive(category) || isSelected(category, 'category_id'))
+})
 </script>
 
 <template>
@@ -53,8 +69,13 @@ defineEmits(['submit', 'slug-manual'])
             <label>Thương hiệu</label>
             <select v-model="form.brand_id" class="control" :class="{ invalid: fieldErrors.brand_id }" required>
               <option value="">Chọn thương hiệu</option>
-              <option v-for="brand in brands" :key="brand.id" :value="String(brand.id)">
-                {{ brand.name }}
+              <option
+                  v-for="brand in visibleBrands"
+                  :key="brand.id"
+                  :value="String(brand.id)"
+                  :disabled="isInactive(brand)"
+              >
+                {{ brand.name }}{{ isInactive(brand) ? ' (Tạm ẩn)' : '' }}
               </option>
             </select>
             <small v-if="fieldErrors.brand_id" class="field-error">{{ fieldErrors.brand_id }}</small>
@@ -64,8 +85,13 @@ defineEmits(['submit', 'slug-manual'])
             <label>Danh mục</label>
             <select v-model="form.category_id" class="control" :class="{ invalid: fieldErrors.category_id }" required>
               <option value="">Chọn danh mục</option>
-              <option v-for="category in categories" :key="category.id" :value="String(category.id)">
-                {{ category.name }}
+              <option
+                  v-for="category in visibleCategories"
+                  :key="category.id"
+                  :value="String(category.id)"
+                  :disabled="isInactive(category)"
+              >
+                {{ category.name }}{{ isInactive(category) ? ' (Tạm ẩn)' : '' }}
               </option>
             </select>
             <small v-if="fieldErrors.category_id" class="field-error">{{ fieldErrors.category_id }}</small>
@@ -77,7 +103,7 @@ defineEmits(['submit', 'slug-manual'])
           <input
               v-model="form.name"
               type="text"
-              class="control"
+              class="control readonly-control"
               :class="{ invalid: fieldErrors.name }"
               placeholder="Ví dụ: Samsung Galaxy A36 5G"
               required
@@ -94,9 +120,9 @@ defineEmits(['submit', 'slug-manual'])
               :class="{ invalid: fieldErrors.slug }"
               placeholder="slug-san-pham"
               required
-              @input="$emit('slug-manual')"
+              readonly
           />
-          <small class="field-hint">Giữ nguyên slug nếu bạn không muốn thay đổi đường dẫn.</small>
+          <small class="field-hint">Slug tu sinh theo ten san pham.</small>
           <small v-if="fieldErrors.slug" class="field-error">{{ fieldErrors.slug }}</small>
         </div>
       </div>
@@ -112,12 +138,14 @@ defineEmits(['submit', 'slug-manual'])
         <div class="field">
           <label>Ảnh đại diện</label>
           <input
-              v-model="form.thumbnail_url"
-              type="url"
-              class="control"
-              :class="{ invalid: fieldErrors.thumbnail_url }"
-              placeholder="https://..."
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              class="control file-control"
+              :class="{ invalid: fieldErrors.thumbnail_file }"
+              @change="$emit('thumbnail-change', $event)"
           />
+          <small class="field-hint">Chon anh tu may tinh de luu vao project.</small>
+          <small v-if="fieldErrors.thumbnail_file" class="field-error">{{ fieldErrors.thumbnail_file }}</small>
           <small v-if="fieldErrors.thumbnail_url" class="field-error">{{ fieldErrors.thumbnail_url }}</small>
         </div>
 
@@ -181,7 +209,7 @@ defineEmits(['submit', 'slug-manual'])
 
     <aside class="preview-card">
       <div class="preview-image">
-        <img :src="form.thumbnail_url || '/images/default-product.png'" :alt="form.name || 'Xem trước sản phẩm'">
+        <img :src="form.thumbnail_preview_url || form.thumbnail_url || '/images/default-product.png'" :alt="form.name || 'Xem trước sản phẩm'">
       </div>
 
       <div class="preview-body">
@@ -284,6 +312,10 @@ defineEmits(['submit', 'slug-manual'])
   outline: none;
 }
 
+.file-control {
+  padding: 9px 14px;
+}
+
 .textarea {
   min-height: 110px;
   padding-top: 12px;
@@ -293,6 +325,11 @@ defineEmits(['submit', 'slug-manual'])
 .control.invalid {
   border-color: #fca5a5;
   box-shadow: 0 0 0 3px rgba(252, 165, 165, 0.12);
+}
+
+.readonly-control {
+  background: #f8fafc;
+  color: #475569;
 }
 
 .field-hint {

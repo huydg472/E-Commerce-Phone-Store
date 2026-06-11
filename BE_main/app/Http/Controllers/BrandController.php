@@ -7,12 +7,14 @@ use App\Http\Requests\UpdateBrandRequest;
 use App\Models\Brand;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class BrandController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $brands = Brand::query()
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->status))
             ->orderByDesc('id')
             ->get();
 

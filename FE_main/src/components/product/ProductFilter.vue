@@ -30,7 +30,7 @@ const openSections = ref({
 const brandPriority = ['Apple', 'Samsung', 'OPPO', 'Xiaomi', 'Vivo', 'Realme']
 
 onMounted(() => {
-  brandStore.fetchAll()
+  brandStore.fetchAll({status: 'active'})
 })
 
 const brandList = computed(() => {

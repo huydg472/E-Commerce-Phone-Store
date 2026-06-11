@@ -4,11 +4,55 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreProductVariantRequest;
 use App\Http\Requests\UpdateProductVariantRequest;
+use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 
 class ProductVariantController extends Controller
 {
+    private function codePart(?string $value): string
+    {
+        $code = Str::upper(Str::ascii((string) $value));
+        $code = preg_replace('/[^A-Z0-9]+/', '', $code) ?: '';
+
+        return $code ?: 'NA';
+    }
+
+    private function productCode(Product $product): string
+    {
+        $source = Str::upper(Str::ascii($product->slug ?: $product->name));
+        $tokens = preg_split('/[^A-Z0-9]+/', $source, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $code = collect($tokens)
+            ->map(fn (string $token) => preg_match('/\d/', $token) ? $token : Str::substr($token, 0, 1))
+            ->join('');
+
+        return Str::limit($code ?: 'SP' . $product->id, 30, '');
+    }
+
+    private function generateSku(array $data, ?int $ignoreId = null): string
+    {
+        $product = Product::findOrFail($data['product_id']);
+        $baseSku = implode('-', [
+            $this->productCode($product),
+            $this->codePart($data['color'] ?? ''),
+            $this->codePart($data['storage'] ?? ''),
+            $this->codePart($data['ram'] ?? ''),
+        ]);
+
+        $sku = $baseSku;
+        $suffix = 2;
+
+        while (ProductVariant::where('sku', $sku)
+            ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
+            ->exists()) {
+            $sku = Str::limit($baseSku, 95, '') . '-' . $suffix;
+            $suffix++;
+        }
+
+        return $sku;
+    }
+
     public function index()
     {
         $productVariant = ProductVariant::query()
@@ -20,19 +64,10 @@ class ProductVariantController extends Controller
 
     public function store(StoreProductVariantRequest $request)
     {
-        $productVariant = ProductVariant::create([
-            'product_id' => $request->product_id,
-            'color' => $request->color,
-            'storage' => $request->storage,
-            'ram' => $request->ram,
-            'sku' => $request->sku,
-            'import_price' => $request->import_price,
-            'price' => $request->price,
-            'sale_price' => $request->sale_price,
-            'quantity' => $request->quantity,
-            'status' => $request->status,
-            'description' => $request->description,
-        ]);
+        $data = $request->validated();
+        $data['sku'] = blank($data['sku'] ?? null) ? $this->generateSku($data) : $data['sku'];
+
+        $productVariant = ProductVariant::create($data);
 
         $productVariant->load(['product', 'images']);
 
@@ -48,19 +83,14 @@ class ProductVariantController extends Controller
 
     public function update(UpdateProductVariantRequest $request, ProductVariant $productVariant)
     {
-        $productVariant->update([
-            'product_id' => $request->product_id,
-            'color' => $request->color,
-            'storage' => $request->storage,
-            'ram' => $request->ram,
-            'sku' => $request->sku,
-            'import_price' => $request->import_price,
-            'price' => $request->price,
-            'sale_price' => $request->sale_price,
-            'quantity' => $request->quantity,
-            'status' => $request->status,
-            'description' => $request->description,
-        ]);
+        $data = $request->validated();
+
+        if (array_key_exists('sku', $data) && blank($data['sku'])) {
+            $dataForSku = array_merge($productVariant->only(['product_id', 'color', 'storage', 'ram']), $data);
+            $data['sku'] = $this->generateSku($dataForSku, $productVariant->id);
+        }
+
+        $productVariant->update($data);
 
         $productVariant->load(['product', 'images']);
 

@@ -57,9 +57,5 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
             ]
         );
-
-        User::factory()->count(8)->create([
-            'role_id' => $customerRole->id,
-        ]);
     }
 }

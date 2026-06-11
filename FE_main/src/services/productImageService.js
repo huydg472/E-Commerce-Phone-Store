@@ -14,6 +14,11 @@ export const productImageService = {
     },
 
     update(id, data) {
+        if (data instanceof FormData) {
+            data.append('_method', 'PUT')
+            return api.post(`/product-images/${id}`, data)
+        }
+
         return api.put(`/product-images/${id}`, data)
     },
 

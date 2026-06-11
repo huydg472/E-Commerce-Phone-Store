@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from 'vue'
+import {computed, ref, watch} from 'vue'
 
 const props = defineProps({
   storages: {
@@ -30,6 +30,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  maxCartQuantity: {
+    type: Number,
+    default: null,
+  },
 })
 
 const emit = defineEmits([
@@ -57,6 +61,15 @@ const maxSelectableQuantity = computed(() => {
   return rawValue > 0 ? rawValue : Number.POSITIVE_INFINITY
 })
 
+const maxAddToCartQuantity = computed(() => {
+  if (props.maxCartQuantity === null || props.maxCartQuantity === undefined) {
+    return maxSelectableQuantity.value
+  }
+
+  const rawValue = Number(props.maxCartQuantity)
+  return rawValue > 0 ? rawValue : 0
+})
+
 const clampQuantity = (value) => {
   const normalized = Math.max(Number(value) || 1, 1)
 
@@ -66,6 +79,26 @@ const clampQuantity = (value) => {
 
   return Math.min(normalized, maxSelectableQuantity.value)
 }
+
+const clampCartQuantity = (value) => {
+  const maxValue = maxAddToCartQuantity.value
+
+  if (maxValue <= 0) {
+    return 1
+  }
+
+  const normalized = Math.max(Number(value) || 1, 1)
+
+  if (!Number.isFinite(maxValue)) {
+    return normalized
+  }
+
+  return Math.min(normalized, maxValue)
+}
+
+const canAddToCart = computed(() => {
+  return Boolean(props.productVariantId) && !props.isOutOfStock && maxAddToCartQuantity.value > 0
+})
 
 const normalizeOption = (item, fallbackValue = '') => {
   if (typeof item === 'string') {
@@ -146,7 +179,7 @@ const decreaseQuantity = () => {
 }
 
 const increaseQuantity = () => {
-  quantity.value = clampQuantity(quantity.value + 1)
+  quantity.value = clampCartQuantity(quantity.value + 1)
 }
 
 const decreaseBuyNowQuantity = () => {
@@ -186,15 +219,23 @@ const confirmBuyNow = () => {
 }
 
 const handleAddToCart = () => {
-  if (!props.productVariantId || props.isOutOfStock) {
+  if (!canAddToCart.value) {
     return
   }
 
   emit('add-to-cart', {
     productVariantId: props.productVariantId,
-    quantity: quantity.value,
+    quantity: clampCartQuantity(quantity.value),
   })
 }
+
+watch(
+    () => [props.productVariantId, props.maxQuantity, props.maxCartQuantity],
+    () => {
+      quantity.value = clampCartQuantity(quantity.value)
+      buyNowQuantity.value = clampQuantity(buyNowQuantity.value)
+    }
+)
 </script>
 
 <template>
@@ -242,12 +283,21 @@ const handleAddToCart = () => {
 
     <div class="option-group">
       <h4>Số lượng</h4>
+      <p v-if="Number.isFinite(maxSelectableQuantity)" class="quantity-note">
+        Còn {{ maxSelectableQuantity }} sản phẩm trong kho.
+      </p>
 
       <div class="buy-row">
         <div class="quantity-box" :class="{ disabled: isOutOfStock }">
           <button type="button" :disabled="isOutOfStock" @click="decreaseQuantity">-</button>
           <span>{{ quantity }}</span>
-          <button type="button" :disabled="isOutOfStock" @click="increaseQuantity">+</button>
+          <button
+              type="button"
+              :disabled="isOutOfStock || quantity >= maxAddToCartQuantity"
+              @click="increaseQuantity"
+          >
+            +
+          </button>
         </div>
 
         <button type="button" class="buy-now-btn" :disabled="isOutOfStock" @click="openBuyNowModal">
@@ -258,9 +308,9 @@ const handleAddToCart = () => {
     </div>
 
     <div class="action-row">
-      <button type="button" class="cart-btn" :disabled="isOutOfStock" @click="handleAddToCart">
+      <button type="button" class="cart-btn" :disabled="!canAddToCart" @click="handleAddToCart">
         <i class="bi bi-cart3"></i>
-        Thêm vào giỏ hàng
+        {{ canAddToCart ? 'Thêm vào giỏ hàng' : 'Đã đạt tối đa trong giỏ' }}
       </button>
     </div>
   </div>
@@ -322,6 +372,13 @@ const handleAddToCart = () => {
   color: #111827;
   font-size: 14px;
   font-weight: 800;
+}
+
+.quantity-note {
+  margin: -2px 0 8px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .option-list,

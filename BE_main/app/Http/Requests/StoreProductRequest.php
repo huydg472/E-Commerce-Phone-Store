@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class StoreProductRequest extends FormRequest
 {
@@ -24,14 +25,16 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'brand_id' => ['required', 'integer', 'exists:brands,id'],
-            'category_id' => ['required', 'integer', 'exists:categories,id'],
+            'brand_id' => ['required', 'integer', Rule::exists('brands', 'id')->where('status', 'active')],
+            'category_id' => ['required', 'integer', Rule::exists('categories', 'id')->where('status', 'active')],
             'name' => ['required', 'string', 'max:150', 'unique:products,name'],
             'slug' => ['required', 'string', 'max:180', 'unique:products,slug'],
             'thumbnail_url' => ['nullable', 'url', 'max:500'],
+            'thumbnail_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'short_description' => ['nullable', 'string'],
             'description' => ['nullable', 'string'],
             'is_featured' => ['sometimes', 'boolean'],
+            'status' => ['sometimes', 'string', 'in:active,inactive'],
         ];
     }
 

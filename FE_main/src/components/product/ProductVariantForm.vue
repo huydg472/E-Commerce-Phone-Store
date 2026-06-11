@@ -71,7 +71,8 @@ defineEmits(['close', 'submit'])
             </div>
             <div class="field">
               <label>SKU</label>
-              <input v-model="form.sku" type="text" class="control" :class="{ invalid: fieldErrors.sku }">
+              <input v-model="form.sku" type="text" class="control readonly-control" :class="{ invalid: fieldErrors.sku }" readonly>
+              <small class="field-hint">SKU tu sinh theo san pham, mau sac, dung luong va RAM.</small>
               <small v-if="fieldErrors.sku" class="field-error">{{ fieldErrors.sku }}</small>
             </div>
           </div>
@@ -252,6 +253,16 @@ defineEmits(['close', 'submit'])
 .control.invalid {
   border-color: #fca5a5;
   box-shadow: 0 0 0 3px rgba(252, 165, 165, 0.12);
+}
+
+.readonly-control {
+  background: #f8fafc;
+  color: #475569;
+}
+
+.field-hint {
+  color: #64748b;
+  font-size: 12px;
 }
 
 .field-error {

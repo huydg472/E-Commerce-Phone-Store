@@ -130,6 +130,15 @@ const getAvailableVariants = (product) => {
   return getVariants(product).filter((variant) => isVariantInStock(variant))
 }
 
+const getVariantAvailableQuantity = (variant) => {
+  return Number(
+      variant?.available_quantity ??
+      variant?.availableQuantity ??
+      variant?.quantity ??
+      0
+  )
+}
+
 const getMatchingVariants = (product, storage = '', color = '') => {
   const storageKey = normalizeKey(storage)
   const colorKey = normalizeKey(color)
@@ -159,7 +168,7 @@ const buildStorageOptions = (product) => {
       value: storage,
       available,
       disabled: !available,
-      quantity: matchingVariants.reduce((sum, variant) => sum + Number(variant?.quantity ?? 0), 0),
+      quantity: matchingVariants.reduce((sum, variant) => sum + getVariantAvailableQuantity(variant), 0),
     }
   })
 }
@@ -178,7 +187,7 @@ const buildColorOptionsByAvailability = (product) => {
       ...color,
       available,
       disabled: !available,
-      quantity: matchingVariants.reduce((sum, variant) => sum + Number(variant?.quantity ?? 0), 0),
+      quantity: matchingVariants.reduce((sum, variant) => sum + getVariantAvailableQuantity(variant), 0),
     }
   })
 }
@@ -206,8 +215,38 @@ const currentVariantInStock = computed(() => {
   return isVariantInStock(currentSelectedVariant.value)
 })
 
+const currentVariantAvailableQuantity = computed(() => {
+  return getVariantAvailableQuantity(currentSelectedVariant.value)
+})
+
+const currentVariantCartQuantity = computed(() => {
+  const variantId = String(currentSelectedVariant.value?.id ?? '')
+  if (!variantId) {
+    return 0
+  }
+
+  const items = Array.isArray(cartStore.items) ? cartStore.items : []
+  return items.reduce((sum, item) => {
+    const itemVariantId = String(item?.product_variant_id ?? item?.productVariant?.id ?? '')
+    return itemVariantId === variantId ? sum + Number(item?.quantity ?? 0) : sum
+  }, 0)
+})
+
+const currentVariantRemainingCartQuantity = computed(() => {
+  return Math.max(currentVariantAvailableQuantity.value - currentVariantCartQuantity.value, 0)
+})
+
 const handleAddToCart = async ({productVariantId, quantity}) => {
   if (!productVariantId || !currentVariantInStock.value) {
+    return
+  }
+
+  const nextQuantity = Math.min(
+      Math.max(Number(quantity ?? 1) || 1, 1),
+      currentVariantRemainingCartQuantity.value
+  )
+
+  if (nextQuantity < 1) {
     return
   }
 
@@ -219,7 +258,7 @@ const handleAddToCart = async ({productVariantId, quantity}) => {
   try {
     await cartStore.create({
       product_variant_id: productVariantId,
-      quantity: Number(quantity ?? 1),
+      quantity: nextQuantity,
       unit_price: currentPrice.value,
     })
   } catch (error) {
@@ -237,6 +276,15 @@ const handleBuyNow = async ({productVariantId, quantity}) => {
     return
   }
 
+  const nextQuantity = Math.min(
+      Math.max(Number(quantity ?? 1) || 1, 1),
+      currentVariantAvailableQuantity.value
+  )
+
+  if (nextQuantity < 1) {
+    return
+  }
+
   if (!authStore.isLoggedIn) {
     await router.push('/auth/login')
     return
@@ -249,7 +297,7 @@ const handleBuyNow = async ({productVariantId, quantity}) => {
     query: {
       direct_buy: '1',
       product_variant_id: String(productVariantId),
-      quantity: String(Math.max(Number(quantity ?? 1) || 1, 1)),
+      quantity: String(nextQuantity),
       product_name: currentName.value,
       variant_name: getVariantDisplayName(variant),
       unit_price: String(currentPrice.value),
@@ -513,23 +561,22 @@ const loadProduct = async () => {
   notFound.value = false
 
   try {
-    await productStore.fetchAll({status: 'active'})
+    try {
+      await productStore.fetchBySlug(slug)
+    } catch (error) {
+      if (!/^\d+$/.test(slug)) {
+        throw error
+      }
 
-    const matchedProduct = productStore.items.find(
-        (item) =>
-            String(item.slug ?? '') === slug ||
-            String(item.id ?? '') === slug ||
-            slugifyText(item?.name) === slug
-    ) ?? null
+      await productStore.fetchById(slug)
+    }
 
-    if (!matchedProduct) {
-      currentProduct.value = null
+    currentProduct.value = productStore.item ?? null
+
+    if (!currentProduct.value) {
       notFound.value = true
       return
     }
-
-    await productStore.fetchById(matchedProduct.id)
-    currentProduct.value = productStore.item ?? matchedProduct
 
     if (String(currentProduct.value?.status ?? '').toLowerCase() !== 'active') {
       currentProduct.value = null
@@ -549,8 +596,16 @@ const loadProduct = async () => {
     selectedColor.value = getVariantColorName(selectedVariant)
     activeBottomTab.value = 'description'
 
+    if (authStore.isLoggedIn) {
+      await cartStore.fetchAll().catch(() => {})
+    }
+
     console.log('Product detail:', currentProduct.value)
     console.log('Product ID:', currentProduct.value.id)
+  } catch (error) {
+    currentProduct.value = null
+    notFound.value = true
+    console.error('KhÃ´ng thá»ƒ táº£i chi tiáº¿t sáº£n pháº©m:', error)
   } finally {
     loading.value = false
   }
@@ -649,7 +704,8 @@ const relatedProducts = [
                 :colors="productColorOptions"
                 :is-out-of-stock="!currentVariantInStock"
                 :product-variant-id="currentSelectedVariant?.id"
-                :max-quantity="Number(currentSelectedVariant?.quantity ?? 0)"
+                :max-quantity="currentVariantAvailableQuantity"
+                :max-cart-quantity="currentVariantRemainingCartQuantity"
                 v-model:selectedStorage="selectedStorage"
                 v-model:selectedColor="selectedColor"
                 @add-to-cart="handleAddToCart"
