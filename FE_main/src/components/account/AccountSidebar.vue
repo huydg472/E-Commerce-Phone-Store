@@ -51,7 +51,7 @@ const activeKey = computed(() => {
     return 'profile'
   }
 
-  if (routeName === 'orders.history' || routeName === 'orders.show') {
+  if (routeName === 'orders.history') {
     return 'orders'
   }
 

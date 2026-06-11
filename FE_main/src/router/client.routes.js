@@ -92,12 +92,6 @@ export default [
                         component: () => import('@/pages/client/OrderHistoryPage.vue'),
                     },
                     {
-                        path: 'don-hang/:id',
-                        name: 'orders.show',
-                        alias: '/orders/:id',
-                        component: () => import('@/pages/client/OrderDetailPage.vue'),
-                    },
-                    {
                         path: 'doi-mat-khau',
                         name: 'change-password',
                         component: () => import('@/pages/client/ChangePasswordPage.vue'),

@@ -96,7 +96,7 @@ class CartController extends Controller
 
         foreach ($cart->items as $item) {
             $variant = $item->productVariant;
-            $price = $variant->sale_price ?? $variant->price ?? 0;
+            $price = $variant?->sale_price ?? $variant?->price ?? 0;
             $itemSubtotal = $price * $item->quantity;
 
             $item->price = $price;

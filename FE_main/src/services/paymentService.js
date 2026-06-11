@@ -13,6 +13,10 @@ export const paymentService = {
         return api.post('/payments', data)
     },
 
+    createVnpayUrl(paymentId) {
+        return api.post(`/payments/${paymentId}/vnpay-url`)
+    },
+
     update(id, data) {
         return api.put(`/payments/${id}`, data)
     },

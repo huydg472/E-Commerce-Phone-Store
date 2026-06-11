@@ -26,12 +26,17 @@ const props = defineProps({
     type: [String, Number],
     default: null,
   },
+  maxQuantity: {
+    type: Number,
+    default: 0,
+  },
 })
 
 const emit = defineEmits([
   'update:selectedStorage',
   'update:selectedColor',
   'add-to-cart',
+  'buy-now',
 ])
 
 const fallbackStorages = ['256GB', '512GB', '1TB']
@@ -44,6 +49,23 @@ const fallbackColors = [
 ]
 
 const quantity = ref(1)
+const buyNowQuantity = ref(1)
+const buyNowVisible = ref(false)
+
+const maxSelectableQuantity = computed(() => {
+  const rawValue = Number(props.maxQuantity)
+  return rawValue > 0 ? rawValue : Number.POSITIVE_INFINITY
+})
+
+const clampQuantity = (value) => {
+  const normalized = Math.max(Number(value) || 1, 1)
+
+  if (!Number.isFinite(maxSelectableQuantity.value)) {
+    return normalized
+  }
+
+  return Math.min(normalized, maxSelectableQuantity.value)
+}
 
 const normalizeOption = (item, fallbackValue = '') => {
   if (typeof item === 'string') {
@@ -124,7 +146,43 @@ const decreaseQuantity = () => {
 }
 
 const increaseQuantity = () => {
-  quantity.value++
+  quantity.value = clampQuantity(quantity.value + 1)
+}
+
+const decreaseBuyNowQuantity = () => {
+  if (buyNowQuantity.value > 1) {
+    buyNowQuantity.value--
+  }
+}
+
+const increaseBuyNowQuantity = () => {
+  buyNowQuantity.value = clampQuantity(buyNowQuantity.value + 1)
+}
+
+const openBuyNowModal = () => {
+  if (!props.productVariantId || props.isOutOfStock) {
+    return
+  }
+
+  buyNowQuantity.value = clampQuantity(quantity.value)
+  buyNowVisible.value = true
+}
+
+const closeBuyNowModal = () => {
+  buyNowVisible.value = false
+}
+
+const confirmBuyNow = () => {
+  if (!props.productVariantId || props.isOutOfStock) {
+    return
+  }
+
+  emit('buy-now', {
+    productVariantId: props.productVariantId,
+    quantity: clampQuantity(buyNowQuantity.value),
+  })
+
+  closeBuyNowModal()
 }
 
 const handleAddToCart = () => {
@@ -192,7 +250,7 @@ const handleAddToCart = () => {
           <button type="button" :disabled="isOutOfStock" @click="increaseQuantity">+</button>
         </div>
 
-        <button type="button" class="buy-now-btn" :disabled="isOutOfStock" @click="handleAddToCart">
+        <button type="button" class="buy-now-btn" :disabled="isOutOfStock" @click="openBuyNowModal">
           <strong>Mua ngay</strong>
           <span>Giao hàng tận nơi hoặc nhận tại cửa hàng</span>
         </button>
@@ -206,6 +264,48 @@ const handleAddToCart = () => {
       </button>
     </div>
   </div>
+  <teleport to="body">
+    <div v-if="buyNowVisible" class="buy-now-overlay" @click.self="closeBuyNowModal">
+      <div class="buy-now-modal" role="dialog" aria-modal="true" aria-label="Chọn số lượng mua ngay">
+        <div class="buy-now-head">
+          <div>
+            <p>Chọn số lượng</p>
+            <h3>Mua ngay</h3>
+          </div>
+
+          <button type="button" class="buy-now-close" aria-label="Đóng" @click="closeBuyNowModal">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <p class="buy-now-note">
+          Chọn số lượng sản phẩm trước khi chuyển sang trang thanh toán.
+        </p>
+
+        <div class="buy-now-quantity">
+          <button type="button" :disabled="buyNowQuantity <= 1" @click="decreaseBuyNowQuantity">-</button>
+          <span>{{ buyNowQuantity }}</span>
+          <button
+              type="button"
+              :disabled="Number.isFinite(maxSelectableQuantity) && buyNowQuantity >= maxSelectableQuantity"
+              @click="increaseBuyNowQuantity"
+          >
+            +
+          </button>
+        </div>
+
+        <div class="buy-now-actions">
+          <button type="button" class="buy-now-secondary" @click="closeBuyNowModal">
+            Hủy
+          </button>
+
+          <button type="button" class="buy-now-primary" :disabled="isOutOfStock" @click="confirmBuyNow">
+            Đi đến thanh toán
+          </button>
+        </div>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <style scoped>
@@ -378,6 +478,136 @@ const handleAddToCart = () => {
 .cart-btn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.buy-now-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(15, 23, 42, 0.58);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.buy-now-modal {
+  width: min(100%, 420px);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 24px 80px rgba(15, 23, 42, 0.22);
+  padding: 20px;
+}
+
+.buy-now-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.buy-now-head p {
+  margin: 0 0 4px;
+  color: #0d6efd;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.buy-now-head h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.buy-now-close {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.buy-now-note {
+  margin: 10px 0 18px;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.buy-now-quantity {
+  height: 48px;
+  border: 1px solid #dbe3ef;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: 48px 1fr 48px;
+  overflow: hidden;
+}
+
+.buy-now-quantity button {
+  border: none;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.buy-now-quantity button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.buy-now-quantity span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.buy-now-actions {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.buy-now-secondary,
+.buy-now-primary {
+  height: 44px;
+  border-radius: 10px;
+  border: none;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.buy-now-secondary {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.buy-now-primary {
+  background: #0057ff;
+  color: #ffffff;
+}
+
+.buy-now-primary:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}
+
+@media (max-width: 576px) {
+  .buy-now-modal {
+    padding: 18px;
+  }
+
+  .buy-now-actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 576px) {

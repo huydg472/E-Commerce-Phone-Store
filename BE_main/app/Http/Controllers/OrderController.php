@@ -7,13 +7,20 @@ use App\Http\Requests\UpdateOrderRequest;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\ShippingAddress;
+use App\Services\OrderInventoryService;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
+    public function __construct(
+        private readonly OrderInventoryService $inventoryService,
+    ) {
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = Order::query()
@@ -51,32 +58,23 @@ class OrderController extends Controller
             }
         }
 
-        $subtotal = collect($items)->sum(fn ($item) => (float) ($item['total_price'] ?? 0));
         $shippingFee = (float) ($data['shipping_fee'] ?? 0);
         $discountAmount = (float) ($data['discount_amount'] ?? 0);
         $paymentMethod = $data['payment_method'] ?? 'cod';
 
-        $data['subtotal'] = $subtotal;
-        $data['total_amount'] = max($subtotal + $shippingFee - $discountAmount, 0);
+        $order = DB::transaction(function () use ($data, $items, $paymentMethod, $shippingFee, $discountAmount) {
+            $inventory = $this->inventoryService->normalizeOrderItems($items);
+            $normalizedItems = $inventory['items'];
+            $subtotal = (float) $inventory['subtotal'];
 
-        $order = DB::transaction(function () use ($data, $items, $paymentMethod) {
             $data['order_code'] = $this->generateOrderCode();
+            $data['subtotal'] = $subtotal;
+            $data['total_amount'] = max($subtotal + $shippingFee - $discountAmount, 0);
             unset($data['payment_method']);
-            $order = Order::create($data);
 
-            if ($items !== []) {
-                $order->orderItems()->createMany(array_map(function (array $item) {
-                    return [
-                        'product_variant_id' => $item['product_variant_id'] ?? null,
-                        'product_name' => $item['product_name'],
-                        'variant_name' => $item['variant_name'],
-                        'sku' => $item['sku'] ?? null,
-                        'unit_price' => $item['unit_price'],
-                        'quantity' => $item['quantity'],
-                        'total_price' => $item['total_price'],
-                    ];
-                }, $items));
-            }
+            $order = Order::create($data);
+            $order->orderItems()->createMany($normalizedItems);
+            $this->inventoryService->reserveStockForOrder($order);
 
             Payment::create([
                 'order_id' => $order->id,
@@ -129,6 +127,13 @@ class OrderController extends Controller
             ], 403);
         }
 
+        if ($order->order_status === 'cancelled') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đơn hàng đã bị huỷ.',
+            ], 409);
+        }
+
         $data = $request->validate([
             'payment_method' => ['nullable', 'string', 'max:50'],
             'transaction_code' => ['nullable', 'string', 'max:100'],
@@ -137,8 +142,6 @@ class OrderController extends Controller
         DB::transaction(function () use ($order, $data) {
             $order->update([
                 'payment_status' => 'paid',
-                'order_status' => 'completed',
-                'completed_at' => $order->completed_at ?? now(),
             ]);
 
             $payment = $order->payment()->first();
@@ -162,6 +165,62 @@ class OrderController extends Controller
         ], 200);
     }
 
+    public function cancel(Request $request, Order $order): JsonResponse
+    {
+        $user = $request->user();
+
+        if (!$user->isAdminOrStaff() && $order->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Forbidden.',
+            ], 403);
+        }
+
+        $order->loadMissing('payment');
+
+        if ($order->order_status !== 'pending') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chỉ có thể huỷ đơn khi đang chờ xác nhận.',
+            ], 422);
+        }
+
+        $paymentMethod = strtolower((string) $order->payment?->payment_method);
+
+        if ($paymentMethod !== 'cod') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chỉ đơn thanh toán COD mới có thể tự huỷ.',
+            ], 422);
+        }
+
+        DB::transaction(function () use ($order) {
+            $this->inventoryService->releaseReservedStockForOrder($order);
+
+            $order->update([
+                'order_status' => 'cancelled',
+                'payment_status' => 'failed',
+                'cancelled_at' => now(),
+            ]);
+
+            $payment = $order->payment()->first();
+
+            if ($payment) {
+                $payment->update([
+                    'payment_status' => 'cancelled',
+                ]);
+            }
+        });
+
+        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Huỷ đơn thành công.',
+            'data' => $order,
+        ], 200);
+    }
+
     public function update(UpdateOrderRequest $request, Order $order): JsonResponse
     {
         if (!$request->user()->isAdminOrStaff()) {
@@ -172,11 +231,29 @@ class OrderController extends Controller
         }
 
         $data = $request->validated();
+        $previousStatus = $order->order_status;
+        $nextStatus = $data['order_status'] ?? $previousStatus;
 
-        DB::transaction(function () use ($order, $data) {
+        DB::transaction(function () use ($order, $data, $previousStatus, $nextStatus) {
             $order->update($data);
 
-            if (($data['order_status'] ?? null) === 'completed') {
+            if ($previousStatus === 'pending' && $nextStatus === 'cancelled') {
+                $this->inventoryService->releaseReservedStockForOrder($order);
+            }
+
+            if ($previousStatus === 'cancelled' && $nextStatus !== 'cancelled') {
+                $this->inventoryService->reserveStockForOrder($order);
+            }
+
+            if ($previousStatus === 'pending' && $nextStatus !== 'pending' && $nextStatus !== 'cancelled') {
+                $this->inventoryService->commitReservedStockForOrder($order);
+            }
+
+            if ($previousStatus !== 'pending' && $previousStatus !== 'cancelled' && $nextStatus === 'cancelled') {
+                $this->inventoryService->releaseCommittedStockForOrder($order);
+            }
+
+            if ($nextStatus === 'completed') {
                 $order->update([
                     'payment_status' => 'paid',
                     'completed_at' => $order->completed_at ?? now(),
@@ -212,7 +289,17 @@ class OrderController extends Controller
         }
 
         try {
-            $order->delete();
+            DB::transaction(function () use ($order) {
+                if ($order->order_status === 'pending') {
+                    $this->inventoryService->releaseReservedStockForOrder($order);
+                }
+
+                if (in_array($order->order_status, ['confirmed', 'processing', 'shipping', 'completed'], true)) {
+                    $this->inventoryService->releaseCommittedStockForOrder($order);
+                }
+
+                $order->delete();
+            });
 
             return response()->json([
                 'success' => true,

@@ -21,6 +21,10 @@ export const orderService = {
         return api.post(`/orders/${id}/mock-payment`, data)
     },
 
+    cancel(id) {
+        return api.post(`/orders/${id}/cancel`)
+    },
+
     delete(id) {
         return api.delete(`/orders/${id}`)
     },

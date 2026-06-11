@@ -3,6 +3,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\AuthTestController;
+use App\Http\Controllers\PaymentController;
 
 
 Route::get('/', function () {
@@ -11,6 +12,8 @@ Route::get('/', function () {
 Route::get('/login', function () {
     return redirect()->route('auth-test.login');
 });
+
+Route::get('/payments/vnpay/return', [PaymentController::class, 'vnpayReturn'])->name('payments.vnpay.return');
 
 Route::prefix('auth-test')->name('auth-test.')->group(function () {
     Route::middleware('guest')->group(function () { // người chưa đăng nhập, đăng ký mới có thể vào form

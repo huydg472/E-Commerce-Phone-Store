@@ -20,6 +20,7 @@ class ProductVariant extends Model
         'price',
         'sale_price',
         'quantity',
+        'reserved_quantity',
         'status',
         'description',
     ];
@@ -31,8 +32,13 @@ class ProductVariant extends Model
             'price' => 'decimal:2',
             'sale_price' => 'decimal:2',
             'quantity' => 'integer',
+            'reserved_quantity' => 'integer',
         ];
     }
+
+    protected $appends = [
+        'available_quantity',
+    ];
 
     public function product()
     {
@@ -57,5 +63,10 @@ class ProductVariant extends Model
     public function stockLogs()
     {
         return $this->hasMany(StockLog::class);
+    }
+
+    public function getAvailableQuantityAttribute(): int
+    {
+        return max((int) $this->quantity - (int) $this->reserved_quantity, 0);
     }
 }

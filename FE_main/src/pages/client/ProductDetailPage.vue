@@ -71,6 +71,15 @@ const getVariantColorName = (variant) => {
   )
 }
 
+const getVariantDisplayName = (variant) => {
+  const parts = [getVariantRom(variant), getVariantColorName(variant)].filter(Boolean)
+  return parts.length ? parts.join(' - ') : safeText(variant?.sku) || 'Phiên bản mặc định'
+}
+
+const getMainImage = (product) => {
+  return getProductImages(product)[0] || '/images/default-product.png'
+}
+
 const normalizeKey = (value) => safeText(value).replace(/\s+/g, ' ').toLowerCase()
 
 const getVariantImages = (variant) => {
@@ -184,7 +193,12 @@ const isVariantInStock = (variant) => {
   }
 
   const status = String(variant?.status ?? '').toLowerCase()
-  const quantity = Number(variant?.quantity ?? 0)
+  const quantity = Number(
+      variant?.available_quantity ??
+      variant?.availableQuantity ??
+      variant?.quantity ??
+      0
+  )
   return status !== 'inactive' && status !== 'out_of_stock' && quantity > 0
 }
 
@@ -216,6 +230,33 @@ const handleAddToCart = async ({productVariantId, quantity}) => {
 
     console.error('Không thể thêm vào giỏ hàng:', error)
   }
+}
+
+const handleBuyNow = async ({productVariantId, quantity}) => {
+  if (!productVariantId || !currentVariantInStock.value) {
+    return
+  }
+
+  if (!authStore.isLoggedIn) {
+    await router.push('/auth/login')
+    return
+  }
+
+  const variant = currentSelectedVariant.value
+
+  await router.push({
+    name: 'checkout',
+    query: {
+      direct_buy: '1',
+      product_variant_id: String(productVariantId),
+      quantity: String(Math.max(Number(quantity ?? 1) || 1, 1)),
+      product_name: currentName.value,
+      variant_name: getVariantDisplayName(variant),
+      unit_price: String(currentPrice.value),
+      image: getMainImage(currentProduct.value) || '',
+      sku: variant?.sku ?? '',
+    },
+  })
 }
 
 const getSelectedVariant = (product) => {
@@ -608,9 +649,11 @@ const relatedProducts = [
                 :colors="productColorOptions"
                 :is-out-of-stock="!currentVariantInStock"
                 :product-variant-id="currentSelectedVariant?.id"
+                :max-quantity="Number(currentSelectedVariant?.quantity ?? 0)"
                 v-model:selectedStorage="selectedStorage"
                 v-model:selectedColor="selectedColor"
                 @add-to-cart="handleAddToCart"
+                @buy-now="handleBuyNow"
             />
           </div>
 

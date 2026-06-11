@@ -6,6 +6,7 @@ import OrderSummary from '@/components/order/OrderSummary.vue'
 import {useAuthStore} from '@/stores/authStore'
 import {useCartStore} from '@/stores/cartStore'
 import {useOrderStore} from '@/stores/orderStore'
+import {paymentService} from '@/services/paymentService'
 import {shippingAddressService} from '@/services/shippingAddressService'
 import {formatCurrency} from '@/utils/formatCurrency'
 
@@ -18,10 +19,15 @@ const orderStore = useOrderStore()
 const pageLoading = ref(true)
 const isSubmitting = ref(false)
 const errorMessage = ref('')
+const addressPickerOpen = ref(false)
+const addressModalOpen = ref(false)
+const addressModalSaving = ref(false)
+const addressModalSuccess = ref('')
 const addresses = ref([])
 const selectedShippingAddressId = ref('')
 const shippingMethod = ref('standard')
 const selectedPaymentMethod = ref('cod')
+const hasSavedAddresses = computed(() => addresses.value.length > 0)
 const selectedCartItemIds = computed(() => {
   const rawValue = route.query.item_ids
   const values = Array.isArray(rawValue) ? rawValue.join(',') : String(rawValue ?? '')
@@ -32,7 +38,58 @@ const selectedCartItemIds = computed(() => {
       .filter((value) => Number.isInteger(value) && value > 0)
 })
 
+const isDirectBuy = computed(() => String(route.query.direct_buy ?? '') === '1')
+
+const directBuyItem = computed(() => {
+  if (!isDirectBuy.value) {
+    return null
+  }
+
+  const productVariantId = Number(route.query.product_variant_id)
+  const quantity = Math.max(Number(route.query.quantity ?? 1) || 1, 1)
+  const unitPrice = Math.max(Number(route.query.unit_price ?? 0) || 0, 0)
+  const productName = String(route.query.product_name ?? 'Sản phẩm').trim() || 'Sản phẩm'
+  const variantName = String(route.query.variant_name ?? 'Phiên bản mặc định').trim() || 'Phiên bản mặc định'
+  const sku = String(route.query.sku ?? variantName).trim() || variantName
+  const image = String(route.query.image ?? '').trim() || '/images/default-product.png'
+
+  if (!Number.isInteger(productVariantId) || productVariantId <= 0) {
+    return null
+  }
+
+  return {
+    id: `buy-now-${productVariantId}`,
+    product_variant_id: productVariantId,
+    quantity,
+    price: unitPrice,
+    productVariant: {
+      id: productVariantId,
+      sku,
+      quantity,
+      sale_price: unitPrice,
+      price: unitPrice,
+      product: {
+        name: productName,
+        thumbnail_url: image,
+        thumbnailUrl: image,
+        image_url: image,
+        imageUrl: image,
+      },
+    },
+  }
+})
+
 const form = reactive({
+  receiver_name: '',
+  receiver_phone: '',
+  province: '',
+  district: '',
+  ward: '',
+  address_detail: '',
+  note: '',
+})
+
+const addressForm = reactive({
   receiver_name: '',
   receiver_phone: '',
   province: '',
@@ -65,6 +122,10 @@ const rawCartItems = computed(() => {
 })
 
 const checkoutCartItems = computed(() => {
+  if (directBuyItem.value) {
+    return [directBuyItem.value]
+  }
+
   if (!selectedCartItemIds.value.length) {
     return rawCartItems.value
   }
@@ -72,6 +133,12 @@ const checkoutCartItems = computed(() => {
   const selectedIds = new Set(selectedCartItemIds.value)
   return rawCartItems.value.filter((item) => selectedIds.has(Number(item?.id)))
 })
+
+const checkoutCartItemIds = computed(() =>
+    checkoutCartItems.value
+        .map((item) => Number(item?.id))
+        .filter((value) => Number.isInteger(value) && value > 0)
+)
 
 const toNumber = (value) => {
   const numericValue = Number(value)
@@ -217,18 +284,46 @@ const selectedShippingAddress = computed(() => {
   return addresses.value.find((address) => String(address.id) === String(selectedShippingAddressId.value)) || null
 })
 
+const isUsingSavedAddress = computed(() => Boolean(selectedShippingAddress.value))
+
+const formatAddressLine = (address) => {
+  return [
+    address?.address_detail,
+    address?.ward,
+    address?.district,
+    address?.province,
+  ]
+      .filter(Boolean)
+      .join(', ')
+}
+
+const selectedAddressLine = computed(() => formatAddressLine(selectedShippingAddress.value))
+
+const selectedAddressPickerTitle = computed(() => (
+  hasSavedAddresses.value ? 'Chọn địa chỉ khác' : 'Sổ địa chỉ đang trống'
+))
+
+const normalizeAddress = (address) => ({
+  id: address?.id,
+  receiver_name: address?.receiver_name || '',
+  receiver_phone: address?.receiver_phone || '',
+  province: address?.province || '',
+  district: address?.district || '',
+  ward: address?.ward || '',
+  address_detail: address?.address_detail || '',
+  note: address?.note || '',
+  is_default: Boolean(address?.is_default),
+})
+
+const unwrapAddress = (response) => {
+  return response?.data?.data ?? response?.data ?? null
+}
+
 const shippingAddressText = computed(() => {
   const selectedAddress = selectedShippingAddress.value
 
   if (selectedAddress) {
-    return [
-      selectedAddress.address_detail,
-      selectedAddress.ward,
-      selectedAddress.district,
-      selectedAddress.province,
-    ]
-        .filter(Boolean)
-        .join(', ')
+    return selectedAddressLine.value
   }
 
   return [
@@ -243,6 +338,106 @@ const shippingAddressText = computed(() => {
 
 const selectedShippingMethod = computed(() => {
   return shippingMethods.find((item) => item.id === shippingMethod.value) ?? shippingMethods[0]
+})
+
+const closeAddressModal = () => {
+  addressModalOpen.value = false
+  addressModalSaving.value = false
+  addressModalSuccess.value = ''
+}
+
+const closeAddressPicker = () => {
+  addressPickerOpen.value = false
+}
+
+const openAddressPicker = () => {
+  addressPickerOpen.value = true
+}
+
+const chooseSavedAddress = (address) => {
+  if (!address?.id) {
+    return
+  }
+
+  selectedShippingAddressId.value = String(address.id)
+  syncAddressForm(address)
+  closeAddressPicker()
+}
+
+const resetAddressForm = () => {
+  addressForm.receiver_name = authStore.user?.name || ''
+  addressForm.receiver_phone = authStore.user?.phone || ''
+  addressForm.province = ''
+  addressForm.district = ''
+  addressForm.ward = ''
+  addressForm.address_detail = ''
+  addressForm.note = ''
+}
+
+const openNewAddressModal = () => {
+  resetAddressForm()
+  addressModalSuccess.value = ''
+  addressModalOpen.value = true
+}
+
+const openNewAddressModalFromPicker = () => {
+  closeAddressPicker()
+  openNewAddressModal()
+}
+
+const saveNewAddressFromModal = async () => {
+  if (!addressForm.receiver_name || !addressForm.receiver_phone || !addressForm.province || !addressForm.district || !addressForm.ward || !addressForm.address_detail) {
+    errorMessage.value = 'Vui lòng nhập đầy đủ thông tin địa chỉ.'
+    return
+  }
+
+  addressModalSaving.value = true
+  addressModalSuccess.value = ''
+  errorMessage.value = ''
+
+  try {
+    const createdAddressResponse = await shippingAddressService.create({
+      receiver_name: addressForm.receiver_name,
+      receiver_phone: addressForm.receiver_phone,
+      province: addressForm.province,
+      district: addressForm.district,
+      ward: addressForm.ward,
+      address_detail: addressForm.address_detail,
+      note: addressForm.note,
+      is_default: !hasSavedAddresses.value,
+    })
+
+    const createdAddress = normalizeAddress(unwrapAddress(createdAddressResponse))
+
+    if (!createdAddress.id) {
+      throw new Error('Không lưu được địa chỉ mới.')
+    }
+
+    addresses.value = [createdAddress, ...addresses.value.filter((item) => item.id !== createdAddress.id)]
+    selectedShippingAddressId.value = String(createdAddress.id)
+    syncAddressForm(createdAddress)
+
+    addressModalSuccess.value = 'Đã thêm địa chỉ mới và chọn cho đơn hàng.'
+
+    window.setTimeout(() => {
+      closeAddressModal()
+    }, 1000)
+  } catch (error) {
+    errorMessage.value = error?.response?.data?.message || error?.message || 'Không thể lưu địa chỉ.'
+  } finally {
+    addressModalSaving.value = false
+  }
+}
+
+const submitButtonLabel = computed(() => {
+  switch (selectedPaymentMethod.value) {
+    case 'vnpay':
+      return 'Thanh toán VNPay'
+    case 'momo':
+      return 'Thanh toán MoMo'
+    default:
+      return 'Đặt hàng'
+  }
 })
 
 const syncAddressForm = (address) => {
@@ -285,7 +480,7 @@ const loadInitialData = async () => {
     }
 
     await Promise.allSettled([
-      cartStore.fetchAll(),
+      isDirectBuy.value ? Promise.resolve() : cartStore.fetchAll(),
       shippingAddressService.getAll().then((response) => {
         addresses.value = response.data?.data ?? response.data ?? []
       }).catch(() => {
@@ -300,8 +495,10 @@ const loadInitialData = async () => {
 
     const defaultAddress = addresses.value.find((address) => address.is_default) ?? addresses.value[0] ?? null
 
-    if (selectedCartItemIds.value.length && !checkoutCartItems.value.length) {
-      errorMessage.value = 'Không tìm thấy sản phẩm đã chọn trong giỏ hàng.'
+    if ((isDirectBuy.value || selectedCartItemIds.value.length) && !checkoutCartItems.value.length) {
+      errorMessage.value = isDirectBuy.value
+        ? 'Không tìm thấy sản phẩm để thanh toán.'
+        : 'Không tìm thấy sản phẩm đã chọn trong giỏ hàng.'
       return
     }
 
@@ -325,8 +522,13 @@ const handleSubmitOrder = async () => {
     return
   }
 
-  if (!form.receiver_name || !form.receiver_phone || !shippingAddressText.value) {
-    errorMessage.value = 'Vui lòng nhập đầy đủ thông tin nhận hàng.'
+  if (!selectedShippingAddress.value) {
+    errorMessage.value = 'Vui lòng chọn một địa chỉ đã lưu hoặc thêm địa chỉ mới.'
+    return
+  }
+
+  if (!shippingAddressText.value) {
+    errorMessage.value = 'Địa chỉ giao hàng không hợp lệ.'
     return
   }
 
@@ -347,11 +549,36 @@ const handleSubmitOrder = async () => {
 
     const createdOrder = response.data?.data ?? response.data ?? null
 
-    await Promise.allSettled(checkoutCartItems.value.map((item) => cartStore.remove(item.id)))
-    await cartStore.fetchAll().catch(() => {
-    })
+    if (selectedPaymentMethod.value === 'vnpay') {
+      const paymentId = createdOrder?.payment?.id
 
-    const nextRoute = ['vnpay', 'momo'].includes(selectedPaymentMethod.value)
+      if (!paymentId) {
+        throw new Error('Không tìm thấy bản ghi thanh toán.')
+      }
+
+      const paymentResponse = await paymentService.createVnpayUrl(paymentId)
+      const paymentUrl = paymentResponse.data?.data?.payment_url
+
+      if (!paymentUrl) {
+        throw new Error('Không tạo được link VNPay.')
+      }
+
+      localStorage.setItem(
+          'pending_payment_cart_item_ids',
+          JSON.stringify(checkoutCartItemIds.value),
+      )
+
+      window.location.href = paymentUrl
+      return
+    }
+
+    if (selectedPaymentMethod.value === 'cod' && checkoutCartItemIds.value.length) {
+      await Promise.allSettled(checkoutCartItems.value.map((item) => cartStore.remove(item.id)))
+      await cartStore.fetchAll().catch(() => {
+      })
+    }
+
+    const nextRoute = selectedPaymentMethod.value === 'momo'
       ? {
           name: 'payment.demo',
           query: {
@@ -426,63 +653,27 @@ onMounted(loadInitialData)
               <h2>Địa chỉ giao hàng</h2>
             </div>
 
-            <div class="form-group form-group-full">
-              <label>Chọn địa chỉ đã lưu</label>
-              <select v-model="selectedShippingAddressId" class="form-select">
-                <option value="">Nhập địa chỉ mới</option>
-                <option
-                    v-for="address in addresses"
-                    :key="address.id"
-                    :value="String(address.id)"
-                >
-                  {{ address.receiver_name }} - {{ address.address_detail }}
-                </option>
-              </select>
+            <div v-if="selectedShippingAddress" class="selected-address-card">
+              <div class="selected-address-card__main">
+                <div class="selected-address-card__icon">
+                  <i class="bi bi-geo-alt-fill"></i>
+                </div>
+                <div class="selected-address-card__content">
+                  <div class="selected-address-card__header">
+                    <strong>{{ selectedShippingAddress.receiver_name }}</strong>
+                  </div>
+                  <p>{{ selectedAddressLine || 'Chưa có địa chỉ chi tiết' }}</p>
+                  <small>
+                    <i class="bi bi-telephone"></i>
+                    {{ selectedShippingAddress.receiver_phone || 'Chưa có số điện thoại' }}
+                  </small>
+                </div>
+              </div>
+              <button type="button" class="link-btn" @click="openAddressPicker">
+                Chọn địa chỉ khác
+              </button>
             </div>
 
-            <div class="form-grid">
-              <div class="form-group">
-                <label>Họ và tên <span>*</span></label>
-                <input v-model.trim="form.receiver_name" type="text" class="form-control" placeholder="Nhập họ và tên"/>
-              </div>
-
-              <div class="form-group">
-                <label>Số điện thoại <span>*</span></label>
-                <input v-model.trim="form.receiver_phone" type="text" class="form-control"
-                       placeholder="Nhập số điện thoại"/>
-              </div>
-
-              <div class="form-group">
-                <label>Tỉnh/Thành phố <span>*</span></label>
-                <input v-model.trim="form.province" type="text" class="form-control" placeholder="Nhập tỉnh/thành phố"/>
-              </div>
-
-              <div class="form-group">
-                <label>Quận/Huyện <span>*</span></label>
-                <input v-model.trim="form.district" type="text" class="form-control" placeholder="Nhập quận/huyện"/>
-              </div>
-
-              <div class="form-group">
-                <label>Phường/Xã <span>*</span></label>
-                <input v-model.trim="form.ward" type="text" class="form-control" placeholder="Nhập phường/xã"/>
-              </div>
-
-              <div class="form-group">
-                <label>Địa chỉ cụ thể <span>*</span></label>
-                <input v-model.trim="form.address_detail" type="text" class="form-control"
-                       placeholder="Số nhà, tên đường, tòa nhà, căn hộ..."/>
-              </div>
-            </div>
-
-            <div class="form-group form-group-full note-group">
-              <label>Ghi chú đơn hàng</label>
-              <textarea
-                  v-model.trim="form.note"
-                  class="form-control"
-                  rows="3"
-                  placeholder="Ví dụ: Giao hàng giờ hành chính, gọi trước khi giao..."
-              ></textarea>
-            </div>
           </div>
 
           <div class="checkout-card">
@@ -530,7 +721,7 @@ onMounted(loadInitialData)
               :shipping="shippingFeeValue"
               :total="totalValue"
               :loading="isSubmitting"
-              button-label="Đặt hàng"
+              :button-label="submitButtonLabel"
               @submit-order="handleSubmitOrder"
           />
         </div>
@@ -540,6 +731,150 @@ onMounted(loadInitialData)
         {{ errorMessage }}
       </p>
     </div>
+
+    <teleport to="body">
+      <div v-if="addressPickerOpen" class="address-modal-overlay" @click.self="closeAddressPicker">
+        <div class="address-modal">
+          <div class="address-modal__header">
+            <div>
+              <h3>{{ selectedAddressPickerTitle }}</h3>
+              <p v-if="hasSavedAddresses">
+                Chọn một địa chỉ khác đang có trong Sổ địa chỉ để dùng cho đơn này.
+              </p>
+              <p v-else>
+                Bạn chưa có địa chỉ nào trong Sổ địa chỉ.
+              </p>
+            </div>
+            <button type="button" class="address-modal__close" @click="closeAddressPicker">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+
+          <div v-if="hasSavedAddresses" class="saved-address-list">
+            <button
+                v-for="address in addresses"
+                :key="address.id"
+                type="button"
+                class="saved-address-item"
+                :class="{ active: String(address.id) === String(selectedShippingAddressId) }"
+                @click="chooseSavedAddress(address)"
+            >
+              <div class="saved-address-item__icon">
+                <i class="bi bi-geo-alt-fill"></i>
+              </div>
+              <div class="saved-address-item__content">
+                <div class="saved-address-item__header">
+                  <strong>{{ address.receiver_name }}</strong>
+                  <span v-if="address.is_default" class="saved-address-item__badge">Mặc định</span>
+                </div>
+                <p>
+                  {{
+                    [
+                      address.address_detail,
+                      address.ward,
+                      address.district,
+                      address.province,
+                    ].filter(Boolean).join(', ')
+                  }}
+                </p>
+                <small>
+                  <i class="bi bi-telephone"></i>
+                  {{ address.receiver_phone || 'Chưa có số điện thoại' }}
+                </small>
+              </div>
+            </button>
+          </div>
+
+          <div v-else class="address-modal__empty">
+            <i class="bi bi-geo-alt"></i>
+            <p>Chưa có địa chỉ nào trong Sổ địa chỉ.</p>
+            <button type="button" class="btn btn-primary" @click="openNewAddressModalFromPicker">
+              Thêm địa chỉ mới
+            </button>
+          </div>
+
+          <div v-if="hasSavedAddresses" class="address-modal__footer">
+            <button type="button" class="btn btn-outline-secondary" @click="openNewAddressModalFromPicker">
+              Thêm địa chỉ mới
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="addressModalOpen" class="address-modal-overlay" @click.self="closeAddressModal">
+        <div class="address-modal">
+          <div class="address-modal__header">
+            <div>
+              <h3>{{ hasSavedAddresses ? 'Thêm địa chỉ mới' : 'Thêm địa chỉ giao hàng' }}</h3>
+              <p>
+                {{ hasSavedAddresses
+                  ? 'Lưu địa chỉ mới vào Sổ địa chỉ, sau đó chọn ngay cho đơn hàng.'
+                  : 'Bạn chưa có địa chỉ nào. Hãy nhập địa chỉ để lưu và dùng cho đơn hàng này.' }}
+              </p>
+            </div>
+            <button type="button" class="address-modal__close" @click="closeAddressModal">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+
+          <div v-if="addressModalSuccess" class="address-modal__success">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>{{ addressModalSuccess }}</span>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Họ và tên <span>*</span></label>
+              <input v-model.trim="addressForm.receiver_name" type="text" class="form-control" placeholder="Nhập họ và tên">
+            </div>
+
+            <div class="form-group">
+              <label>Số điện thoại <span>*</span></label>
+              <input v-model.trim="addressForm.receiver_phone" type="text" class="form-control" placeholder="Nhập số điện thoại">
+            </div>
+
+            <div class="form-group">
+              <label>Tỉnh/Thành phố <span>*</span></label>
+              <input v-model.trim="addressForm.province" type="text" class="form-control" placeholder="Nhập tỉnh/thành phố">
+            </div>
+
+            <div class="form-group">
+              <label>Quận/Huyện <span>*</span></label>
+              <input v-model.trim="addressForm.district" type="text" class="form-control" placeholder="Nhập quận/huyện">
+            </div>
+
+            <div class="form-group">
+              <label>Phường/Xã <span>*</span></label>
+              <input v-model.trim="addressForm.ward" type="text" class="form-control" placeholder="Nhập phường/xã">
+            </div>
+
+            <div class="form-group">
+              <label>Địa chỉ cụ thể <span>*</span></label>
+              <input v-model.trim="addressForm.address_detail" type="text" class="form-control" placeholder="Số nhà, tên đường, tòa nhà, căn hộ...">
+            </div>
+          </div>
+
+          <div class="form-group form-group-full note-group">
+            <label>Ghi chú</label>
+            <textarea
+                v-model.trim="addressForm.note"
+                class="form-control"
+                rows="3"
+                placeholder="Ví dụ: Giao hàng giờ hành chính, gọi trước khi giao..."
+            ></textarea>
+          </div>
+
+          <div class="address-modal__footer">
+            <button type="button" class="btn btn-outline-secondary" @click="closeAddressModal">
+              Hủy
+            </button>
+            <button type="button" class="btn btn-primary" :disabled="addressModalSaving" @click="saveNewAddressFromModal">
+              {{ addressModalSaving ? 'Đang lưu...' : 'Lưu địa chỉ' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
   </section>
 </template>
 
@@ -689,6 +1024,12 @@ onMounted(loadInitialData)
   font-weight: 500;
 }
 
+.form-control--readonly {
+  background: #f8fafc;
+  color: #334155;
+  cursor: not-allowed;
+}
+
 .form-group textarea.form-control {
   height: auto;
   min-height: 56px;
@@ -698,6 +1039,79 @@ onMounted(loadInitialData)
 
 .form-group-full {
   margin-top: 12px;
+}
+
+.selected-address-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.selected-address-card__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.selected-address-card__icon {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  color: #1d4ed8;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+}
+
+.selected-address-card__content {
+  min-width: 0;
+}
+
+.selected-address-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.selected-address-card strong {
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.selected-address-card p {
+  margin: 0 0 6px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.selected-address-card small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.link-btn {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .note-group {
@@ -766,6 +1180,186 @@ onMounted(loadInitialData)
   font-weight: 600;
 }
 
+.saved-address-list {
+  display: grid;
+  gap: 10px;
+}
+
+.saved-address-item {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: #f8fbff;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  text-align: left;
+}
+
+.saved-address-item.active {
+  border-color: #2563eb;
+  box-shadow: inset 0 0 0 1px #2563eb;
+}
+
+.saved-address-item__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  color: #1d4ed8;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+}
+
+.saved-address-item__content {
+  min-width: 0;
+}
+
+.saved-address-item__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.saved-address-item__content strong {
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.saved-address-item__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #e0edff;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.saved-address-item__content p {
+  margin: 0 0 6px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.saved-address-item__content small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.saved-address-item__content small i {
+  color: #94a3b8;
+}
+
+.address-modal__empty {
+  padding: 24px 20px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 16px;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.address-modal__empty i {
+  color: #1d4ed8;
+  font-size: 28px;
+}
+
+.address-modal__empty p {
+  margin: 10px 0 16px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.address-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(10px);
+}
+
+.address-modal {
+  width: min(100%, 760px);
+  max-height: min(90vh, 900px);
+  overflow: auto;
+  padding: 20px;
+  border-radius: 20px;
+  background: #ffffff;
+  border: 1px solid #e5edf8;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.28);
+}
+
+.address-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.address-modal__header h3 {
+  margin: 0 0 6px;
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.address-modal__header p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.address-modal__close {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  display: grid;
+  place-items: center;
+}
+
+.address-modal__success {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: #ecfdf5;
+  color: #15803d;
+  font-weight: 800;
+}
+
+.address-modal__success i {
+  font-size: 18px;
+}
+
+.address-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
 @media (max-width: 1200px) {
   .checkout-layout {
     grid-template-columns: 1fr;
@@ -788,6 +1382,44 @@ onMounted(loadInitialData)
 
   .checkout-card {
     padding: 16px;
+  }
+
+  .selected-address-card {
+    flex-direction: column;
+  }
+
+  .selected-address-card__main {
+    width: 100%;
+  }
+
+  .link-btn {
+    padding-left: 50px;
+  }
+
+  .saved-address-item {
+    grid-template-columns: 1fr;
+  }
+
+  .saved-address-item__icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .address-modal {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .address-modal__header {
+    flex-direction: column;
+  }
+
+  .address-modal__footer {
+    justify-content: stretch;
+  }
+
+  .address-modal__footer .btn {
+    width: 100%;
   }
 }
 </style>

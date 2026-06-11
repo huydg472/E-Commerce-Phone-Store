@@ -67,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders', [OrderController::class, 'store']);
     Route::get('/orders/{order}', [OrderController::class, 'show']);
     Route::post('/orders/{order}/mock-payment', [OrderController::class, 'mockPayment']);
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel']);
 });
 
 Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
@@ -131,6 +132,8 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
 });
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/payments/{payment}/vnpay-url', [PaymentController::class, 'createVnpayUrl']);
+
     Route::get('/shipping-addresses', [ShippingAddressController::class, 'index']);
     Route::post('/shipping-addresses', [ShippingAddressController::class, 'store']);
     Route::get('/shipping-addresses/{shippingAddress}', [ShippingAddressController::class, 'show']);

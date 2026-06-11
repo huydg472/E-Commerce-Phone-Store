@@ -209,6 +209,15 @@ const getVariantPrice = (variant) => {
     )
 }
 
+const getVariantAvailableQuantity = (variant) => {
+    return Number(
+        variant?.available_quantity ??
+        variant?.availableQuantity ??
+        variant?.quantity ??
+        0
+    )
+}
+
 const getVariantOldPrice = (variant) => {
     return toNumberPrice(
         variant?.old_price ??
@@ -264,7 +273,7 @@ const getVariantImage = (variant) => {
 
 const getBestVariantByRom = (variants) => {
     const availableVariants = variants.filter((variant) => {
-        return isActiveStatus(variant?.status) && Number(variant?.quantity ?? 0) > 0
+        return isActiveStatus(variant?.status) && getVariantAvailableQuantity(variant) > 0
     })
     const source = availableVariants.length ? availableVariants : variants
 
@@ -331,7 +340,7 @@ const createRomProductCard = (product, rom, variants, placeholderImage = '') => 
     const bestVariant = getBestVariantByRom(variants)
     const price = getVariantPrice(bestVariant) || getProductFallbackPrice(product)
     const oldPrice = getVariantOldPrice(bestVariant) || getProductFallbackOldPrice(product)
-    const stockQuantity = Number(bestVariant?.quantity ?? product?.quantity ?? 0)
+    const stockQuantity = getVariantAvailableQuantity(bestVariant) || Number(product?.quantity ?? 0)
 
     return {
         id: `${product?.id}-${normalizeText(rom) || bestVariant?.id || 'default'}`,

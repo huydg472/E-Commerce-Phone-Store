@@ -11,14 +11,14 @@ const gateways = {
     key: 'vnpay',
     name: 'VNPay',
     accent: 'blue',
-    description: 'Thanh toán qua QR VNPay, tự động xác nhận sau 10 giây nếu không thao tác thêm.',
+    description: 'Thanh toán qua QR VNPay, giao dịch thành công thì đơn vẫn chờ cửa hàng xác nhận.',
     badge: 'VNPay QR',
   },
   momo: {
     key: 'momo',
     name: 'MoMo',
     accent: 'pink',
-    description: 'Thanh toán bằng ví MoMo với QR demo và callback giả lập trạng thái hoàn tất.',
+    description: 'Thanh toán bằng ví MoMo, giao dịch chỉ ghi nhận đã trả tiền và chờ shop duyệt.',
     badge: 'MoMo QR',
   },
 }
@@ -48,7 +48,7 @@ const statusLabel = computed(() => {
     case 'syncing':
       return 'Đang xác nhận thanh toán'
     case 'paid':
-      return 'Thanh toán thành công'
+      return 'Đã thanh toán, chờ xác nhận'
     case 'cancelled':
       return 'Giao dịch đã hủy'
     case 'error':
@@ -67,13 +67,13 @@ const paymentSteps = computed(() => [
   },
   {
     title: 'Hệ thống đối soát',
-    description: 'Giao dịch được đẩy vào luồng mock để chờ xác nhận tự động.',
+    description: 'Giao dịch được ghi nhận và đẩy vào luồng chờ cửa hàng xác nhận.',
     active: paymentState.value === 'syncing',
     done: paymentState.value === 'paid',
   },
   {
-    title: 'Hoàn tất đơn',
-    description: 'Đơn hàng được cập nhật sang trạng thái hoàn thành và thanh toán thành công.',
+    title: 'Chờ shop xác nhận',
+    description: 'Thanh toán đã được ghi nhận, đơn vẫn chờ cửa hàng xác nhận trước khi chuyển sang xử lý.',
     active: paymentState.value === 'paid',
     done: paymentState.value === 'paid',
   },
@@ -192,7 +192,7 @@ const syncPaymentStatus = async () => {
       transactionCode.value = syncedOrder.payment.transaction_code
     }
 
-    syncMessage.value = 'Đã đồng bộ trạng thái đơn hàng.'
+    syncMessage.value = 'Đã ghi nhận thanh toán, đơn vẫn chờ cửa hàng xác nhận.'
     paymentState.value = 'paid'
     clearSuccessTimer()
     successTimer = window.setTimeout(() => {
@@ -511,8 +511,8 @@ onBeforeUnmount(() => {
         <div v-if="paymentState === 'paid'" class="result-box result-box--success">
           <i class="bi bi-check2-circle"></i>
           <div>
-            <strong>Đã cập nhật trạng thái đơn hàng</strong>
-            <p>{{ syncMessage || 'Thanh toán thành công và đơn đã được chuyển sang hoàn tất.' }}</p>
+            <strong>Đã ghi nhận thanh toán</strong>
+            <p>{{ syncMessage || 'Giao dịch thành công, đơn vẫn đang chờ cửa hàng xác nhận để tiếp tục xử lý.' }}</p>
           </div>
         </div>
 
@@ -528,7 +528,7 @@ onBeforeUnmount(() => {
           <i class="bi bi-shield-check"></i>
           <div>
             <strong>Đang chờ kết quả</strong>
-            <p>Trang này mô phỏng giao diện thanh toán thật để bạn test luồng VNPay và MoMo.</p>
+            <p>Trang này mô phỏng giao diện thanh toán thật để test luồng VNPay và MoMo theo trạng thái đã thanh toán nhưng chưa xác nhận.</p>
           </div>
         </div>
 

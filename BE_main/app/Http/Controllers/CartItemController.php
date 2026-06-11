@@ -39,7 +39,7 @@ class CartItemController extends Controller
         foreach ($cart->items as $item) {
             $variant = $item->productVariant;
 
-            $price = $variant->sale_price ?? $variant->price ?? 0;
+            $price = $variant?->sale_price ?? $variant?->price ?? 0;
             $itemSubtotal = $price * $item->quantity;
 
             $item->price = $price;
@@ -75,7 +75,7 @@ class CartItemController extends Controller
             ], 400);
         }
 
-        if ($variant->quantity < $quantity) {
+        if ((int) $variant->available_quantity < $quantity) {
             return response()->json([
                 'status' => false,
                 'message' => 'Số lượng tồn kho không đủ.'
@@ -100,7 +100,7 @@ class CartItemController extends Controller
         if ($cartItem) {
             $newQuantity = $cartItem->quantity + $quantity;
 
-            if ($variant->quantity < $newQuantity) {
+            if ((int) $variant->available_quantity < $newQuantity) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Số lượng trong giỏ vượt quá tồn kho.'

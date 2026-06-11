@@ -68,5 +68,18 @@ export const useOrderStore = defineStore('order', {
             useDashboardStore().removeOrder(id)
             return response
         },
+
+        async cancel(id) {
+            const response = await orderService.cancel(id)
+            const updated = response.data?.data ?? response.data ?? null
+
+            if (updated) {
+                this.item = this.item?.id === id ? updated : this.item
+                this.items = this.items.map((item) => (item.id === id ? {...item, ...updated} : item))
+                useDashboardStore().upsertOrder(updated)
+            }
+
+            return response
+        },
     },
 })

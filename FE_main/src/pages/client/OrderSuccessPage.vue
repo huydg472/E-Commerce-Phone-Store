@@ -1,46 +1,77 @@
 <script setup>
-import {computed} from 'vue'
+import {computed, onMounted} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
+import {useCartStore} from '@/stores/cartStore'
 
 const route = useRoute()
 const router = useRouter()
+const cartStore = useCartStore()
 
 const orderId = computed(() => String(route.query.order_id || ''))
+const paymentStatus = computed(() => String(route.query.payment || 'success').toLowerCase())
+const paymentReason = computed(() => String(route.query.reason || '').toLowerCase())
+const isPaymentFailed = computed(() => paymentStatus.value === 'failed')
+const pageTitle = computed(() => (isPaymentFailed.value ? 'Thanh toán thất bại' : 'Thanh toán thành công'))
+const pageDescription = computed(() => {
+  if (isPaymentFailed.value) {
+    if (paymentReason.value === 'order_cancelled') {
+      return 'Đơn hàng đã bị huỷ nên giao dịch không được chấp nhận. Bạn có thể tạo đơn mới nếu vẫn muốn mua hàng.'
+    }
+
+    return 'Giao dịch chưa hoàn tất. Đơn vẫn đang chờ thanh toán hoặc chờ cửa hàng xác nhận.'
+  }
+
+  return 'Giao dịch đã được ghi nhận. Đơn hàng vẫn ở trạng thái chờ cửa hàng xác nhận trước khi xử lý tiếp.'
+})
 
 const goToOrders = () => {
   router.push({name: 'orders.history'})
 }
 
-const goToDetail = () => {
-  if (!orderId.value) {
-    goToOrders()
+const clearPendingCartItems = async () => {
+  const raw = localStorage.getItem('pending_payment_cart_item_ids')
+
+  if (!raw) {
     return
   }
 
-  router.push({name: 'orders.show', params: {id: orderId.value}})
+  try {
+    const ids = JSON.parse(raw)
+
+    if (Array.isArray(ids) && ids.length > 0) {
+      await Promise.allSettled(ids.map((id) => cartStore.remove(id)))
+      await cartStore.fetchAll().catch(() => {})
+    }
+  } finally {
+    localStorage.removeItem('pending_payment_cart_item_ids')
+  }
 }
+
+onMounted(() => {
+  if (!isPaymentFailed.value) {
+    void clearPendingCartItems()
+    return
+  }
+
+  localStorage.removeItem('pending_payment_cart_item_ids')
+})
 </script>
 
 <template>
   <section class="success-page">
     <div class="success-card">
       <div class="success-icon">
-        <i class="bi bi-check-lg"></i>
+        <i :class="isPaymentFailed ? 'bi bi-exclamation-lg' : 'bi bi-check-lg'"></i>
       </div>
 
-      <h1>Đặt hàng thành công</h1>
-      <p>
-        Đơn hàng của bạn đã được ghi nhận. Bạn có thể xem chi tiết đơn hàng hoặc quay lại danh sách đơn hàng.
-      </p>
+      <h1>{{ pageTitle }}</h1>
+      <p>{{ pageDescription }}</p>
 
       <div v-if="orderId" class="order-pill">
         Mã đơn hàng: <strong>#{{ orderId }}</strong>
       </div>
 
       <div class="actions">
-        <button type="button" class="primary-btn" @click="goToDetail">
-          Xem chi tiết đơn hàng
-        </button>
         <button type="button" class="secondary-btn" @click="goToOrders">
           Xem tất cả đơn hàng
         </button>

@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'vnpay' => [
+        'url' => env('VNP_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'),
+        'tmn_code' => env('VNP_TMN_CODE'),
+        'hash_secret' => env('VNP_HASH_SECRET'),
+        'return_url' => env('VNP_RETURN_URL', env('APP_URL') . '/payments/vnpay/return'),
+        'frontend_url' => env('FRONTEND_URL', 'http://localhost:5173'),
+        'version' => '2.1.0',
+        'locale' => 'vn',
+    ],
+
 ];

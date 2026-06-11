@@ -1,12 +1,19 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
+import {storeToRefs} from 'pinia'
+import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
 import {useOrderStore} from '@/stores/orderStore'
+import {useCartStore} from '@/stores/cartStore'
+import {paymentService} from '@/services/paymentService'
 import {formatCurrency} from '@/utils/formatCurrency'
 import {formatDate} from '@/utils/formatDate'
+import {useClientPagination} from '@/composables/useClientPagination.js'
 
 const router = useRouter()
 const orderStore = useOrderStore()
+const cartStore = useCartStore()
+const {items: orderItems, loading: orderLoading} = storeToRefs(orderStore)
 
 const searchKeyword = ref('')
 const selectedStatus = ref('all')
@@ -15,6 +22,8 @@ const errorMessage = ref('')
 const detailModalOpen = ref(false)
 const detailLoading = ref(false)
 const detailError = ref('')
+const retryLoading = ref(false)
+const retryError = ref('')
 
 const statusMap = {
   pending: {label: 'Chờ xác nhận', className: 'pending'},
@@ -82,14 +91,35 @@ const getItemImage = (item) =>
   item?.product?.image ||
   '/images/default-product.png'
 
+const getPaymentMethod = (order) =>
+  String(order?.payment?.payment_method || order?.payment_method || 'cod').toLowerCase()
+
+const getPaymentStatus = (order) =>
+  String(order?.payment?.payment_status || order?.payment_status || 'unpaid').toLowerCase()
+
+const getAddressSourceLabel = (order) =>
+  order?.shipping_address_id ? 'Từ Sổ địa chỉ' : 'Địa chỉ nhập mới'
+
 const selectedOrder = computed(() => orderStore.item ?? null)
 const selectedOrderItems = computed(() => {
   const source = selectedOrder.value?.orderItems ?? selectedOrder.value?.order_items ?? []
   return Array.isArray(source) ? source : []
 })
 
-const orders = computed(() => {
-  const source = Array.isArray(orderStore.items) ? orderStore.items : []
+const selectedOrderPayment = computed(() => selectedOrder.value?.payment ?? null)
+const selectedPaymentMethod = computed(() =>
+  String(selectedOrderPayment.value?.payment_method || selectedOrder.value?.payment_method || '').toLowerCase(),
+)
+const selectedPaymentStatus = computed(() =>
+  String(selectedOrderPayment.value?.payment_status || selectedOrder.value?.payment_status || 'unpaid').toLowerCase(),
+)
+const canRetryVnpayPayment = computed(() =>
+  selectedPaymentMethod.value === 'vnpay' && selectedPaymentStatus.value !== 'paid',
+)
+const pendingPaymentMethods = new Set(['vnpay', 'momo'])
+
+const displayOrders = computed(() => {
+  const source = Array.isArray(orderItems.value) ? orderItems.value : []
 
   return source.map((order) => {
     const items = unwrapOrderItems(order)
@@ -115,8 +145,14 @@ const orders = computed(() => {
       code: order.order_code || `#${order.id}`,
       orderDate: formatDate(order.ordered_at || order.created_at),
       status: order.order_status || 'pending',
+      paymentMethod: getPaymentMethod(order),
+      paymentStatus: getPaymentStatus(order),
+      paymentId: order.payment?.id || null,
       total: toNumber(order.total_amount),
       address: order.shipping_address_text || '',
+      addressSourceLabel: getAddressSourceLabel(order),
+      addressSourceClass: order?.shipping_address_id ? 'saved' : 'manual',
+      orderItems: items,
       product: {
         name: getItemName(firstItem),
         color: getItemVariantName(firstItem),
@@ -132,7 +168,7 @@ const orders = computed(() => {
 const filteredOrders = computed(() => {
   const keyword = searchKeyword.value.trim().toLowerCase()
 
-  return orders.value.filter((order) => {
+  return displayOrders.value.filter((order) => {
     const matchesStatus = selectedStatus.value === 'all' || order.status === selectedStatus.value
     const matchesKeyword =
         !keyword ||
@@ -144,25 +180,37 @@ const filteredOrders = computed(() => {
   })
 })
 
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  paginatedItems: paginatedOrders,
+  pageStart,
+  pageEnd,
+} = useClientPagination(filteredOrders, {
+  defaultPageSize: 5,
+  pageSizeOptions: [5, 10],
+})
+
 const orderSummary = computed(() => [
   {
     label: 'Tổng đơn hàng',
-    value: orders.value.length,
+    value: displayOrders.value.length,
     icon: 'bi bi-bag',
   },
   {
     label: 'Đang giao',
-    value: orders.value.filter((order) => order.status === 'shipping').length,
+    value: displayOrders.value.filter((order) => order.status === 'shipping').length,
     icon: 'bi bi-truck',
   },
   {
     label: 'Hoàn thành',
-    value: orders.value.filter((order) => order.status === 'completed').length,
+    value: displayOrders.value.filter((order) => order.status === 'completed').length,
     icon: 'bi bi-check-circle',
   },
   {
     label: 'Đã hủy',
-    value: orders.value.filter((order) => order.status === 'cancelled').length,
+    value: displayOrders.value.filter((order) => order.status === 'cancelled').length,
     icon: 'bi bi-x-circle',
   },
 ])
@@ -197,6 +245,8 @@ const handleViewDetail = (order) => {
   detailModalOpen.value = true
   detailLoading.value = true
   detailError.value = ''
+  retryError.value = ''
+  retryLoading.value = false
 
   orderStore.fetchById(order.id)
     .catch((error) => {
@@ -210,6 +260,134 @@ const handleViewDetail = (order) => {
 const closeDetailModal = () => {
   detailModalOpen.value = false
   detailError.value = ''
+  retryError.value = ''
+  retryLoading.value = false
+}
+
+const handleRetryVnpayPayment = async () => {
+  if (!selectedOrder.value?.payment?.id || !canRetryVnpayPayment.value) {
+    return
+  }
+
+  retryLoading.value = true
+  retryError.value = ''
+
+  try {
+    const response = await paymentService.createVnpayUrl(selectedOrder.value.payment.id)
+    const paymentUrl = response.data?.data?.payment_url
+
+    if (!paymentUrl) {
+      throw new Error('Không tạo được link VNPay.')
+    }
+
+    window.location.href = paymentUrl
+  } catch (error) {
+    retryError.value = error?.response?.data?.message || error?.message || 'Không thể tạo lại link VNPay.'
+  } finally {
+    retryLoading.value = false
+  }
+}
+
+const handleOrderPrimaryAction = async (order) => {
+  const paymentMethod = String(order.paymentMethod || '').toLowerCase()
+  const paymentStatus = String(order.paymentStatus || 'unpaid').toLowerCase()
+
+  if (order.status !== 'pending' || paymentStatus === 'paid') {
+    return
+  }
+
+  if (paymentMethod === 'cod') {
+    const confirmed = window.confirm('Bạn có chắc muốn huỷ đơn hàng này không?')
+
+    if (!confirmed) {
+      return
+    }
+
+    try {
+      await orderStore.cancel(order.id)
+      await orderStore.fetchAll().catch(() => {})
+
+      if (selectedOrder.value?.id === order.id) {
+        await orderStore.fetchById(order.id).catch(() => {})
+      }
+    } catch (error) {
+      errorMessage.value = error?.response?.data?.message || 'Không thể huỷ đơn hàng.'
+    }
+
+    return
+  }
+
+  if (paymentMethod === 'momo') {
+    await router.push({
+      name: 'payment.demo',
+      query: {
+        gateway: 'momo',
+        order_id: order.id,
+        amount: String(order.total ?? 0),
+      },
+    })
+    return
+  }
+
+  if (paymentMethod === 'vnpay') {
+    if (!order.paymentId) {
+      errorMessage.value = 'Không tìm thấy bản ghi thanh toán.'
+      return
+    }
+
+    retryLoading.value = true
+    retryError.value = ''
+
+    try {
+      const response = await paymentService.createVnpayUrl(order.paymentId)
+      const paymentUrl = response.data?.data?.payment_url
+
+      if (!paymentUrl) {
+        throw new Error('Không tạo được link VNPay.')
+      }
+
+      window.location.href = paymentUrl
+    } catch (error) {
+      errorMessage.value = error?.response?.data?.message || error?.message || 'Không thể tạo lại link VNPay.'
+    } finally {
+      retryLoading.value = false
+    }
+  }
+}
+
+const handleReorder = async (order) => {
+  const items = Array.isArray(order?.orderItems) ? order.orderItems : []
+
+  if (!items.length) {
+    errorMessage.value = 'Không tìm thấy sản phẩm của đơn hàng này.'
+    return
+  }
+
+  try {
+    errorMessage.value = ''
+
+    for (const item of items) {
+      const productVariantId = Number(item?.product_variant_id ?? item?.productVariant?.id)
+      const quantity = Math.max(Number(item?.quantity) || 1, 1)
+
+      if (!Number.isInteger(productVariantId) || productVariantId <= 0) {
+        continue
+      }
+
+      await cartStore.create({
+        product_variant_id: productVariantId,
+        quantity,
+        unit_price: Number(item?.unit_price ?? item?.price ?? 0),
+        price: Number(item?.unit_price ?? item?.price ?? 0),
+        productVariant: item?.productVariant ?? item?.product_variant ?? null,
+      })
+    }
+
+    await cartStore.fetchAll().catch(() => {})
+    await router.push({name: 'cart'})
+  } catch (error) {
+    errorMessage.value = error?.response?.data?.message || 'Không thể thêm lại sản phẩm vào giỏ hàng.'
+  }
 }
 
 onMounted(loadOrders)
@@ -217,12 +395,6 @@ onMounted(loadOrders)
 
 <template>
   <section class="order-history-page">
-    <nav class="breadcrumb-wrap mb-2">
-      <span>Trang chủ</span>
-      <span>/</span>
-      <strong>Đơn hàng của tôi</strong>
-    </nav>
-
     <div class="page-head">
       <div>
         <h1 class="page-title">Đơn hàng của tôi</h1>
@@ -279,7 +451,7 @@ onMounted(loadOrders)
       </div>
     </div>
 
-    <div v-if="pageLoading" class="loading-card">
+    <div v-if="pageLoading || orderLoading" class="loading-card">
       <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
       <p>Đang tải đơn hàng...</p>
     </div>
@@ -290,7 +462,7 @@ onMounted(loadOrders)
 
     <div v-else class="orders-list">
       <article
-          v-for="order in filteredOrders"
+          v-for="order in paginatedOrders"
           :key="order.id"
           class="order-card"
       >
@@ -342,12 +514,26 @@ onMounted(loadOrders)
               Xem chi tiết
             </button>
 
-            <button v-if="order.status === 'pending'" type="button" class="action-btn primary-btn"
-                    @click="handleViewDetail(order)">
-              Xem đơn chờ thanh toán
+            <button
+                v-if="order.status === 'pending' && order.paymentStatus !== 'paid' && pendingPaymentMethods.has(order.paymentMethod)"
+                type="button"
+                class="action-btn primary-btn"
+                @click="handleOrderPrimaryAction(order)"
+            >
+              Thanh toán
             </button>
 
-            <button v-if="order.status !== 'pending'" type="button" class="text-action blue">
+            <button
+                v-else-if="order.status === 'pending' && order.paymentStatus !== 'paid' && order.paymentMethod === 'cod'"
+                type="button"
+                class="action-btn danger-btn"
+                @click="handleOrderPrimaryAction(order)"
+            >
+              Huỷ đơn
+            </button>
+
+            <button v-if="order.status !== 'pending'" type="button" class="text-action blue"
+                    @click="handleReorder(order)">
               <i class="bi bi-arrow-clockwise"></i>
               Mua lại
             </button>
@@ -355,7 +541,12 @@ onMounted(loadOrders)
         </div>
 
         <div class="order-address">
-          <span>Địa chỉ nhận hàng</span>
+          <div class="order-address__head">
+            <span>Địa chỉ nhận hàng</span>
+            <span class="address-source-badge" :class="order.addressSourceClass">
+              {{ order.addressSourceLabel }}
+            </span>
+          </div>
           <p>
             <i class="bi bi-geo-alt"></i>
             {{ order.address || 'Chưa có địa chỉ' }}
@@ -369,6 +560,19 @@ onMounted(loadOrders)
         <p>Hãy thử thay đổi từ khóa hoặc bộ lọc trạng thái.</p>
       </div>
     </div>
+
+    <ListPaginationControls
+        v-if="!pageLoading && !orderLoading && filteredOrders.length > 0"
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :page-size="pageSize"
+        :total-items="filteredOrders.length"
+        :page-start="pageStart"
+        :page-end="pageEnd"
+        item-label="đơn hàng"
+        @update:currentPage="currentPage = $event"
+        @update:pageSize="pageSize = $event"
+    />
 
     <Teleport to="body">
       <div v-if="detailModalOpen" class="order-detail-overlay" @click.self="closeDetailModal">
@@ -403,6 +607,18 @@ onMounted(loadOrders)
                 <span class="status-badge" :class="statusMap[selectedOrder.order_status]?.className || 'pending'">
                   {{ statusMap[selectedOrder.order_status]?.label || selectedOrder.order_status }}
                 </span>
+
+                <button
+                    v-if="canRetryVnpayPayment"
+                    type="button"
+                    class="action-btn primary-btn retry-vnpay-btn"
+                    :disabled="retryLoading"
+                    @click="handleRetryVnpayPayment"
+                >
+                  <span v-if="retryLoading" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                  <i v-else class="bi bi-credit-card"></i>
+                  Thanh toán VNPay
+                </button>
               </div>
             </div>
 
@@ -431,13 +647,35 @@ onMounted(loadOrders)
                 </div>
 
                 <div class="address-box">
-                  <span>Địa chỉ giao hàng</span>
+                  <div class="address-box__head">
+                    <span>Địa chỉ giao hàng</span>
+                    <span
+                        class="address-source-badge"
+                        :class="selectedOrder.shipping_address_id ? 'saved' : 'manual'"
+                    >
+                      {{ selectedOrder.shipping_address_id ? 'Từ Sổ địa chỉ' : 'Địa chỉ nhập mới' }}
+                    </span>
+                  </div>
                   <p>{{ selectedOrder.shipping_address_text || 'Chưa có địa chỉ' }}</p>
                 </div>
 
                 <div v-if="selectedOrder.note" class="note-box">
                   <span>Ghi chú</span>
                   <p>{{ selectedOrder.note }}</p>
+                </div>
+
+                <div v-if="selectedOrderPayment" class="payment-box">
+                  <span>Thanh toán</span>
+                  <p>
+                    Phương thức:
+                    <strong>{{ selectedPaymentMethod.toUpperCase() || 'N/A' }}</strong>
+                  </p>
+                  <p>
+                    Trạng thái:
+                    <strong :class="selectedPaymentStatus === 'paid' ? 'paid-text' : 'unpaid-text'">
+                      {{ selectedPaymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán' }}
+                    </strong>
+                  </p>
                 </div>
               </section>
 
@@ -479,6 +717,10 @@ onMounted(loadOrders)
                   <span>Tổng cộng</span>
                   <strong>{{ formatCurrency(selectedOrder.total_amount || 0) }}</strong>
                 </div>
+
+                <p v-if="retryError" class="retry-error">
+                  {{ retryError }}
+                </p>
               </aside>
             </div>
           </template>
@@ -872,6 +1114,12 @@ onMounted(loadOrders)
   color: #2563eb;
 }
 
+.danger-btn {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
 .text-action {
   height: 26px;
   border: 0;
@@ -894,7 +1142,16 @@ onMounted(loadOrders)
   border-top: 1px solid #eef2f7;
 }
 
-.order-address span {
+.order-address__head,
+.address-box__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.order-address__head > span:first-child,
+.address-box__head > span:first-child {
   display: block;
   margin-bottom: 5px;
   color: #374151;
@@ -911,6 +1168,26 @@ onMounted(loadOrders)
 .order-address i {
   margin-right: 5px;
   color: #94a3b8;
+}
+
+.address-source-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.address-source-badge.saved {
+  background: #e0edff;
+  color: #1d4ed8;
+}
+
+.address-source-badge.manual {
+  background: #fff7ed;
+  color: #c2410c;
 }
 
 .empty-card {
@@ -1022,6 +1299,13 @@ onMounted(loadOrders)
   flex-wrap: wrap;
 }
 
+.retry-vnpay-btn {
+  width: fit-content;
+  min-width: 170px;
+  height: 38px;
+  padding: 0 14px;
+}
+
 .popup-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr) minmax(0, 0.92fr);
@@ -1071,6 +1355,39 @@ onMounted(loadOrders)
 
 .popup-info-grid strong {
   color: #111827;
+}
+
+.payment-box {
+  padding: 14px 16px;
+  border: 1px solid #e5edf8;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.payment-box > span {
+  display: block;
+  margin-bottom: 10px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.payment-box p {
+  margin: 0 0 6px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.payment-box p:last-child {
+  margin-bottom: 0;
+}
+
+.paid-text {
+  color: #16a34a;
+}
+
+.unpaid-text {
+  color: #f97316;
 }
 
 .popup-item-list {
@@ -1166,6 +1483,14 @@ onMounted(loadOrders)
   margin-top: auto;
   border-color: #cfe0ff;
   background: linear-gradient(180deg, #eef4ff 0%, #dfeaff 100%);
+}
+
+.retry-error {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 @media (max-width: 1200px) {
@@ -1287,6 +1612,10 @@ onMounted(loadOrders)
 
   .popup-layout {
     gap: 14px;
+  }
+
+  .retry-vnpay-btn {
+    width: 100%;
   }
 }
 </style>
