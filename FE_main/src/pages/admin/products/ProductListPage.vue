@@ -106,7 +106,7 @@ const refreshProducts = async () => {
   try {
     await productStore.fetchAll({
       per_page: 1000,
-      sort: 'latest',
+      sort: 'id_asc',
     })
   } catch (error) {
     loadingError.value = error.response?.data?.message || 'Không tải được danh sách sản phẩm.'
@@ -141,6 +141,26 @@ const handleToggleStatus = async (product) => {
   } catch (error) {
     product.status = previousStatus
     loadingError.value = error.response?.data?.message || 'Không cập nhật được trạng thái sản phẩm.'
+  }
+}
+
+const handleToggleFeatured = async (product) => {
+  const nextFeatured = !Boolean(product?.is_featured)
+  const previousFeatured = Boolean(product?.is_featured)
+
+  product.is_featured = nextFeatured
+  loadingError.value = ''
+
+  try {
+    await productStore.update(product.id, {is_featured: nextFeatured})
+
+    const matchedProduct = displayProducts.value.find((item) => item.id === product.id)
+    if (matchedProduct) {
+      matchedProduct.is_featured = nextFeatured
+    }
+  } catch (error) {
+    product.is_featured = previousFeatured
+    loadingError.value = error.response?.data?.message || 'Không cập nhật được trạng thái nổi bật.'
   }
 }
 
@@ -363,9 +383,16 @@ onMounted(async () => {
               </button>
             </td>
             <td>
-                <span class="featured-pill" :class="{ active: product.is_featured }">
-                  {{ product.is_featured ? 'Nổi bật' : 'Thường' }}
-                </span>
+              <button
+                  type="button"
+                  class="featured-pill"
+                  :class="product.is_featured ? 'is-active' : 'is-inactive'"
+                  @click="handleToggleFeatured(product)"
+                  :title="product.is_featured ? 'Nổi bật' : 'Thường'"
+                  :aria-label="product.is_featured ? 'Nổi bật' : 'Thường'"
+              >
+                <i :class="product.is_featured ? 'bi bi-star-fill' : 'bi bi-star'"></i>
+              </button>
             </td>
             <td>{{ formatDate(product.updated_at || product.created_at) }}</td>
             <td>
@@ -809,20 +836,41 @@ onMounted(async () => {
 }
 
 .featured-pill {
-  min-height: 30px;
-  padding: 0 10px;
+  width: 42px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid transparent;
   border-radius: 999px;
-  background: #f8fafc;
-  color: #475569;
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  font-size: 12px;
+  justify-content: center;
+  font-size: 15px;
   font-weight: 800;
+  transition: 0.2s ease;
 }
 
-.featured-pill.active {
+.featured-pill i {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.featured-pill.is-active {
   background: #fef3c7;
   color: #b45309;
+  border-color: #fde68a;
+}
+
+.featured-pill.is-inactive {
+  background: #f8fafc;
+  color: #475569;
+  border-color: #e2e8f0;
 }
 
 .action-group {

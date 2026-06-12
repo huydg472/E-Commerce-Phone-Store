@@ -2,8 +2,10 @@
 import {computed, onMounted, reactive, ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
 import {storeToRefs} from 'pinia'
+import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
 import {useProductStore} from '@/stores/productStore.js'
 import {useProductVariantStore} from '@/stores/productVariantStore.js'
+import {useClientPagination} from '@/composables/useClientPagination.js'
 import {formatCurrency} from '@/utils/formatCurrency.js'
 import {formatDate} from '@/utils/formatDate.js'
 import ProductVariantForm from '@/components/product/ProductVariantForm.vue'
@@ -25,6 +27,18 @@ const fieldErrors = reactive({})
 const productId = computed(() => route.params.id)
 const isActiveTab = (name) => route.name === name
 const variantRows = computed(() => product.value?.productVariants || product.value?.product_variants || [])
+
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  paginatedItems: paginatedVariants,
+  pageStart,
+  pageEnd,
+} = useClientPagination(variantRows, {
+  defaultPageSize: 5,
+  pageSizeOptions: [5, 10],
+})
 
 const codePart = (value) => {
   const code = String(value ?? '')
@@ -357,7 +371,7 @@ onMounted(loadData)
             </tr>
             </thead>
             <tbody>
-            <tr v-for="variant in variantRows" :key="variant.id">
+            <tr v-for="variant in paginatedVariants" :key="variant.id">
               <td>
                 <div class="variant-meta">
                   <strong>{{ variant.color }}</strong>
@@ -419,6 +433,18 @@ onMounted(loadData)
           </table>
         </div>
       </section>
+
+      <ListPaginationControls
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          :page-size="pageSize"
+          :total-items="variantRows.length"
+          :page-start="pageStart"
+          :page-end="pageEnd"
+          item-label="biến thể"
+          @update:currentPage="currentPage = $event"
+          @update:pageSize="pageSize = $event"
+      />
     </template>
 
     <ProductVariantForm

@@ -1,6 +1,7 @@
 import {defineStore} from 'pinia'
 import {useAuthStore} from '@/stores/authStore'
 import {cartItemService} from '@/services/cartItemService'
+import {useNotificationStore} from '@/stores/notificationStore.js'
 
 const cloneValue = (value) => {
     try {
@@ -123,6 +124,7 @@ export const useCartStore = defineStore('cart', {
             const previousItem = this.item ? cloneValue(this.item) : null
             const quantity = Math.max(Number(payload?.quantity) || 1, 1)
             const productVariantId = Number(payload?.product_variant_id)
+            const notificationStore = useNotificationStore()
 
             const existingIndex = this.items.findIndex((cartItem) => {
                 return Number(cartItem?.product_variant_id ?? cartItem?.productVariant?.id) === productVariantId
@@ -222,6 +224,7 @@ export const useCartStore = defineStore('cart', {
 
                 void this.fetchAll().catch(() => {
                 })
+                notificationStore.success('Đã thêm vào giỏ.')
                 return response
             } catch (error) {
                 if (error.response?.status === 401) {

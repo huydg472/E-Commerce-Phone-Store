@@ -41,6 +41,7 @@ export default [
                 path: 'cart',
                 name: 'cart',
                 component: () => import('@/pages/client/CartPage.vue'),
+                meta: {requiresAuth: true},
             },
             {
                 path: 'dashboard',
@@ -90,6 +91,11 @@ export default [
                         name: 'orders.history',
                         alias: '/orders',
                         component: () => import('@/pages/client/OrderHistoryPage.vue'),
+                    },
+                    {
+                        path: 'yeu-thich',
+                        name: 'favorites',
+                        component: () => import('@/pages/client/FavoritePage.vue'),
                     },
                     {
                         path: 'doi-mat-khau',

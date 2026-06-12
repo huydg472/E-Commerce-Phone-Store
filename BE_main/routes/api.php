@@ -8,6 +8,8 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CouponController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\PaymentController;
@@ -27,7 +29,7 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 Route::post('/register', [RegisteredUserController::class, 'store']);
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
-    return $request->user();
+    return $request->user()->load('role.permissions');
 });
 
 Route::get('/brands', [BrandController::class, 'index']);
@@ -86,6 +88,13 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
     Route::put('/payments/{payment}', [PaymentController::class, 'update']);
     Route::delete('/payments/{payment}', [PaymentController::class, 'destroy']);
 
+    Route::get('/coupons', [CouponController::class, 'index']);
+    Route::post('/coupons', [CouponController::class, 'store']);
+    Route::get('/coupons/{coupon}', [CouponController::class, 'show']);
+    Route::put('/coupons/{coupon}', [CouponController::class, 'update']);
+    Route::patch('/coupons/{coupon}/toggle-status', [CouponController::class, 'toggleStatus']);
+    Route::delete('/coupons/{coupon}', [CouponController::class, 'destroy']);
+
     Route::get('/permissions', [PermissionController::class, 'index']);
     Route::post('/permissions', [PermissionController::class, 'store']);
     Route::get('/permissions/{permission}', [PermissionController::class, 'show']);
@@ -134,15 +143,23 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments/{payment}/vnpay-url', [PaymentController::class, 'createVnpayUrl']);
 
+    Route::get('/favorites', [FavoriteController::class, 'index']);
+    Route::post('/favorites', [FavoriteController::class, 'store']);
+    Route::get('/favorites/{productVariant}/status', [FavoriteController::class, 'status']);
+    Route::post('/favorites/{productVariant}/toggle', [FavoriteController::class, 'toggle']);
+    Route::delete('/favorites/{productVariant}', [FavoriteController::class, 'destroy']);
+
     Route::get('/shipping-addresses', [ShippingAddressController::class, 'index']);
     Route::post('/shipping-addresses', [ShippingAddressController::class, 'store']);
     Route::get('/shipping-addresses/{shippingAddress}', [ShippingAddressController::class, 'show']);
     Route::put('/shipping-addresses/{shippingAddress}', [ShippingAddressController::class, 'update']);
     Route::delete('/shipping-addresses/{shippingAddress}', [ShippingAddressController::class, 'destroy']);
 
+    Route::post('/coupons/apply', [CouponController::class, 'apply']);
+
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy']);
     Route::get('/me', function (Request $request) {
-        return response()->json($request->user()->load('role'));
+        return response()->json($request->user()->load('role.permissions'));
     });
 });
 

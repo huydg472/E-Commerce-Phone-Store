@@ -32,12 +32,48 @@ const typeClasses = {
 
 const stockLogs = computed(() => (Array.isArray(stockLogStore.items) ? stockLogStore.items : []))
 
+const getVariant = (log) => {
+  return log?.productVariant || log?.product_variant || log?.variant || {}
+}
+
+const getProduct = (log) => {
+  const variant = getVariant(log)
+  return variant?.product || log?.product || log?.product_data || {}
+}
+
+const getProductName = (log) => {
+  const product = getProduct(log)
+  const variant = getVariant(log)
+
+  return (
+    product?.name ||
+    log?.product_name ||
+    variant?.product_name ||
+    variant?.product?.name ||
+    'Không rõ'
+  )
+}
+
+const getVariantSummary = (log) => {
+  const variant = getVariant(log)
+  const parts = [variant?.color, variant?.storage, variant?.ram]
+    .map((value) => String(value ?? '').trim())
+    .filter(Boolean)
+
+  return parts.length ? parts.join(' · ') : 'Không màu'
+}
+
+const getVariantSku = (log) => {
+  const variant = getVariant(log)
+  return variant?.sku || log?.sku || 'N/A'
+}
+
 const filteredLogs = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
 
   return stockLogs.value.filter((log) => {
-    const variant = log.productVariant || {}
-    const product = variant.product || {}
+    const variant = getVariant(log)
+    const product = getProduct(log)
     const user = log.user || {}
     const order = log.order || {}
 
@@ -209,11 +245,10 @@ onMounted(loadPage)
           <tbody>
             <tr v-for="log in paginatedLogs" :key="log.id">
               <td>
-                <strong>{{ log.productVariant?.product?.name || 'Không rõ' }}</strong>
+                <strong>{{ getProductName(log) }}</strong>
                 <div class="muted">
-                  {{ log.productVariant?.sku || 'N/A' }} ·
-                  {{ log.productVariant?.color || 'Không màu' }}
-                  <template v-if="log.productVariant?.storage">· {{ log.productVariant.storage }}</template>
+                  {{ getVariantSku(log) }} ·
+                  {{ getVariantSummary(log) }}
                 </div>
               </td>
               <td>

@@ -101,7 +101,7 @@ const loadData = async () => {
   try {
     await Promise.all([
       categoryStore.fetchAll(),
-      productStore.fetchAll({per_page: 1000, sort: 'latest'}),
+      productStore.fetchAll({per_page: 1000, sort: 'id_asc'}),
     ])
   } catch (error) {
     loadingError.value = error.response?.data?.message || 'Không tải được danh sách danh mục.'

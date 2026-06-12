@@ -1,8 +1,9 @@
 <script setup>
-import {computed} from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
 import {useAuthStore} from '@/stores/authStore'
 import {useCartStore} from '@/stores/cartStore'
+import {useFavoriteStore} from '@/stores/favoriteStore'
 import {formatCurrency} from '@/utils/formatCurrency'
 import {toNumberPrice} from '@/utils/productCardHelpers'
 
@@ -57,6 +58,8 @@ const fallbackImage = 'https://placehold.co/300x220/f1f5f9/2563eb?text=Zin+Mobil
 const router = useRouter()
 const authStore = useAuthStore()
 const cartStore = useCartStore()
+const favoriteStore = useFavoriteStore()
+const favoriteLoading = ref(false)
 
 const normalizeMoney = (value) => {
   if (value === null || value === undefined || value === '') {
@@ -81,6 +84,9 @@ const isLightColor = (value) => {
 
 const canQuickAdd = computed(() => {
   return Boolean(props.variantId) && Number(props.stockQuantity ?? 0) > 0
+})
+const isFavorite = computed(() => {
+  return authStore.isLoggedIn && favoriteStore.isFavorite(props.variantId)
 })
 
 const handleImageError = (event) => {
@@ -107,6 +113,34 @@ const handleQuickAdd = () => {
     console.error('Không thể thêm vào giỏ hàng:', error)
   })
 }
+
+const handleFavoriteToggle = async () => {
+  if (!props.variantId || favoriteLoading.value) {
+    return
+  }
+
+  if (!authStore.isLoggedIn) {
+    await router.push('/auth/login')
+    return
+  }
+
+  favoriteLoading.value = true
+
+  try {
+    await favoriteStore.ensureLoaded()
+    await favoriteStore.toggle(props.variantId)
+  } catch (error) {
+    console.error('KhÃ´ng thá»ƒ cáº­p nháº­t yÃªu thÃ­ch:', error)
+  } finally {
+    favoriteLoading.value = false
+  }
+}
+
+onMounted(() => {
+  if (authStore.isLoggedIn) {
+    void favoriteStore.ensureLoaded().catch(() => {})
+  }
+})
 </script>
 
 <template>
@@ -131,6 +165,18 @@ const handleQuickAdd = () => {
       >
         <i class="bi bi-cart3"></i>
       </button>
+
+      <button
+          v-if="variantId"
+          type="button"
+          class="card-action-btn favorite-btn"
+          :class="{ 'is-active': isFavorite }"
+          :disabled="favoriteLoading"
+          :aria-label="isFavorite ? 'Bá» yÃªu thÃ­ch' : 'ThÃªm vÃ o yÃªu thÃ­ch'"
+          @click="handleFavoriteToggle"
+      >
+        <i :class="isFavorite ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+      </button>
     </div>
 
     <div class="product-info">
@@ -139,15 +185,26 @@ const handleQuickAdd = () => {
       </RouterLink>
 
       <div v-if="colorSwatches.length" class="product-colors">
-        <span
-            v-for="color in colorSwatches"
-            :key="`${color.name}-${color.value}`"
-            class="color-swatch"
-            :class="{ 'is-light': isLightColor(color.value) }"
-            :title="color.name"
-            :aria-label="color.name"
-            :style="{ backgroundColor: color.value }"
-        ></span>
+        <template v-for="color in colorSwatches" :key="`${color.name}-${color.value}-${color.to || ''}`">
+          <RouterLink
+              v-if="color.to"
+              :to="color.to"
+              class="color-swatch"
+              :class="{ 'is-light': isLightColor(color.value) }"
+              :title="color.name"
+              :aria-label="color.name"
+              :style="{ backgroundColor: color.value }"
+          ></RouterLink>
+
+          <span
+              v-else
+              class="color-swatch"
+              :class="{ 'is-light': isLightColor(color.value) }"
+              :title="color.name"
+              :aria-label="color.name"
+              :style="{ backgroundColor: color.value }"
+          ></span>
+        </template>
       </div>
 
       <div class="price-row">
@@ -219,9 +276,22 @@ const handleQuickAdd = () => {
   pointer-events: auto;
 }
 
+.product-card .favorite-btn.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
 .quick-cart-btn {
   left: 8px;
   color: #0d6efd;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+}
+
+.favorite-btn {
+  right: 8px;
+  color: #dc2626;
   box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
 }
 
@@ -247,11 +317,23 @@ const handleQuickAdd = () => {
   transform: translateY(-1px);
 }
 
+.favorite-btn:hover,
+.favorite-btn.is-active {
+  border-color: #fecdd3;
+  background: #fff1f2;
+  color: #e11d48;
+  transform: translateY(-1px);
+}
+
 .quick-cart-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   transform: none;
   pointer-events: none;
+}
+
+.favorite-btn:disabled {
+  cursor: not-allowed;
 }
 
 .product-info {
@@ -282,12 +364,13 @@ const handleQuickAdd = () => {
 }
 
 .color-swatch {
-  width: 14px;
-  height: 14px;
+  width: 17px;
+  height: 17px;
   border-radius: 50%;
   border: 1px solid rgba(148, 163, 184, 0.35);
   display: inline-block;
   flex: 0 0 auto;
+  cursor: pointer;
 }
 
 .color-swatch.is-light {

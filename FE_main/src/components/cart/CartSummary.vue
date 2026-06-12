@@ -1,7 +1,8 @@
 <script setup>
-import {computed} from 'vue'
+import {computed, onMounted} from 'vue'
 import {formatCurrency} from '@/utils/formatCurrency'
 import {toNumberPrice} from '@/utils/productCardHelpers'
+import {useCouponStore} from '@/stores/couponStore'
 
 const props = defineProps({
   itemCount: {
@@ -30,11 +31,13 @@ const props = defineProps({
   },
 })
 
+const couponStore = useCouponStore()
 const subtotalValue = computed(() => toNumberPrice(props.subtotal))
 const discountValue = computed(() => toNumberPrice(props.discount))
 const shippingValue = computed(() => toNumberPrice(props.shipping))
 const totalValue = computed(() => toNumberPrice(props.total))
 const hasSelectedItems = computed(() => props.selectedItemIds.length > 0 && props.itemCount > 0)
+const appliedCoupon = computed(() => couponStore.appliedCoupon)
 const checkoutRoute = computed(() => ({
   name: 'checkout',
   query: {
@@ -48,6 +51,18 @@ const shippingText = computed(() => {
   }
 
   return formatCurrency(shippingValue.value)
+})
+
+const handleApplyCoupon = async () => {
+  await couponStore.apply(subtotalValue.value)
+}
+
+const handleClearCoupon = () => {
+  couponStore.clear()
+}
+
+onMounted(() => {
+  couponStore.hydrate()
 })
 </script>
 
@@ -91,11 +106,21 @@ const shippingText = computed(() => {
             type="text"
             class="form-control"
             placeholder="Nhập mã giảm giá"
+            v-model.trim="couponStore.inputCode"
         />
 
-        <button class="btn btn-primary" type="button">
-          Áp dụng
+        <button class="btn btn-primary" type="button" :disabled="couponStore.loading" @click="handleApplyCoupon">
+          {{ couponStore.loading ? 'Đang...' : 'Áp dụng' }}
         </button>
+      </div>
+
+      <p v-if="couponStore.error" class="coupon-error">{{ couponStore.error }}</p>
+
+      <div v-if="appliedCoupon" class="coupon-chip">
+        <span>
+          Đã áp dụng: <strong>{{ appliedCoupon.code }}</strong>
+        </span>
+        <button type="button" @click="handleClearCoupon">Bỏ</button>
       </div>
 
       <RouterLink v-if="hasSelectedItems" :to="checkoutRoute" class="checkout-btn">
@@ -252,6 +277,38 @@ const shippingText = computed(() => {
 
 .coupon-form .btn {
   background: #0d6efd;
+}
+
+.coupon-error {
+  margin: 8px 0 0;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.coupon-chip {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.coupon-chip strong {
+  font-weight: 900;
+}
+
+.coupon-chip button {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-weight: 800;
 }
 
 .checkout-btn,

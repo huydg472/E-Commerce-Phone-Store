@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia'
 import {productImageService} from '@/services/productImageService'
+import {useNotificationStore} from '@/stores/notificationStore.js'
 
 export const useProductImageStore = defineStore('productImage', {
     state: () => ({
@@ -43,6 +44,7 @@ export const useProductImageStore = defineStore('productImage', {
                 this.item = createdItem
                 this.items = [createdItem, ...this.items]
             }
+            useNotificationStore().success('Đã thêm hình ảnh.')
 
             return response
         },
@@ -57,6 +59,7 @@ export const useProductImageStore = defineStore('productImage', {
                     item.id === updatedItem.id ? {...item, ...updatedItem} : item
                 ))
             }
+            useNotificationStore().success('Đã sửa hình ảnh.')
 
             return response
         },
@@ -64,6 +67,7 @@ export const useProductImageStore = defineStore('productImage', {
         async remove(id) {
             const response = await productImageService.delete(id)
             this.items = this.items.filter((item) => item.id !== id)
+            useNotificationStore().success('Đã xóa hình ảnh.')
             return response
         },
     },

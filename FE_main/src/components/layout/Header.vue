@@ -4,12 +4,15 @@ import {useRouter} from 'vue-router'
 import {storeToRefs} from 'pinia'
 import {useAuthStore} from '@/stores/authStore.js'
 import {useCartStore} from '@/stores/cartStore'
+import {useFavoriteStore} from '@/stores/favoriteStore'
 
 const router = useRouter();
 const authStore = useAuthStore();
 const cartStore = useCartStore()
+const favoriteStore = useFavoriteStore()
 
 const {items: cartItems, item: cartData} = storeToRefs(cartStore)
+const {variantIds: favoriteVariantIds} = storeToRefs(favoriteStore)
 
 const isLoggedIn = computed(() => authStore.isLoggedIn)
 
@@ -18,12 +21,17 @@ const cartQuantity = computed(() => {
   return Array.isArray(items) ? items.length : 0
 })
 
+const favoriteQuantity = computed(() => {
+  return Array.isArray(favoriteVariantIds.value) ? favoriteVariantIds.value.length : 0
+})
+
 const displayName = computed(() => {
   return authStore.user?.['name'] || authStore.user?.['username'] || 'Tài khoản'
 })
 
 const handleLogout = async () => {
   await authStore.logout()
+  favoriteStore.clear()
   await router.replace('/auth/login')
 }
 
@@ -42,8 +50,18 @@ const refreshCart = async () => {
   }
 }
 
+const refreshFavorites = async () => {
+  if (!authStore.isLoggedIn) {
+    favoriteStore.clear()
+    return
+  }
+
+  await favoriteStore.ensureLoaded().catch(() => {})
+}
+
 watch(isLoggedIn, () => {
   refreshCart()
+  refreshFavorites()
 }, {immediate: true})
 </script>
 <template>
@@ -100,6 +118,13 @@ watch(isLoggedIn, () => {
               </li>
 
               <li>
+                <RouterLink class="dropdown-item" :to="{ name: 'favorites' }">
+                  <i class="bi bi-heart me-2"></i>
+                  Sản phẩm yêu thích
+                </RouterLink>
+              </li>
+
+              <li>
                 <hr class="dropdown-divider"/>
               </li>
 
@@ -112,7 +137,19 @@ watch(isLoggedIn, () => {
             </ul>
           </div>
 
-          <RouterLink to="/cart" class="header-action cart-action">
+          <RouterLink
+              :to="isLoggedIn ? { name: 'favorites' } : '/auth/login'"
+              class="header-action favorite-action"
+          >
+            <i class="bi bi-heart"></i>
+            <span>Yêu thích</span>
+            <em v-if="isLoggedIn">{{ favoriteQuantity }}</em>
+          </RouterLink>
+
+          <RouterLink
+              :to="isLoggedIn ? { name: 'cart' } : '/auth/login'"
+              class="header-action cart-action"
+          >
             <i class="bi bi-cart3"></i>
             <span>Giỏ hàng</span>
             <em>{{ cartQuantity }}</em>
@@ -135,9 +172,9 @@ watch(isLoggedIn, () => {
 .header-top {
   min-height: 66px;
   display: grid;
-  grid-template-columns: 300px minmax(420px, 1fr) 520px;
+  grid-template-columns: 300px minmax(360px, 1fr) 620px;
   align-items: center;
-  gap: 28px;
+  gap: 24px;
   padding: 8px 0;
 }
 
@@ -213,7 +250,7 @@ watch(isLoggedIn, () => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 34px;
+  gap: 26px;
   overflow: visible;
 }
 
@@ -244,6 +281,12 @@ watch(isLoggedIn, () => {
 }
 
 .cart-action {
+  order: 2;
+  padding-right: 12px;
+}
+
+.favorite-action {
+  order: 1;
   padding-right: 12px;
 }
 
@@ -291,6 +334,7 @@ watch(isLoggedIn, () => {
 
 .account-dropdown {
   position: relative;
+  order: 3;
 }
 
 .account-btn {

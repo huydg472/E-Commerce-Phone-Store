@@ -61,9 +61,10 @@ class ProductController extends Controller
                 'category',
                 'productVariants' => fn ($query) => $query
                     ->when($activeOnly, fn ($variantQuery) => $variantQuery->where('status', 'active'))
+                    ->orderBy('id')
                     ->with('images'),
             ])
-            ->latest();
+            ->orderBy('id');
 
         if ($request->filled('is_featured')) {
             $query->where('is_featured', $request->boolean('is_featured'));
@@ -86,8 +87,8 @@ class ProductController extends Controller
             });
         }
 
-        if ($request->get('sort') === 'latest') {
-            $query->latest();
+        if ($request->get('sort') === 'id_asc') {
+            $query->orderBy('id');
         }
 
         $perPage = $request->integer('per_page', 12);
@@ -220,6 +221,7 @@ class ProductController extends Controller
                 'category',
                 'productVariants' => fn ($query) => $query
                     ->where('status', 'active')
+                    ->orderBy('id')
                     ->with('images'),
             ])
             ->firstOrFail();

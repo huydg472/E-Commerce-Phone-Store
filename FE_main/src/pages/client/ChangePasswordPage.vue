@@ -75,14 +75,6 @@ const handleSubmit = async () => {
 
 <template>
   <section class="account-page">
-    <nav class="account-breadcrumb mb-2">
-      <span>Trang chủ</span>
-      <span>/</span>
-      <span>Tài khoản của tôi</span>
-      <span>/</span>
-      <strong>Đổi mật khẩu</strong>
-    </nav>
-
     <div class="page-head">
       <div>
         <h1 class="page-title mb-1">Đổi mật khẩu</h1>
@@ -160,19 +152,6 @@ const handleSubmit = async () => {
 .account-page {
   color: #0f172a;
   font-size: 14px;
-}
-
-.account-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.account-breadcrumb strong {
-  color: #2563eb;
-  font-weight: 600;
 }
 
 .page-head {

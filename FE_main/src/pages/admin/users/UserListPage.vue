@@ -4,8 +4,10 @@ import ListPaginationControls from '@/components/common/ListPaginationControls.v
 import UserTable from '@/components/user/UserTable.vue'
 import {useUserStore} from '@/stores/userStore'
 import {userService} from '@/services/userService'
+import {useNotificationStore} from '@/stores/notificationStore.js'
 
 const userStore = useUserStore()
+const notificationStore = useNotificationStore()
 
 const search = ref('')
 const currentPage = ref(1)
@@ -127,6 +129,7 @@ const handleStatusToggle = async (user) => {
       user.updated_at = updatedUser.updated_at
     }
     await fetchStatsUsers()
+    notificationStore.success('Đã sửa trạng thái.')
   } catch (error) {
     user.status = previousStatus
     user.updated_at = previousUpdatedAt

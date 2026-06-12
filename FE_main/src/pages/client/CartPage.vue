@@ -4,12 +4,14 @@ import CartEmpty from '@/components/cart/CartEmpty.vue'
 import CartItem from '@/components/cart/CartItem.vue'
 import CartSummary from '@/components/cart/CartSummary.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
+import {useCouponStore} from '@/stores/couponStore'
 import {useCartStore} from '@/stores/cartStore'
 import {useProductStore} from '@/stores/productStore'
 import {formatCurrency} from '@/utils/formatCurrency'
 import {buildProductCards, toNumberPrice} from '@/utils/productCardHelpers'
 
 const cartStore = useCartStore()
+const couponStore = useCouponStore()
 const productStore = useProductStore()
 const isInitialLoading = ref(true)
 const selectedItemIds = ref([])
@@ -172,7 +174,7 @@ const selectedItemCount = computed(() => selectedItems.value.length)
 const subtotalValue = computed(() => {
   return selectedItems.value.reduce((sum, item) => sum + Number(item.totalValue ?? 0), 0)
 })
-const discountValue = computed(() => 0)
+const discountValue = computed(() => couponStore.discountAmount(subtotalValue.value))
 const shippingValue = computed(() => 0)
 const totalValue = computed(() => subtotalValue.value)
 
@@ -274,6 +276,7 @@ const handleRemove = async (item) => {
 }
 
 onMounted(async () => {
+  couponStore.hydrate()
   isInitialLoading.value = true
 
   try {

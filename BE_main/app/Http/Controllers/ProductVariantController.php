@@ -57,7 +57,7 @@ class ProductVariantController extends Controller
     {
         $productVariant = ProductVariant::query()
             ->with(['product', 'images'])
-            ->orderByDesc('id')
+            ->orderBy('id')
             ->get();
         return response()->json(['status' => true, 'message' => 'Lay du lieu thanh cong', 'data' => $productVariant]);
     }

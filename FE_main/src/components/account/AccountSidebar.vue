@@ -2,10 +2,12 @@
 import {computed} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useAuthStore} from '@/stores/authStore'
+import {useFavoriteStore} from '@/stores/favoriteStore'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const favoriteStore = useFavoriteStore()
 
 const items = [
   {
@@ -25,6 +27,12 @@ const items = [
     label: 'Đơn hàng của tôi',
     icon: 'bi bi-bag',
     to: {name: 'orders.history'},
+  },
+  {
+    key: 'favorites',
+    label: 'Yêu thích',
+    icon: 'bi bi-heart',
+    to: {name: 'favorites'},
   },
   {
     key: 'address',
@@ -55,6 +63,10 @@ const activeKey = computed(() => {
     return 'orders'
   }
 
+  if (routeName === 'favorites') {
+    return 'favorites'
+  }
+
   if (routeName === 'shipping-addresses') {
     return 'address'
   }
@@ -68,6 +80,7 @@ const activeKey = computed(() => {
 
 const handleLogout = async () => {
   await authStore.logout()
+  favoriteStore.clear()
   await router.replace('/auth/login')
 }
 </script>

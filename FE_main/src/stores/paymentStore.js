@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia'
 import {paymentService} from '@/services/paymentService'
+import {useNotificationStore} from '@/stores/notificationStore.js'
 
 export const usePaymentStore = defineStore('payment', {
     state: () => ({
@@ -50,6 +51,7 @@ export const usePaymentStore = defineStore('payment', {
         async remove(id) {
             const response = await paymentService.delete(id)
             this.items = this.items.filter((item) => item.id !== id)
+            useNotificationStore().success('Đã xóa thanh toán.')
             return response
         },
     },

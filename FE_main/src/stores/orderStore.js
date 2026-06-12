@@ -1,6 +1,7 @@
 import {defineStore} from 'pinia'
 import {orderService} from '@/services/orderService'
 import {useDashboardStore} from '@/stores/dashboardStore'
+import {useNotificationStore} from '@/stores/notificationStore.js'
 
 export const useOrderStore = defineStore('order', {
     state: () => ({
@@ -59,6 +60,7 @@ export const useOrderStore = defineStore('order', {
                 this.items = this.items.map((item) => (item.id === id ? {...item, ...updated, ...payload} : item))
                 useDashboardStore().upsertOrder(merged)
             }
+            useNotificationStore().success('Đã sửa đơn hàng.')
             return response
         },
 
@@ -66,6 +68,7 @@ export const useOrderStore = defineStore('order', {
             const response = await orderService.delete(id)
             this.items = this.items.filter((item) => item.id !== id)
             useDashboardStore().removeOrder(id)
+            useNotificationStore().success('Đã xóa đơn hàng.')
             return response
         },
 

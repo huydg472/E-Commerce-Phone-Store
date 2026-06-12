@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\ShippingAddress;
 use App\Services\OrderInventoryService;
+use App\Services\OrderPricingService;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
@@ -18,13 +20,14 @@ class OrderController extends Controller
 {
     public function __construct(
         private readonly OrderInventoryService $inventoryService,
+        private readonly OrderPricingService $pricingService,
     ) {
     }
 
     public function index(Request $request): JsonResponse
     {
         $query = Order::query()
-            ->with(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user'])
+            ->with(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user', 'coupon'])
             ->latest();
 
         if (!$request->user()->isAdminOrStaff()) {
@@ -59,22 +62,32 @@ class OrderController extends Controller
         }
 
         $shippingFee = (float) ($data['shipping_fee'] ?? 0);
-        $discountAmount = (float) ($data['discount_amount'] ?? 0);
+        $couponCode = strtoupper(trim((string) ($data['coupon_code'] ?? '')));
         $paymentMethod = $data['payment_method'] ?? 'cod';
 
-        $order = DB::transaction(function () use ($data, $items, $paymentMethod, $shippingFee, $discountAmount) {
+        $order = DB::transaction(function () use ($data, $items, $paymentMethod, $shippingFee, $couponCode) {
             $inventory = $this->inventoryService->normalizeOrderItems($items);
             $normalizedItems = $inventory['items'];
             $subtotal = (float) $inventory['subtotal'];
+            $couponResult = $this->pricingService->resolveCouponDiscount($couponCode, $subtotal);
+            $discountAmount = $couponResult['discount_amount'];
+            $coupon = $couponResult['coupon'];
 
-            $data['order_code'] = $this->generateOrderCode();
+            $data['order_code'] = $this->pricingService->generateOrderCode();
             $data['subtotal'] = $subtotal;
             $data['total_amount'] = max($subtotal + $shippingFee - $discountAmount, 0);
+            $data['coupon_id'] = $coupon?->id;
+            $data['coupon_code'] = $coupon?->code;
+            $data['discount_amount'] = $discountAmount;
             unset($data['payment_method']);
 
             $order = Order::create($data);
             $order->orderItems()->createMany($normalizedItems);
             $this->inventoryService->reserveStockForOrder($order);
+
+            if ($coupon) {
+                $coupon->increment('used_count');
+            }
 
             Payment::create([
                 'order_id' => $order->id,
@@ -89,7 +102,7 @@ class OrderController extends Controller
             return $order;
         });
 
-        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user']);
+        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user', 'coupon']);
 
         return response()->json([
             'success' => true,
@@ -100,7 +113,7 @@ class OrderController extends Controller
 
     public function show(Request $request, Order $order): JsonResponse
     {
-        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user']);
+        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user', 'coupon']);
 
         if (!$request->user()->isAdminOrStaff() && $order->user_id !== $request->user()->id) {
             return response()->json([
@@ -156,7 +169,7 @@ class OrderController extends Controller
             }
         });
 
-        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user']);
+        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user', 'coupon']);
 
         return response()->json([
             'success' => true,
@@ -212,7 +225,7 @@ class OrderController extends Controller
             }
         });
 
-        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user']);
+        $order->load(['orderItems.productVariant.product', 'payment', 'shippingAddress', 'user', 'coupon']);
 
         return response()->json([
             'success' => true,
@@ -325,5 +338,76 @@ class OrderController extends Controller
         }
 
         return 'ORD-' . now()->format('YmdHis') . '-' . random_int(10000, 99999);
+    }
+
+    private function resolveCouponDiscount(string $couponCode, float $subtotal): array
+    {
+        if ($couponCode === '') {
+            return [
+                'coupon' => null,
+                'discount_amount' => 0,
+            ];
+        }
+
+        $coupon = Coupon::query()
+            ->where('code', $couponCode)
+            ->lockForUpdate()
+            ->first();
+
+        if (! $coupon) {
+            throw ValidationException::withMessages([
+                'coupon_code' => ['Mã giảm giá không tồn tại.'],
+            ]);
+        }
+
+        if (! $coupon->is_active) {
+            throw ValidationException::withMessages([
+                'coupon_code' => ['Mã giảm giá hiện không khả dụng.'],
+            ]);
+        }
+
+        if ($coupon->starts_at && $coupon->starts_at->isFuture()) {
+            throw ValidationException::withMessages([
+                'coupon_code' => ['Mã giảm giá chưa đến thời gian áp dụng.'],
+            ]);
+        }
+
+        if ($coupon->ends_at && $coupon->ends_at->isPast()) {
+            throw ValidationException::withMessages([
+                'coupon_code' => ['Mã giảm giá đã hết hạn.'],
+            ]);
+        }
+
+        if ($coupon->usage_limit !== null && $coupon->used_count >= $coupon->usage_limit) {
+            throw ValidationException::withMessages([
+                'coupon_code' => ['Mã giảm giá đã hết lượt sử dụng.'],
+            ]);
+        }
+
+        if ($subtotal < (float) $coupon->min_order_amount) {
+            throw ValidationException::withMessages([
+                'coupon_code' => ['Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã.'],
+            ]);
+        }
+
+        $discountAmount = $this->calculateCouponDiscount($coupon, $subtotal);
+
+        return [
+            'coupon' => $coupon,
+            'discount_amount' => $discountAmount,
+        ];
+    }
+
+    private function calculateCouponDiscount(Coupon $coupon, float $subtotal): float
+    {
+        $discount = $coupon->type === 'percentage'
+            ? $subtotal * ((float) $coupon->value / 100)
+            : (float) $coupon->value;
+
+        if ($coupon->max_discount !== null) {
+            $discount = min($discount, (float) $coupon->max_discount);
+        }
+
+        return max(min($discount, $subtotal), 0);
     }
 }

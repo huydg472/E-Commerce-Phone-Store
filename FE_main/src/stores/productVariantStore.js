@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia'
 import {productVariantService} from '@/services/productVariantService'
+import {useNotificationStore} from '@/stores/notificationStore.js'
 
 export const useProductVariantStore = defineStore('productVariant', {
     state: () => ({
@@ -41,8 +42,9 @@ export const useProductVariantStore = defineStore('productVariant', {
             const createdItem = response.data?.data ?? response.data ?? null
             if (createdItem?.id) {
                 this.item = createdItem
-                this.items = [createdItem, ...this.items]
+                this.items = [...this.items, createdItem]
             }
+            useNotificationStore().success('Đã thêm biến thể.')
 
             return response
         },
@@ -57,6 +59,7 @@ export const useProductVariantStore = defineStore('productVariant', {
                     item.id === updatedItem.id ? {...item, ...updatedItem} : item
                 ))
             }
+            useNotificationStore().success('Đã sửa biến thể.')
 
             return response
         },
@@ -64,6 +67,7 @@ export const useProductVariantStore = defineStore('productVariant', {
         async remove(id) {
             const response = await productVariantService.delete(id)
             this.items = this.items.filter((item) => item.id !== id)
+            useNotificationStore().success('Đã xóa biến thể.')
             return response
         },
     },

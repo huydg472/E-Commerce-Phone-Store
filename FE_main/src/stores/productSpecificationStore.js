@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia'
 import {productSpecificationService} from '@/services/productSpecificationService'
+import {useNotificationStore} from '@/stores/notificationStore.js'
 
 export const useProductSpecificationStore = defineStore('productSpecification', {
     state: () => ({
@@ -43,6 +44,7 @@ export const useProductSpecificationStore = defineStore('productSpecification', 
                 this.item = createdItem
                 this.items = [createdItem, ...this.items]
             }
+            useNotificationStore().success('Đã thêm thông số.')
 
             return response
         },
@@ -57,6 +59,7 @@ export const useProductSpecificationStore = defineStore('productSpecification', 
                     item.id === updatedItem.id ? {...item, ...updatedItem} : item
                 ))
             }
+            useNotificationStore().success('Đã sửa thông số.')
 
             return response
         },
@@ -64,6 +67,7 @@ export const useProductSpecificationStore = defineStore('productSpecification', 
         async remove(id) {
             const response = await productSpecificationService.delete(id)
             this.items = this.items.filter((item) => item.id !== id)
+            useNotificationStore().success('Đã xóa thông số.')
             return response
         },
     },

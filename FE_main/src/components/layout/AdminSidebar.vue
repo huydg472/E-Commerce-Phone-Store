@@ -1,8 +1,10 @@
 <script setup>
+import {computed} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useAuthStore} from '@/stores/authStore.js'
+import {PERMISSIONS} from '@/constants/permissions'
 
-defineProps({
+const props = defineProps({
   isOpen: {
     type: Boolean,
     default: false,
@@ -15,74 +17,45 @@ const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
-const menuGroups = [
+const menuGroups = computed(() => [
   {
     title: 'Tổng quan',
     items: [
-      {
-        label: 'Dashboard',
-        icon: 'bi bi-grid',
-        to: '/admin/dashboard',
-        match: '/admin/dashboard',
-      },
+      {label: 'Dashboard', icon: 'bi bi-grid', to: '/admin/dashboard', match: '/admin/dashboard', permission: null},
     ],
   },
   {
     title: 'Quản lý bán hàng',
     items: [
-      {
-        label: 'Sản phẩm',
-        icon: 'bi bi-phone',
-        to: '/admin/products',
-        match: '/admin/products',
-      },
-      {
-        label: 'Danh mục',
-        icon: 'bi bi-grid-3x3-gap',
-        to: '/admin/categories',
-        match: '/admin/categories',
-      },
-      {
-        label: 'Thương hiệu',
-        icon: 'bi bi-award',
-        to: '/admin/brands',
-        match: '/admin/brands',
-      },
-      {
-        label: 'Đơn hàng',
-        icon: 'bi bi-receipt',
-        to: '/admin/orders',
-        match: '/admin/orders',
-      },
+      {label: 'Sản phẩm', icon: 'bi bi-phone', to: '/admin/products', match: '/admin/products', permission: PERMISSIONS.PRODUCTS.VIEW},
+      {label: 'Danh mục', icon: 'bi bi-grid-3x3-gap', to: '/admin/categories', match: '/admin/categories', permission: PERMISSIONS.CATEGORIES.VIEW},
+      {label: 'Thương hiệu', icon: 'bi bi-award', to: '/admin/brands', match: '/admin/brands', permission: PERMISSIONS.BRANDS.VIEW},
+      {label: 'Đơn hàng', icon: 'bi bi-receipt', to: '/admin/orders', match: '/admin/orders', permission: PERMISSIONS.ORDERS.VIEW},
     ],
   },
   {
     title: 'Quản lý người dùng',
     items: [
-      {
-        label: 'Người dùng',
-        icon: 'bi bi-people',
-        to: '/admin/users',
-        match: '/admin/users',
-      },
+      {label: 'Người dùng', icon: 'bi bi-people', to: '/admin/users', match: '/admin/users', permission: PERMISSIONS.USERS.VIEW},
+      {label: 'Vai trò', icon: 'bi bi-shield-lock', to: '/admin/roles', match: '/admin/roles', permission: PERMISSIONS.ROLES.VIEW},
+      {label: 'Quyền', icon: 'bi bi-key', to: '/admin/permissions', match: '/admin/permissions', permission: PERMISSIONS.PERMISSION.VIEW},
     ],
   },
   {
     title: 'Nội dung & hệ thống',
     items: [
-      {
-        label: 'Cài đặt',
-        icon: 'bi bi-gear',
-        to: '/admin/settings',
-        match: '/admin/settings',
-      },
+      {label: 'Coupon', icon: 'bi bi-ticket-perforated', to: '/admin/coupons', match: '/admin/coupons', permission: PERMISSIONS.COUPONS.VIEW},
+      {label: 'Báo cáo doanh thu', icon: 'bi bi-graph-up', to: '/admin/reports/revenue', match: '/admin/reports/revenue', permission: null},
+      {label: 'Báo cáo sản phẩm', icon: 'bi bi-bar-chart', to: '/admin/reports/products', match: '/admin/reports/products', permission: null},
+      {label: 'Báo cáo đơn hàng', icon: 'bi bi-clipboard-data', to: '/admin/reports/orders', match: '/admin/reports/orders', permission: null},
+      {label: 'Nhật ký kho', icon: 'bi bi-journal-text', to: '/admin/stock-logs', match: '/admin/stock-logs', permission: PERMISSIONS.STOCK_LOGS.VIEW},
+      {label: 'Cài đặt', icon: 'bi bi-gear', to: '/admin/settings', match: '/admin/settings', permission: null},
     ],
   },
-]
+])
 
-const isActive = (item) => {
-  return route.path.startsWith(item.match)
-}
+const isActive = (item) => route.path.startsWith(item.match)
+const canShowItem = (item) => !item.permission || authStore.can(item.permission)
 
 const handleClose = () => {
   emit('close')
@@ -118,19 +91,15 @@ const handleLogout = async () => {
 
     <div class="sidebar-body">
       <div v-for="group in menuGroups" :key="group.title" class="sidebar-group">
-        <p class="group-title">
-          {{ group.title }}
-        </p>
+        <p class="group-title">{{ group.title }}</p>
 
         <ul class="menu-list">
-          <li v-for="item in group.items" :key="item.to">
+          <li v-for="item in group.items.filter(canShowItem)" :key="item.to">
             <RouterLink :to="item.to" class="menu-link" :class="{ active: isActive(item) }" @click="handleClose">
               <span class="menu-icon">
                 <i :class="item.icon"></i>
               </span>
-              <span class="menu-label">
-                {{ item.label }}
-              </span>
+              <span class="menu-label">{{ item.label }}</span>
             </RouterLink>
           </li>
         </ul>
@@ -170,7 +139,7 @@ const handleLogout = async () => {
 
 .sidebar-top {
   height: 84px;
-  padding: 20px 50px 15px;
+  padding: 20px 24px 15px;
   border-bottom: 1px solid #eef2f7;
   display: flex;
   align-items: center;
@@ -257,82 +226,59 @@ const handleLogout = async () => {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  white-space: nowrap;
 }
 
 .menu-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.menu-list li + li {
-  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .menu-link,
 .logout-btn {
   width: 100%;
   min-height: 46px;
-  padding: 0 12px;
-  border: none;
-  border-radius: 12px;
-  background: transparent;
-  color: #334155;
-  text-decoration: none;
+  padding: 0 14px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   gap: 12px;
-  text-align: left;
-  cursor: pointer;
-  transition: 0.2s ease;
-  position: relative;
+  color: #334155;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  transition: all 0.2s ease;
 }
 
 .menu-link:hover,
 .logout-btn:hover {
-  background: #f4f8ff;
-  color: #2563eb;
+  background: #f1f6ff;
+  color: #1d4ed8;
 }
 
 .menu-link.active {
-  background: #eef5ff;
+  background: linear-gradient(135deg, #eaf2ff 0%, #dce9ff 100%);
   color: #2563eb;
-  font-weight: 700;
-}
-
-.menu-link.active .menu-icon,
-.menu-link:hover .menu-icon,
-.logout-btn:hover .menu-icon {
-  color: #2563eb;
-}
-
-.menu-link.active::before {
-  content: '';
-  width: 4px;
-  height: 24px;
-  border-radius: 999px;
-  background: #2563eb;
-  position: absolute;
-  left: 0;
+  box-shadow: inset 0 0 0 1px #bfdbfe;
 }
 
 .menu-icon {
-  width: 20px;
-  min-width: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  font-size: 18px;
-  transition: 0.2s ease;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: #f8fafc;
+}
+
+.menu-link.active .menu-icon {
+  background: rgba(37, 99, 235, 0.12);
 }
 
 .menu-label {
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .sidebar-bottom {
@@ -341,68 +287,31 @@ const handleLogout = async () => {
 }
 
 .logout-btn {
-  color: #ef4444;
-}
-
-.logout-btn .menu-icon {
-  color: #ef4444;
+  color: #dc2626;
 }
 
 .logout-btn:hover {
   background: #fff1f2;
+}
+
+.logout-btn .menu-icon {
+  background: rgba(220, 38, 38, 0.08);
   color: #dc2626;
 }
 
-.logout-btn:hover .menu-icon {
-  color: #dc2626;
-}
-
-.sidebar-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar-body::-webkit-scrollbar-thumb {
-  background: #d7e0ec;
-  border-radius: 999px;
-}
-
-.sidebar-body::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-@media (min-width: 992px) {
+@media (max-width: 991.98px) {
   .admin-sidebar {
-    transform: none !important;
-  }
-}
-
-@media (max-width: 990px) {
-  .admin-sidebar {
-    width: 280px;
     position: fixed;
-    top: 0;
     left: 0;
-    transform: translateX(-100%);
+    top: 0;
+    bottom: 0;
+    transform: translateX(-102%);
     transition: transform 0.25s ease;
-    box-shadow: 16px 0 34px rgba(15, 23, 42, 0.16);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.18);
   }
 
   .admin-sidebar.is-open {
     transform: translateX(0);
-  }
-}
-
-@media (max-width: 575px) {
-  .admin-sidebar {
-    width: 260px;
-  }
-
-  .brand-text strong {
-    font-size: 20px;
-  }
-
-  .menu-label {
-    font-size: 14px;
   }
 }
 </style>

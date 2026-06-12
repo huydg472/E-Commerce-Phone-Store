@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia'
 import {categoryService} from '@/services/categoryService'
+import {useNotificationStore} from '@/stores/notificationStore.js'
 
 export const useCategoryStore = defineStore('category', {
     state: () => ({
@@ -38,6 +39,7 @@ export const useCategoryStore = defineStore('category', {
         async create(payload) {
             const response = await categoryService.create(payload)
             await this.fetchAll()
+            useNotificationStore().success('Đã thêm danh mục.')
             return response
         },
 
@@ -51,6 +53,7 @@ export const useCategoryStore = defineStore('category', {
                     item.id === updatedItem.id ? {...item, ...updatedItem} : item
                 ))
             }
+            useNotificationStore().success('Đã sửa danh mục.')
 
             return response
         },
@@ -58,6 +61,7 @@ export const useCategoryStore = defineStore('category', {
         async remove(id) {
             const response = await categoryService.delete(id)
             this.items = this.items.filter((item) => item.id !== id)
+            useNotificationStore().success('Đã xóa danh mục.')
             return response
         },
     },

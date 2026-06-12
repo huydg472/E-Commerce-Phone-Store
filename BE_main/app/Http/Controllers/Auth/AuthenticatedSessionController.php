@@ -24,7 +24,7 @@ class AuthenticatedSessionController extends Controller
 
         ]);
         // lấy thông tin user theo user name
-        $user = User::with('role')->where('username', $request->username)->first();
+        $user = User::with('role.permissions')->where('username', $request->username)->first();
         // hàm kiểm tra tồn tai của bản ghi
         // nếu không tồn tại bản ghi hoặc pass vào mail không đúng trả về 401
         if (!$user || !Hash::check($request->password, $user->password)) {

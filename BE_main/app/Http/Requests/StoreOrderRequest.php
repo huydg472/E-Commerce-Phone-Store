@@ -15,6 +15,7 @@ class StoreOrderRequest extends FormRequest
     {
         return [
             'shipping_address_id' => ['nullable', 'integer', 'exists:shipping_addresses,id'],
+            'coupon_code' => ['nullable', 'string', 'max:50'],
             'receiver_name' => ['required', 'string', 'max:150'],
             'receiver_phone' => ['required', 'string', 'max:20'],
             'shipping_address_text' => ['required', 'string'],
@@ -61,6 +62,7 @@ class StoreOrderRequest extends FormRequest
     {
         return [
             'shipping_address_id' => 'Địa chỉ giao hàng',
+            'coupon_code' => 'Mã coupon',
             'receiver_name' => 'Tên người nhận',
             'receiver_phone' => 'Số điện thoại người nhận',
             'shipping_address_text' => 'Địa chỉ giao hàng',

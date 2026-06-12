@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia'
 import {roleService} from '@/services/roleService'
+import {useNotificationStore} from '@/stores/notificationStore.js'
 
 export const useRoleStore = defineStore('role', {
     state: () => ({
@@ -38,18 +39,21 @@ export const useRoleStore = defineStore('role', {
         async create(payload) {
             const response = await roleService.create(payload)
             await this.fetchAll()
+            useNotificationStore().success('Đã thêm vai trò.')
             return response
         },
 
         async update(id, payload) {
             const response = await roleService.update(id, payload)
             await this.fetchAll()
+            useNotificationStore().success('Đã sửa vai trò.')
             return response
         },
 
         async remove(id) {
             const response = await roleService.delete(id)
             this.items = this.items.filter((item) => item.id !== id)
+            useNotificationStore().success('Đã xóa vai trò.')
             return response
         },
     },

@@ -121,12 +121,7 @@ class OrderInventoryService
             $quantity = (int) $orderItem->quantity;
             $reservedBefore = (int) $variant->reserved_quantity;
             $stockBefore = (int) $variant->quantity;
-
-            if ($reservedBefore < $quantity) {
-                throw ValidationException::withMessages([
-                    'order' => ['Số lượng giữ chỗ không đủ để xác nhận đơn hàng.'],
-                ]);
-            }
+            $hasReservedStock = $reservedBefore >= $quantity;
 
             if ($stockBefore < $quantity) {
                 throw ValidationException::withMessages([
@@ -134,9 +129,15 @@ class OrderInventoryService
                 ]);
             }
 
+            if (!$hasReservedStock && $this->availableQuantity($variant) < $quantity) {
+                throw ValidationException::withMessages([
+                    'order' => ['Số lượng tồn kho khả dụng không đủ để xác nhận đơn hàng.'],
+                ]);
+            }
+
             $variant->update([
                 'quantity' => $stockBefore - $quantity,
-                'reserved_quantity' => $reservedBefore - $quantity,
+                'reserved_quantity' => $hasReservedStock ? $reservedBefore - $quantity : $reservedBefore,
             ]);
 
             StockLog::create([

@@ -1,5 +1,6 @@
 import {defineStore} from 'pinia'
 import {brandService} from '@/services/brandService'
+import {useNotificationStore} from '@/stores/notificationStore.js'
 
 export const useBrandStore = defineStore('brand', {
     state: () => ({
@@ -41,6 +42,7 @@ export const useBrandStore = defineStore('brand', {
             if (created) {
                 this.items = [created, ...this.items]
             }
+            useNotificationStore().success('Đã thêm thương hiệu.')
             return response
         },
 
@@ -51,12 +53,14 @@ export const useBrandStore = defineStore('brand', {
                 this.item = updated
                 this.items = this.items.map((item) => (item.id === id ? updated : item))
             }
+            useNotificationStore().success('Đã sửa thương hiệu.')
             return response
         },
 
         async remove(id) {
             const response = await brandService.delete(id)
             this.items = this.items.filter((item) => item.id !== id)
+            useNotificationStore().success('Đã xóa thương hiệu.')
             return response
         },
     },

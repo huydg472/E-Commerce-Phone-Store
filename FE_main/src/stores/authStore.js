@@ -17,6 +17,32 @@ export const useAuthStore = defineStore('auth', {
         isStaff: (state) => state.user?.role?.name === 'staff' || state.user?.role_name === 'staff',
 
         isCustomer: (state) => state.user?.role?.name === 'customer' || state.user?.role_name === 'customer',
+
+        isAdminOrStaff: (state) => {
+            const roleName = state.user?.role?.name || state.user?.role_name
+            return roleName === 'admin' || roleName === 'staff'
+        },
+
+        permissions: (state) => Array.isArray(state.user?.role?.permissions) ? state.user.role.permissions : [],
+
+        permissionNames: (state) => {
+            const permissions = Array.isArray(state.user?.role?.permissions) ? state.user.role.permissions : []
+            return permissions.map((permission) => permission?.name).filter(Boolean)
+        },
+
+        can: (state) => (permissionName) => {
+            if (!permissionName) {
+                return true
+            }
+
+            const roleName = state.user?.role?.name || state.user?.role_name
+            if (roleName === 'admin') {
+                return true
+            }
+
+            const permissions = Array.isArray(state.user?.role?.permissions) ? state.user.role.permissions : []
+            return permissions.some((permission) => permission?.name === permissionName)
+        },
     },
 
     actions: {

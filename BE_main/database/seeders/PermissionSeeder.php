@@ -28,6 +28,7 @@ class PermissionSeeder extends Seeder
             'orders' => 'Đơn hàng',
             'order_items' => 'Chi tiết đơn hàng',
             'payments' => 'Thanh toán',
+            'coupons' => 'Mã giảm giá',
             'stock_logs' => 'Nhật ký kho',
         ];
 
@@ -100,6 +101,11 @@ class PermissionSeeder extends Seeder
                     'orders.update',
                     'order_items.view',
                     'shipping_addresses.view',
+
+                    // Quản lý mã giảm giá
+                    'coupons.view',
+                    'coupons.create',
+                    'coupons.update',
 
                     // Theo dõi/cập nhật thanh toán
                     'payments.view',

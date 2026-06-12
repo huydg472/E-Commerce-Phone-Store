@@ -41,11 +41,16 @@ class Product extends Model
 
     public function productVariants()
     {
-        return $this->hasMany(ProductVariant::class);
+        return $this->hasMany(ProductVariant::class)->orderBy('id');
     }
 
     public function productSpecifications()
     {
         return $this->hasMany(ProductSpecification::class);
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
     }
 }

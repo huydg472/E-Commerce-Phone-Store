@@ -13,6 +13,8 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'shipping_address_id',
+        'coupon_id',
+        'coupon_code',
         'order_code',
         'receiver_name',
         'receiver_phone',
@@ -50,6 +52,11 @@ class Order extends Model
     public function shippingAddress()
     {
         return $this->belongsTo(ShippingAddress::class);
+    }
+
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     public function orderItems()

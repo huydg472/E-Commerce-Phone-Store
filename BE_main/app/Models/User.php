@@ -54,6 +54,11 @@ class User extends Authenticatable
         return $this->hasMany(ShippingAddress::class);
     }
 
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class);
@@ -84,5 +89,18 @@ class User extends Authenticatable
     public function isAdminOrStaff(): bool
     {
         return $this->hasRole(['admin', 'staff']);
+    }
+
+    public function hasPermission(string|array $permissions): bool
+    {
+        $permissionNames = is_array($permissions) ? $permissions : [$permissions];
+
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        return collect($this->role?->permissions ?? [])
+            ->pluck('name')
+            ->contains(fn ($name) => in_array($name, $permissionNames, true));
     }
 }

@@ -14,9 +14,9 @@ const {items: products, loading: productLoading} = storeToRefs(productStore)
 const {items: brands} = storeToRefs(brandStore)
 
 const placeholder = {
-  hero: 'https://placehold.co/1800x420/e8f0fb/2563eb?text=Hero+Banner',
-  product: 'https://placehold.co/300x180/f1f5f9/2563eb?text=Phone',
-  accessories: 'https://placehold.co/900x180/e8f0fb/2563eb?text=Accessories',
+  hero: '/images/home/723085294_1479301970876577_3964645034513532217_n.jpg',
+  product: '/images/home/camera-17762255561921796534711.webp',
+  accessories: '/images/home/phu-kien-dien-thoaijpg.jpg',
 }
 
 const selectedBrand = ref('')
@@ -44,6 +44,20 @@ const brandList = computed(() => {
 
 const brandTabs = computed(() => brandList.value.slice(0, 6))
 const productCards = computed(() => buildProductCards(productList.value, placeholder.product))
+const showcaseImages = [
+  placeholder.product,
+  placeholder.accessories,
+  placeholder.hero,
+]
+
+const getShowcaseImage = (productImage, index = 0) => {
+  const resolvedImage = String(productImage ?? '').trim()
+  if (resolvedImage) {
+    return resolvedImage
+  }
+
+  return showcaseImages[index % showcaseImages.length]
+}
 
 const getBrandTabValue = (brand) => {
   return String(brand?.slug ?? brand?.name ?? brand?.id ?? '')
@@ -107,7 +121,7 @@ onMounted(() => {
   <div class="home-page">
     <section class="container-fluid px-4">
       <div class="hero-banner">
-        <img :src="placeholder.hero" alt="Hero banner"/>
+        <img :src="placeholder.hero" alt="Banner cửa hàng"/>
       </div>
     </section>
 
@@ -135,7 +149,7 @@ onMounted(() => {
 
           <div v-for="product in featuredProducts" :key="product.id" class="product-card-shell">
             <ProductCard
-                :image="product.image"
+                :image="getShowcaseImage(product.image, featuredProducts.indexOf(product))"
                 :name="product.name"
                 :colors="product.colors"
                 :price="product.price"
@@ -158,11 +172,11 @@ onMounted(() => {
     <section class="container-fluid px-4 promo-section">
       <div class="promo-grid">
         <RouterLink to="/phu-kien" class="promo-placeholder-card">
-          <img :src="placeholder.accessories" alt="Accessories placeholder"/>
+          <img :src="placeholder.accessories" alt="Phụ kiện điện thoại"/>
         </RouterLink>
 
         <RouterLink to="/san-pham" class="promo-placeholder-card">
-          <img :src="placeholder.product" alt="Products placeholder"/>
+          <img :src="placeholder.product" alt="Ảnh sản phẩm nổi bật"/>
         </RouterLink>
       </div>
     </section>
@@ -195,9 +209,9 @@ onMounted(() => {
 
       <div class="brand-product-grid">
         <ProductCard
-            v-for="product in brandProducts"
+            v-for="(product, index) in brandProducts"
             :key="product.id"
-            :image="product.image"
+            :image="getShowcaseImage(product.image, index)"
             :name="product.name"
             :colors="product.colors"
             :price="product.price"

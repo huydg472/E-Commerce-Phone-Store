@@ -128,12 +128,6 @@ onMounted(() => {
 
 <template>
   <section class="account-page">
-    <nav class="account-breadcrumb mb-2">
-      <span>Trang chủ</span>
-      <span>/</span>
-      <strong>Tài khoản của tôi</strong>
-    </nav>
-
     <div class="page-head">
       <div>
         <h1 class="page-title mb-1">Tài khoản của tôi</h1>
@@ -254,19 +248,6 @@ onMounted(() => {
 .account-page {
   color: #0f172a;
   font-size: 14px;
-}
-
-.account-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.account-breadcrumb strong {
-  color: #2563eb;
-  font-weight: 600;
 }
 
 .page-head {

@@ -79,7 +79,7 @@ export const useDashboardStore = defineStore('dashboard', {
                     productService.getAll({per_page: 1}),
                     productService.getAll({per_page: 1, status: 'active'}),
                     productService.getAll({per_page: 1, is_featured: 1}),
-                    productService.getAll({per_page: 4, sort: 'latest'}),
+                    productService.getAll({per_page: 4, sort: 'id_asc'}),
                     orderService.getAll(),
                     userService.getAll({per_page: 1}),
                     brandService.getAll(),

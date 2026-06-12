@@ -1,4 +1,29 @@
 const colorNameMap = {
+    'black titanium': '#24211f',
+    'white titanium': '#f8fafc',
+    'natural titanium': '#b9b3a9',
+    'blue titanium': '#0f1d2e',
+    'space black': '#111827',
+    'phantom black': '#111827',
+    'asteroid black': '#171717',
+    'crystal black': '#111827',
+    'starlight black': '#1f2937',
+    'pearl white': '#f8fafc',
+    cream: '#f5f0df',
+    lavender: '#c4b5fd',
+    'light violet': '#d8b4fe',
+    'star grey': '#6b7280',
+    'star gray': '#6b7280',
+    'astro silver': '#d1d5db',
+    'fluid silver': '#cbd5e1',
+    'stellar silver': '#d1d5db',
+    'matte brown': '#8b5e3c',
+    'sunset pink': '#f472b6',
+    'sunset orange': '#fb923c',
+    'startrail blue': '#2563eb',
+    'nebula purple': '#8b5cf6',
+    'starlight purple': '#8b5cf6',
+    'razor green': '#16a34a',
     đen: '#111827',
     black: '#111827',
     trắng: '#f8fafc',
@@ -27,7 +52,11 @@ const colorNameMap = {
 }
 
 export const normalizeText = (value) => {
-    return String(value ?? '').replace(/\s+/g, '').toLowerCase()
+    return String(value ?? '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, '')
+        .toLowerCase()
 }
 
 const isActiveStatus = (value) => {
@@ -129,6 +158,17 @@ const getVariantRom = (variant) => {
     ).trim()
 }
 
+const getStorageWeight = (value) => {
+    const text = String(value ?? '').trim().toLowerCase()
+    const number = Number.parseFloat(text.replace(',', '.')) || 0
+
+    if (text.includes('tb')) {
+        return number * 1024
+    }
+
+    return number
+}
+
 const getVariantColorName = (variant) => {
     if (typeof variant?.color === 'object' && variant?.color !== null) {
         return String(
@@ -176,8 +216,31 @@ const getVariantColorValue = (variant) => {
     return matchedColor?.value ?? '#e5e7eb'
 }
 
-export const buildColorOptions = (variants) => {
+const getLowestStorageVariantByColor = (variants, colorName) => {
+    const colorKey = normalizeText(colorName)
+    const sameColorVariants = variants.filter((variant) => {
+        return (
+            isActiveStatus(variant?.status) &&
+            getVariantAvailableQuantity(variant) > 0 &&
+            normalizeText(getVariantColorName(variant)) === colorKey
+        )
+    })
+
+    return [...sameColorVariants].sort((left, right) => {
+        const storageDiff = getStorageWeight(getVariantRom(left)) - getStorageWeight(getVariantRom(right))
+
+        if (storageDiff !== 0) {
+            return storageDiff
+        }
+
+        return Number(left?.id ?? 0) - Number(right?.id ?? 0)
+    })[0] ?? null
+}
+
+export const buildColorOptions = (variants, options = {}) => {
     const colorMap = new Map()
+    const product = options.product ?? null
+    const targetVariants = Array.isArray(options.targetVariants) ? options.targetVariants : variants
 
     variants.forEach((variant) => {
         const name = getVariantColorName(variant)
@@ -189,9 +252,15 @@ export const buildColorOptions = (variants) => {
         const key = normalizeText(name)
 
         if (!colorMap.has(key)) {
+            const targetVariant = getLowestStorageVariantByColor(targetVariants, name) ?? variant
+            const targetRom = getVariantRom(targetVariant)
+
             colorMap.set(key, {
                 name,
                 value: getVariantColorValue(variant),
+                variantId: targetVariant?.id ?? null,
+                rom: targetRom,
+                to: product ? buildProductLink(product, targetRom, targetVariant) : '',
             })
         }
     })
@@ -336,7 +405,7 @@ const getProductCategoryName = (product) => {
     return String(product?.category?.name ?? product?.category_name ?? '')
 }
 
-const createRomProductCard = (product, rom, variants, placeholderImage = '') => {
+const createRomProductCard = (product, rom, variants, placeholderImage = '', allVariants = variants) => {
     const bestVariant = getBestVariantByRom(variants)
     const price = getVariantPrice(bestVariant) || getProductFallbackPrice(product)
     const oldPrice = getVariantOldPrice(bestVariant) || getProductFallbackOldPrice(product)
@@ -349,7 +418,10 @@ const createRomProductCard = (product, rom, variants, placeholderImage = '') => 
         product,
         variant: bestVariant,
         rom,
-        colors: buildColorOptions(variants),
+        colors: buildColorOptions(variants, {
+            product,
+            targetVariants: allVariants,
+        }),
         brandId: getProductBrandId(product),
         brandSlug: getProductBrandSlug(product),
         brandName: getProductBrandName(product),
@@ -358,10 +430,10 @@ const createRomProductCard = (product, rom, variants, placeholderImage = '') => 
         categoryName: getProductCategoryName(product),
         name: buildCardName(product, rom),
         image:
-            getVariantImage(bestVariant) ||
             product?.thumbnail_url ||
             product?.thumbnailUrl ||
             product?.image ||
+            getVariantImage(bestVariant) ||
             placeholderImage ||
             '',
         price,
@@ -406,7 +478,7 @@ const groupProductByRom = (product, placeholderImage = '') => {
     })
 
     return Array.from(romGroups.values()).map((group) => {
-        return createRomProductCard(product, group.rom, group.variants, placeholderImage)
+        return createRomProductCard(product, group.rom, group.variants, placeholderImage, variants)
     })
 }
 

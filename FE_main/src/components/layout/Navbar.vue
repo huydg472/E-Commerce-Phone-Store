@@ -240,40 +240,47 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .navbar-wrap {
-  background: var(--card-bg);
-  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  border-top: 1px solid #eef2f7;
+  border-bottom: 1px solid #dbe3ef;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.035);
   position: sticky;
   top: 66px;
   z-index: 99;
 }
 
 .header-nav {
-  min-height: 50px;
+  min-height: 58px;
   display: grid;
-  grid-template-columns: 255px 1fr;
+  grid-template-columns: 270px minmax(0, 1fr);
   align-items: center;
-  gap: 150px;
-  padding: 8px 0;
+  gap: 28px;
+  padding: 9px 0;
 }
 
 .category-btn {
-  height: 40px;
+  height: 42px;
   border: none;
-  border-radius: 14px;
-  background: #ffffff;
-  color: #2563eb;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+  color: #1d4ed8;
   font-weight: 800;
   font-size: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
   gap: 10px;
-  padding: 0 14px;
+  padding: 0 16px;
   width: 100%;
-  max-width: 240px;
-  border: 1px solid #dbe3ef;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  max-width: 260px;
+  border: 1px solid #bfdbfe;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.08);
+  transform: translateZ(0);
+  will-change: transform, box-shadow;
+  transition: border-color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+  color 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+  box-shadow 0.24s cubic-bezier(0.22, 1, 0.36, 1),
+  transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .category-btn.active {
@@ -285,7 +292,8 @@ onBeforeUnmount(() => {
 
 .category-btn:hover {
   border-color: #2563eb;
-  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.14);
+  transform: translate3d(0, -1px, 0);
 }
 
 .category-btn i {
@@ -294,7 +302,7 @@ onBeforeUnmount(() => {
 
 .category-caret {
   margin-left: auto;
-  transition: transform 0.2s ease;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
   font-size: 12px;
 }
 
@@ -305,22 +313,50 @@ onBeforeUnmount(() => {
 .main-menu {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 90px;
+  justify-content: center;
+  gap: 14px;
   max-width: 100%;
 }
 
 .main-menu a {
-  color: var(--text-color);
-  font-weight: 700;
-  font-size: 16px;
-  line-height: 1.4;
+  min-height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 15px;
+  line-height: 38px;
   text-decoration: none;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transform: translateZ(0);
+  transition: color 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.main-menu a::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #eff6ff;
+  box-shadow: inset 0 0 0 1px #bfdbfe;
+  opacity: 0;
+  transform: scale(0.86);
+  transition: opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+  transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -1;
 }
 
 .main-menu a.is-active,
 .main-menu a:hover {
-  color: var(--primary-color);
+  color: #1d4ed8;
+}
+
+.main-menu a.is-active::before,
+.main-menu a:hover::before {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .mega-menu-panel {
@@ -457,13 +493,14 @@ onBeforeUnmount(() => {
 
 .mega-fade-enter-active,
 .mega-fade-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition: opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+  transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .mega-fade-enter-from,
 .mega-fade-leave-to {
   opacity: 0;
-  transform: translateY(-6px);
+  transform: translate3d(0, -8px, 0) scale(0.985);
 }
 
 @media (max-width: 1200px) {
@@ -472,11 +509,11 @@ onBeforeUnmount(() => {
   }
 
   .header-nav {
-    gap: 30px;
+    gap: 18px;
   }
 
   .main-menu {
-    gap: 50px;
+    gap: 10px;
   }
 
   .mega-menu-grid {
@@ -502,7 +539,7 @@ onBeforeUnmount(() => {
   .main-menu {
     flex-wrap: wrap;
     justify-content: center;
-    gap: 18px;
+    gap: 10px;
     max-width: 100%;
   }
 

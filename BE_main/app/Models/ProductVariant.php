@@ -47,7 +47,7 @@ class ProductVariant extends Model
 
     public function images()
     {
-        return $this->hasMany(ProductVariantImage::class);
+        return $this->hasMany(ProductVariantImage::class)->orderBy('sort_order')->orderBy('id');
     }
 
     public function cartItems()
@@ -63,6 +63,11 @@ class ProductVariant extends Model
     public function stockLogs()
     {
         return $this->hasMany(StockLog::class);
+    }
+
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
     }
 
     public function getAvailableQuantityAttribute(): int
