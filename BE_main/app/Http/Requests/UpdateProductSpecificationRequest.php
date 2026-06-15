@@ -34,7 +34,15 @@ class UpdateProductSpecificationRequest extends FormRequest
                     ->ignore($specificationId),
             ],
             'spec_value' => ['nullable', 'string'],
-            'sort_order' => ['sometimes', 'integer', 'min:0'],
+            'sort_order' => [
+                'sometimes',
+                'nullable',
+                'integer',
+                'min:0',
+                Rule::unique('product_specifications')
+                    ->where('product_id', $productId)
+                    ->ignore($specificationId),
+            ],
         ];
     }
 

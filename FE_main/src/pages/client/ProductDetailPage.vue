@@ -45,7 +45,7 @@ const {
   <section class="product-detail-page">
     <div class="container">
       <div class="breadcrumb-area">
-        <RouterLink to="/">Trang chá»§</RouterLink>
+        <RouterLink to="/">Trang chủ</RouterLink>
         <i class="bi bi-chevron-right"></i>
         <RouterLink :to="brandFilterLink">{{ currentBrandName }}</RouterLink>
         <i class="bi bi-chevron-right"></i>
@@ -53,11 +53,11 @@ const {
       </div>
 
       <div v-if="loading" class="detail-state">
-        Äang táº£i sáº£n pháº©m...
+        Đang tải sản phẩm...
       </div>
 
       <div v-else-if="notFound" class="detail-state">
-        KhÃ´ng tÃ¬m tháº¥y sáº£n pháº©m phÃ¹ há»£p.
+        Không tìm thấy sản phẩm phù hợp.
       </div>
 
       <template v-else>
@@ -79,9 +79,9 @@ const {
                 <i class="bi bi-star-half"></i>
               </div>
 
-              <span>({{ currentProduct?.rating_count ?? currentProduct?.review_count ?? 0 }} Ä‘Ã¡nh giÃ¡)</span>
+              <span>({{ currentProduct?.rating_count ?? currentProduct?.review_count ?? 0 }} đánh giá)</span>
               <span class="line"></span>
-              <button type="button">Há»i Ä‘Ã¡p</button>
+              <button type="button">Hỏi đáp</button>
             </div>
 
             <div class="price-row">
@@ -90,21 +90,23 @@ const {
               <strong v-if="discountPercent">-{{ discountPercent }}</strong>
             </div>
 
-            <div class="stock-status" :class="{ 'is-out': !currentVariantInStock }">
-              <i class="bi" :class="currentVariantInStock ? 'bi-check-lg' : 'bi-x-circle'"></i>
-              {{ currentVariantInStock ? 'CÃ²n hÃ ng' : 'Háº¿t hÃ ng' }}
-            </div>
+            <div class="status-actions">
+              <div class="stock-status" :class="{ 'is-out': !currentVariantInStock }">
+                <i class="bi" :class="currentVariantInStock ? 'bi-check-lg' : 'bi-x-circle'"></i>
+                {{ currentVariantInStock ? 'Còn hàng' : 'Hết hàng' }}
+              </div>
 
-            <button
-                type="button"
-                class="favorite-detail-btn"
-                :class="{ active: currentProductFavorite }"
-                :disabled="favoriteLoading || !currentProductVariantId"
-                @click="handleFavoriteToggle"
-            >
-              <i :class="currentProductFavorite ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
-              {{ currentProductFavorite ? 'Ã„ÂÃƒÂ£ yÃƒÂªu thÃƒÂ­ch' : 'YÃƒÂªu thÃƒÂ­ch' }}
-            </button>
+              <button
+                  type="button"
+                  class="favorite-detail-btn"
+                  :class="{ active: currentProductFavorite }"
+                  :disabled="favoriteLoading || !currentProductVariantId"
+              @click="handleFavoriteToggle"
+              >
+                <i :class="currentProductFavorite ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+                {{ currentProductFavorite ? 'Đã yêu thích' : 'Yêu thích' }}
+              </button>
+            </div>
 
             <ProductVariantSelector
                 :storages="productStorageOptions"
@@ -135,7 +137,7 @@ const {
                     type="button"
                     @click="activeBottomTab = 'description'"
                 >
-                  MÃ´ táº£ sáº£n pháº©m
+                  Mô tả sản phẩm
                 </button>
               </li>
 
@@ -146,14 +148,14 @@ const {
                     type="button"
                     @click="activeBottomTab = 'specs'"
                 >
-                  ThÃ´ng sá»‘ ká»¹ thuáº­t
+                  Thông số kỹ thuật
                 </button>
               </li>
             </ul>
 
             <div v-if="activeBottomTab === 'description'" class="description-content">
               <p v-if="hasDescription">{{ currentDescription }}</p>
-              <p v-else>Äang cáº­p nháº­t mÃ´ táº£ sáº£n pháº©m.</p>
+              <p v-else>Đang cập nhật mô tả sản phẩm.</p>
             </div>
 
             <div v-else class="specs-content">
@@ -168,9 +170,9 @@ const {
             </div>
           </div>
 
-          <div class="related-section">
-            <div class="related-header">
-              <h2>Sáº£n pháº©m liÃªn quan</h2>
+        <div class="related-section">
+          <div class="related-header">
+              <h2>Sản phẩm liên quan</h2>
 
               <button type="button">
                 <i class="bi bi-chevron-right"></i>
@@ -313,16 +315,22 @@ const {
 }
 
 .stock-status {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #bbf7d0;
+  border-radius: 999px;
+  background: #f0fdf4;
   color: #16a34a;
   display: inline-flex;
   align-items: center;
   gap: 7px;
   font-size: 14px;
   font-weight: 800;
-  margin-bottom: 2px;
 }
 
 .stock-status.is-out {
+  border-color: #fecdd3;
+  background: #fff1f2;
   color: #ef4444;
 }
 
@@ -338,8 +346,15 @@ const {
   gap: 8px;
   font-size: 14px;
   font-weight: 800;
-  margin: 10px 0 14px;
   transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.status-actions {
+  margin: 10px 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .favorite-detail-btn:hover,

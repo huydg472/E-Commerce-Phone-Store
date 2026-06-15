@@ -39,16 +39,16 @@ const orderStatusOptions = ['pending', 'confirmed', 'processing', 'shipping', 'c
 const orderStatusSteps = ['pending', 'confirmed', 'processing', 'shipping', 'completed']
 
 const isSelectableOrderStatus = (currentStatus, targetStatus) => {
-  if (currentStatus === 'completed') {
-    return currentStatus === targetStatus
-  }
-
   if (currentStatus === targetStatus) {
     return true
   }
 
-  if (currentStatus === 'cancelled' || targetStatus === 'cancelled') {
-    return currentStatus === targetStatus
+  if (targetStatus === 'cancelled') {
+    return currentStatus !== 'completed' && currentStatus !== 'cancelled'
+  }
+
+  if (currentStatus === 'cancelled') {
+    return targetStatus === 'pending'
   }
 
   const currentIndex = orderStatusSteps.indexOf(currentStatus)
@@ -170,16 +170,6 @@ const saveChanges = async () => {
 }
 
 const quickSetStatus = async (status) => {
-  if (form.order_status === 'completed') {
-    errorMessage.value = 'Đơn hàng đã hoàn thành nên không thể thay đổi trạng thái.'
-    return
-  }
-
-  if (status !== 'cancelled' && !isSelectableOrderStatus(form.order_status, status)) {
-    errorMessage.value = 'Chỉ có thể chuyển trạng thái từng bước một.'
-    return
-  }
-
   form.order_status = status
   await saveChanges()
 }
@@ -351,7 +341,7 @@ onMounted(loadOrder)
                     v-for="status in orderStatusOptions"
                     :key="status"
                     :value="status"
-                    :disabled="form.order_status === 'completed' || !isSelectableOrderStatus(form.order_status, status)"
+                    :disabled="!isSelectableOrderStatus(form.order_status, status)"
                 >
                   {{ orderStatusMap[status]?.label || status }}
                 </option>
@@ -372,7 +362,7 @@ onMounted(loadOrder)
               <button
                   type="button"
                   class="quick-btn"
-                  :disabled="form.order_status === 'completed' || !isSelectableOrderStatus(form.order_status, 'confirmed')"
+                  :disabled="!isSelectableOrderStatus(form.order_status, 'confirmed')"
                   @click="quickSetStatus('confirmed')"
               >
                 Xác nhận
@@ -380,7 +370,7 @@ onMounted(loadOrder)
               <button
                   type="button"
                   class="quick-btn"
-                  :disabled="form.order_status === 'completed' || !isSelectableOrderStatus(form.order_status, 'processing')"
+                  :disabled="!isSelectableOrderStatus(form.order_status, 'processing')"
                   @click="quickSetStatus('processing')"
               >
                 Xử lý
@@ -388,7 +378,7 @@ onMounted(loadOrder)
               <button
                   type="button"
                   class="quick-btn"
-                  :disabled="form.order_status === 'completed' || !isSelectableOrderStatus(form.order_status, 'shipping')"
+                  :disabled="!isSelectableOrderStatus(form.order_status, 'shipping')"
                   @click="quickSetStatus('shipping')"
               >
                 Đang giao
@@ -396,12 +386,19 @@ onMounted(loadOrder)
               <button
                   type="button"
                   class="quick-btn"
-                  :disabled="form.order_status === 'completed' || !isSelectableOrderStatus(form.order_status, 'completed')"
+                  :disabled="!isSelectableOrderStatus(form.order_status, 'completed')"
                   @click="quickSetStatus('completed')"
               >
                 Hoàn thành
               </button>
-              <button type="button" class="quick-btn danger" @click="quickSetStatus('cancelled')">Hủy</button>
+              <button
+                  type="button"
+                  class="quick-btn danger"
+                  :disabled="!isSelectableOrderStatus(form.order_status, 'cancelled')"
+                  @click="quickSetStatus('cancelled')"
+              >
+                Hủy
+              </button>
             </div>
 
             <button type="button" class="primary-action" :disabled="saving" @click="saveChanges">
@@ -765,3 +762,4 @@ textarea.control {
   }
 }
 </style>
+

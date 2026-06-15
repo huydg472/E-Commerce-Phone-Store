@@ -1,10 +1,9 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue'
 import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
-import {orderService} from '@/services/orderService'
-import {productService} from '@/services/productService'
+import {reportService} from '@/services/reportService'
 import {formatDate} from '@/utils/formatDate'
-import {formatMoney, toNumber, unwrapList} from '@/utils/reportHelpers'
+import {formatMoney, toNumber} from '@/utils/reportHelpers'
 import {useClientPagination} from '@/composables/useClientPagination.js'
 
 const loading = ref(true)
@@ -153,13 +152,11 @@ const loadReport = async () => {
   errorMessage.value = ''
 
   try {
-    const [productsResponse, ordersResponse] = await Promise.all([
-      productService.getAll({per_page: 1000, sort: 'id_asc'}),
-      orderService.getAll({per_page: 1000}),
-    ])
+    const response = await reportService.products()
+    const payload = response.data?.data ?? response.data ?? {}
 
-    products.value = unwrapList(productsResponse)
-    orders.value = unwrapList(ordersResponse)
+    products.value = Array.isArray(payload.products) ? payload.products : []
+    orders.value = Array.isArray(payload.orders) ? payload.orders : []
   } catch (error) {
     errorMessage.value = error.response?.data?.message || 'Không tải được báo cáo sản phẩm.'
   } finally {

@@ -24,7 +24,14 @@ class StoreProductSpecificationRequest extends FormRequest
                     ->where('product_id', $this->product_id),
             ],
             'spec_value' => ['nullable', 'string'],
-            'sort_order' => ['sometimes', 'integer', 'min:0'],
+            'sort_order' => [
+                'sometimes',
+                'nullable',
+                'integer',
+                'min:0',
+                Rule::unique('product_specifications')
+                    ->where('product_id', $this->product_id),
+            ],
         ];
     }
 

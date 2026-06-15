@@ -31,6 +31,7 @@ const menuGroups = computed(() => [
       {label: 'Danh mục', icon: 'bi bi-grid-3x3-gap', to: '/admin/categories', match: '/admin/categories', permission: PERMISSIONS.CATEGORIES.VIEW},
       {label: 'Thương hiệu', icon: 'bi bi-award', to: '/admin/brands', match: '/admin/brands', permission: PERMISSIONS.BRANDS.VIEW},
       {label: 'Đơn hàng', icon: 'bi bi-receipt', to: '/admin/orders', match: '/admin/orders', permission: PERMISSIONS.ORDERS.VIEW},
+      {label: 'Coupon', icon: 'bi bi-ticket-perforated', to: '/admin/coupons', match: '/admin/coupons', permission: PERMISSIONS.COUPONS.VIEW},
     ],
   },
   {
@@ -44,7 +45,6 @@ const menuGroups = computed(() => [
   {
     title: 'Nội dung & hệ thống',
     items: [
-      {label: 'Coupon', icon: 'bi bi-ticket-perforated', to: '/admin/coupons', match: '/admin/coupons', permission: PERMISSIONS.COUPONS.VIEW},
       {label: 'Báo cáo doanh thu', icon: 'bi bi-graph-up', to: '/admin/reports/revenue', match: '/admin/reports/revenue', permission: null},
       {label: 'Báo cáo sản phẩm', icon: 'bi bi-bar-chart', to: '/admin/reports/products', match: '/admin/reports/products', permission: null},
       {label: 'Báo cáo đơn hàng', icon: 'bi bi-clipboard-data', to: '/admin/reports/orders', match: '/admin/reports/orders', permission: null},

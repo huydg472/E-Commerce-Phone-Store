@@ -59,6 +59,7 @@ class ProductController extends Controller
             ->with([
                 'brand',
                 'category',
+                'productSpecifications' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
                 'productVariants' => fn ($query) => $query
                     ->when($activeOnly, fn ($variantQuery) => $variantQuery->where('status', 'active'))
                     ->orderBy('id')
@@ -126,7 +127,7 @@ class ProductController extends Controller
             'status' => $request->status,
         ]);
 
-        $product->load(['brand', 'category', 'productVariants.images']);
+        $product->load(['brand', 'category', 'productSpecifications' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'), 'productVariants.images']);
         $this->attachDisplayPrice($product);
 
         return response()->json([
@@ -138,7 +139,7 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        $product->load(['brand', 'category', 'productVariants.images']);
+        $product->load(['brand', 'category', 'productSpecifications' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'), 'productVariants.images']);
         $this->attachDisplayPrice($product);
 
         return response()->json([
@@ -160,7 +161,7 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        $product->load(['brand', 'category', 'productVariants.images']);
+        $product->load(['brand', 'category', 'productSpecifications' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'), 'productVariants.images']);
         $this->attachDisplayPrice($product);
 
         return response()->json([
@@ -219,6 +220,7 @@ class ProductController extends Controller
             ->with([
                 'brand',
                 'category',
+                'productSpecifications' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
                 'productVariants' => fn ($query) => $query
                     ->where('status', 'active')
                     ->orderBy('id')

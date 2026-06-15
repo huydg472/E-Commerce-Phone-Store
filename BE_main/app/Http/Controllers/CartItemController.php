@@ -7,12 +7,18 @@ use App\Http\Requests\UpdateCartItemRequest;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\ProductVariant;
+use App\Services\CartPricingService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CartItemController extends Controller
 {
+    public function __construct(
+        private readonly CartPricingService $pricingService,
+    ) {
+    }
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -34,19 +40,7 @@ class CartItemController extends Controller
             ], 200);
         }
 
-        $subtotal = 0;
-
-        foreach ($cart->items as $item) {
-            $variant = $item->productVariant;
-
-            $price = $variant?->sale_price ?? $variant?->price ?? 0;
-            $itemSubtotal = $price * $item->quantity;
-
-            $item->price = $price;
-            $item->subtotal = $itemSubtotal;
-
-            $subtotal += $itemSubtotal;
-        }
+        $this->pricingService->applyPricing($cart);
 
         return response()->json([
             'status' => true,
@@ -55,8 +49,8 @@ class CartItemController extends Controller
                 'id' => $cart->id,
                 'user_id' => $cart->user_id,
                 'items' => $cart->items,
-                'subtotal' => $subtotal,
-                'total_amount' => $subtotal,
+                'subtotal' => $cart->subtotal,
+                'total_amount' => $cart->total_amount,
             ]
         ], 200);
     }

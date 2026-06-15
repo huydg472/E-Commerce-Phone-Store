@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
-use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\ShippingAddress;
@@ -14,7 +13,6 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
@@ -61,7 +59,8 @@ class OrderController extends Controller
             }
         }
 
-        $shippingFee = (float) ($data['shipping_fee'] ?? 0);
+        $shippingMethod = (string) ($data['shipping_method'] ?? 'standard');
+        $shippingFee = $this->pricingService->resolveShippingFee($shippingMethod);
         $couponCode = strtoupper(trim((string) ($data['coupon_code'] ?? '')));
         $paymentMethod = $data['payment_method'] ?? 'cod';
 
@@ -79,7 +78,9 @@ class OrderController extends Controller
             $data['coupon_id'] = $coupon?->id;
             $data['coupon_code'] = $coupon?->code;
             $data['discount_amount'] = $discountAmount;
+            $data['shipping_fee'] = $shippingFee;
             unset($data['payment_method']);
+            unset($data['shipping_method']);
 
             $order = Order::create($data);
             $order->orderItems()->createMany($normalizedItems);
@@ -247,23 +248,28 @@ class OrderController extends Controller
         $previousStatus = $order->order_status;
         $nextStatus = $data['order_status'] ?? $previousStatus;
 
-        DB::transaction(function () use ($order, $data, $previousStatus, $nextStatus) {
+        if (!$this->isAllowedStatusTransition($previousStatus, $nextStatus)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không cho phép chuyển sang trạng thái này.',
+            ], 422);
+        }
+
+        $wasCompleted = $order->completed_at !== null;
+
+        DB::transaction(function () use ($order, $data, $previousStatus, $nextStatus, $wasCompleted) {
             $order->update($data);
 
-            if ($previousStatus === 'pending' && $nextStatus === 'cancelled') {
+            if ($nextStatus === 'cancelled' && !$wasCompleted) {
                 $this->inventoryService->releaseReservedStockForOrder($order);
             }
 
-            if ($previousStatus === 'cancelled' && $nextStatus !== 'cancelled') {
+            if ($previousStatus === 'cancelled' && $nextStatus === 'pending' && !$wasCompleted) {
                 $this->inventoryService->reserveStockForOrder($order);
             }
 
-            if ($previousStatus === 'pending' && $nextStatus !== 'pending' && $nextStatus !== 'cancelled') {
+            if ($nextStatus === 'completed' && !$wasCompleted) {
                 $this->inventoryService->commitReservedStockForOrder($order);
-            }
-
-            if ($previousStatus !== 'pending' && $previousStatus !== 'cancelled' && $nextStatus === 'cancelled') {
-                $this->inventoryService->releaseCommittedStockForOrder($order);
             }
 
             if ($nextStatus === 'completed') {
@@ -291,6 +297,31 @@ class OrderController extends Controller
             'data' => $order
         ], 200);
     }
+    private function isAllowedStatusTransition(string $currentStatus, string $nextStatus): bool
+    {
+        if ($currentStatus === $nextStatus) {
+            return true;
+        }
+
+        $steps = ['pending', 'confirmed', 'processing', 'shipping', 'completed'];
+
+        if ($nextStatus === 'cancelled') {
+            return $currentStatus !== 'completed';
+        }
+
+        if ($currentStatus === 'cancelled') {
+            return $nextStatus === 'pending';
+        }
+
+        $currentIndex = array_search($currentStatus, $steps, true);
+        $nextIndex = array_search($nextStatus, $steps, true);
+
+        if ($currentIndex === false || $nextIndex === false) {
+            return false;
+        }
+
+        return abs($nextIndex - $currentIndex) === 1;
+    }
 
     public function destroy(Request $request, Order $order): JsonResponse
     {
@@ -303,12 +334,10 @@ class OrderController extends Controller
 
         try {
             DB::transaction(function () use ($order) {
-                if ($order->order_status === 'pending') {
-                    $this->inventoryService->releaseReservedStockForOrder($order);
-                }
-
-                if (in_array($order->order_status, ['confirmed', 'processing', 'shipping', 'completed'], true)) {
+                if ($order->completed_at) {
                     $this->inventoryService->releaseCommittedStockForOrder($order);
+                } elseif (in_array($order->order_status, ['pending', 'confirmed', 'processing', 'shipping'], true)) {
+                    $this->inventoryService->releaseReservedStockForOrder($order);
                 }
 
                 $order->delete();
@@ -327,87 +356,5 @@ class OrderController extends Controller
         }
     }
 
-    private function generateOrderCode(): string
-    {
-        for ($attempt = 0; $attempt < 5; $attempt++) {
-            $candidate = 'ORD-' . now()->format('YmdHis') . '-' . random_int(1000, 9999);
-
-            if (!Order::where('order_code', $candidate)->exists()) {
-                return $candidate;
-            }
-        }
-
-        return 'ORD-' . now()->format('YmdHis') . '-' . random_int(10000, 99999);
-    }
-
-    private function resolveCouponDiscount(string $couponCode, float $subtotal): array
-    {
-        if ($couponCode === '') {
-            return [
-                'coupon' => null,
-                'discount_amount' => 0,
-            ];
-        }
-
-        $coupon = Coupon::query()
-            ->where('code', $couponCode)
-            ->lockForUpdate()
-            ->first();
-
-        if (! $coupon) {
-            throw ValidationException::withMessages([
-                'coupon_code' => ['Mã giảm giá không tồn tại.'],
-            ]);
-        }
-
-        if (! $coupon->is_active) {
-            throw ValidationException::withMessages([
-                'coupon_code' => ['Mã giảm giá hiện không khả dụng.'],
-            ]);
-        }
-
-        if ($coupon->starts_at && $coupon->starts_at->isFuture()) {
-            throw ValidationException::withMessages([
-                'coupon_code' => ['Mã giảm giá chưa đến thời gian áp dụng.'],
-            ]);
-        }
-
-        if ($coupon->ends_at && $coupon->ends_at->isPast()) {
-            throw ValidationException::withMessages([
-                'coupon_code' => ['Mã giảm giá đã hết hạn.'],
-            ]);
-        }
-
-        if ($coupon->usage_limit !== null && $coupon->used_count >= $coupon->usage_limit) {
-            throw ValidationException::withMessages([
-                'coupon_code' => ['Mã giảm giá đã hết lượt sử dụng.'],
-            ]);
-        }
-
-        if ($subtotal < (float) $coupon->min_order_amount) {
-            throw ValidationException::withMessages([
-                'coupon_code' => ['Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã.'],
-            ]);
-        }
-
-        $discountAmount = $this->calculateCouponDiscount($coupon, $subtotal);
-
-        return [
-            'coupon' => $coupon,
-            'discount_amount' => $discountAmount,
-        ];
-    }
-
-    private function calculateCouponDiscount(Coupon $coupon, float $subtotal): float
-    {
-        $discount = $coupon->type === 'percentage'
-            ? $subtotal * ((float) $coupon->value / 100)
-            : (float) $coupon->value;
-
-        if ($coupon->max_discount !== null) {
-            $discount = min($discount, (float) $coupon->max_discount);
-        }
-
-        return max(min($discount, $subtotal), 0);
-    }
 }
+

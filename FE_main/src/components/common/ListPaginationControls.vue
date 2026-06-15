@@ -85,10 +85,10 @@ const updatePage = (page) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
-  padding: 14px 0 0;
-  margin-top: 14px;
+  padding: 24px 0 4px;
+  margin-top: 34px;
   border-top: 1px solid #eef2f7;
 }
 
@@ -102,7 +102,7 @@ const updatePage = (page) => {
 .pagination-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: nowrap;
   margin-left: auto;
   flex: 0 0 auto;
@@ -165,6 +165,7 @@ const updatePage = (page) => {
   .pagination-toolbar {
     flex-direction: column;
     align-items: stretch;
+    margin-top: 24px;
   }
 
   .pagination-summary,

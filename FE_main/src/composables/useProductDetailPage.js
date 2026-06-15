@@ -401,8 +401,7 @@ export function useProductDetailPage() {
 
     const getProductSpecifications = (product, selectedVariant = null) => {
         const primaryVariant = selectedVariant ?? getVariants(product)[0] ?? null
-
-        const specs = [
+        const defaultSpecs = [
             {label: 'Thương hiệu', value: getFirstValue(product?.brand?.name, product?.brand_name, product?.brandName)},
             {label: 'Danh mục', value: getFirstValue(product?.category?.name, product?.category_name, product?.categoryName)},
             {label: 'Dung lượng', value: getFirstValue(getVariantRom(primaryVariant), product?.storage, product?.capacity)},
@@ -417,7 +416,40 @@ export function useProductDetailPage() {
             {label: 'Pin', value: getFirstValue(product?.battery, product?.battery_capacity)},
         ]
 
-        return specs.filter((spec) => safeText(spec.value))
+        const specifications = [
+            ...(Array.isArray(product?.productSpecifications) ? product.productSpecifications : []),
+            ...(Array.isArray(product?.product_specifications) ? product.product_specifications : []),
+        ]
+
+        if (specifications.length) {
+            const extraSpecs = specifications
+                .map((spec) => ({
+                    label: safeText(spec?.spec_name ?? spec?.name ?? ''),
+                    value: safeText(spec?.spec_value ?? spec?.value ?? ''),
+                    sortOrder: Number(spec?.sort_order ?? spec?.sortOrder ?? 0),
+                }))
+                .filter((spec) => Boolean(spec.label) && Boolean(spec.value))
+                .sort((left, right) => left.sortOrder - right.sortOrder)
+                .map(({label, value}) => ({label, value}))
+
+            const mergedSpecs = [...defaultSpecs]
+
+            extraSpecs.forEach((spec) => {
+                const normalizedLabel = normalizeKey(spec.label)
+                const existingIndex = mergedSpecs.findIndex((item) => normalizeKey(item.label) === normalizedLabel)
+
+                if (existingIndex >= 0) {
+                    mergedSpecs[existingIndex] = spec
+                    return
+                }
+
+                mergedSpecs.push(spec)
+            })
+
+            return mergedSpecs.filter((spec) => safeText(spec.value))
+        }
+
+        return defaultSpecs.filter((spec) => safeText(spec.value))
     }
 
     const bottomSpecifications = computed(() => getProductSpecifications(currentProduct.value, currentSelectedVariant.value))

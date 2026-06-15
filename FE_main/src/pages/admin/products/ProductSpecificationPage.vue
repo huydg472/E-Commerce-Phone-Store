@@ -31,6 +31,25 @@ const filteredSpecifications = computed(() => {
       .sort((left, right) => Number(left?.sort_order ?? 0) - Number(right?.sort_order ?? 0))
 })
 
+const hasDuplicateSortOrder = (nextSortOrder) => {
+  if (nextSortOrder === null || nextSortOrder === undefined || nextSortOrder === '') {
+    return false
+  }
+
+  const normalizedSortOrder = Number(nextSortOrder)
+  if (Number.isNaN(normalizedSortOrder)) {
+    return false
+  }
+
+  return filteredSpecifications.value.some((spec) => {
+    if (editingSpecificationId.value && String(spec.id) === String(editingSpecificationId.value)) {
+      return false
+    }
+
+    return Number(spec?.sort_order ?? 0) === normalizedSortOrder
+  })
+}
+
 const summary = computed(() => {
   const specs = filteredSpecifications.value
   return {
@@ -119,6 +138,12 @@ const handleSubmit = async () => {
       spec_name: form.spec_name.trim(),
       spec_value: form.spec_value.trim() || null,
       sort_order: form.sort_order === '' ? null : Number(form.sort_order),
+    }
+
+    if (hasDuplicateSortOrder(payload.sort_order)) {
+      fieldErrors.sort_order = 'Thứ tự đã tồn tại trong sản phẩm này.'
+      saving.value = false
+      return
     }
 
     if (editingSpecificationId.value) {

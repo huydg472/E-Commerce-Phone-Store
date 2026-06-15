@@ -282,7 +282,12 @@ onMounted(() => {
       </div>
 
       <div class="hero-stats">
-        <article v-for="item in stats" :key="item.title" class="stat-card">
+        <article
+            v-for="item in stats"
+            :key="item.title"
+            class="stat-card"
+            :class="{ 'stat-card--revenue': item.title === 'Tổng doanh thu' }"
+        >
           <div class="stat-icon" :class="`tone-${item.tone}`">
             <i :class="item.icon"></i>
           </div>
@@ -623,11 +628,13 @@ onMounted(() => {
 .stat-content strong {
   display: block;
   color: #0f172a;
-  font-size: 32px;
-  line-height: 1;
+  font-size: 30px;
+  line-height: 1.06;
   font-weight: 900;
   letter-spacing: -0.02em;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .stat-content span {
@@ -644,6 +651,11 @@ onMounted(() => {
   color: #94a3b8;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.stat-card--revenue .stat-content strong {
+  font-size: 26px;
+  letter-spacing: -0.03em;
 }
 
 .dashboard-grid {
@@ -995,6 +1007,10 @@ onMounted(() => {
 
   .stat-content strong {
     font-size: 28px;
+  }
+
+  .stat-card--revenue .stat-content strong {
+    font-size: 24px;
   }
 
   .stat-icon {

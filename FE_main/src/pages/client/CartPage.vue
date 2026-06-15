@@ -380,10 +380,6 @@ onMounted(async () => {
                   :key="product.id"
                   class="suggest-card"
               >
-                <button class="suggest-heart" type="button">
-                  <i class="bi bi-heart"></i>
-                </button>
-
                 <ProductCard
                     :name="product.name"
                     :image="product.image"
@@ -605,17 +601,6 @@ onMounted(async () => {
 
 .suggest-card {
   position: relative;
-}
-
-.suggest-heart {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  font-size: 21px;
-  z-index: 5;
 }
 
 .suggest-card :deep(.product-card) {

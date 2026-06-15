@@ -1,4 +1,5 @@
-﻿<script setup>
+<script setup>
+import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
 import {useOrderHistoryPage} from '@/composables/useOrderHistoryPage'
 
 const {
@@ -30,11 +31,13 @@ const {
   pageEnd,
   orderSummary,
   orderTabs,
+  loadOrders,
   handleViewDetail,
   closeDetailModal,
   handleRetryVnpayPayment,
   handleOrderPrimaryAction,
   handleReorder,
+  getItemImage,
   formatCurrency,
   formatDate,
 } = useOrderHistoryPage()
@@ -44,8 +47,8 @@ const {
   <section class="order-history-page">
     <div class="page-head">
       <div>
-        <h1 class="page-title">ÄÆ¡n hÃ ng cá»§a tÃ´i</h1>
-        <p class="page-subtitle mb-0">Tra cá»©u tráº¡ng thÃ¡i, xem chi tiáº¿t vÃ  mua láº¡i cÃ¡c Ä‘Æ¡n hÃ ng trÆ°á»›c Ä‘Ã¢y.</p>
+        <h1 class="page-title">Đơn hàng của tôi</h1>
+        <p class="page-subtitle mb-0">Tra cứu trạng thái, xem chi tiết và mua lại các đơn hàng trước đây.</p>
       </div>
     </div>
 
@@ -56,13 +59,13 @@ const {
             <input
                 v-model.trim="searchKeyword"
                 type="text"
-                placeholder="TÃ¬m theo mÃ£ Ä‘Æ¡n hÃ ng, sáº£n pháº©m hoáº·c Ä‘á»‹a chá»‰"
+                placeholder="Tìm theo mã đơn hàng, sản phẩm hoặc địa chỉ"
             />
             <i class="bi bi-search"></i>
           </div>
 
           <select v-model="selectedStatus" class="status-select">
-            <option value="all">Táº¥t cáº£ tráº¡ng thÃ¡i</option>
+            <option value="all">Tất cả trạng thái</option>
             <option v-for="tab in orderTabs.slice(1)" :key="tab.key" :value="tab.key">
               {{ tab.label }}
             </option>
@@ -100,7 +103,7 @@ const {
 
     <div v-if="pageLoading || orderLoading" class="loading-card">
       <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-      <p>Äang táº£i Ä‘Æ¡n hÃ ng...</p>
+      <p>Đang tải đơn hàng...</p>
     </div>
 
     <p v-else-if="errorMessage" class="error-message">
@@ -115,12 +118,12 @@ const {
       >
         <div class="order-card-header">
           <div class="order-code">
-            <span>MÃ£ Ä‘Æ¡n hÃ ng:</span>
+            <span>Mã đơn hàng:</span>
             <strong>{{ order.code }}</strong>
           </div>
 
           <div class="order-date">
-            <span>NgÃ y Ä‘áº·t:</span>
+            <span>Ngày đặt:</span>
             <strong>{{ order.orderDate }}</strong>
           </div>
 
@@ -143,22 +146,22 @@ const {
 
             <div class="product-text">
               <h3>{{ order.product.name }}</h3>
-              <p v-if="order.product.color">PhiÃªn báº£n: {{ order.product.color }}</p>
+              <p v-if="order.product.color">Phiên bản: {{ order.product.color }}</p>
               <p>
-              Sá»‘ lÆ°á»£ng: {{ order.product.quantity }}
-              <span v-if="order.product.extraCount">+ {{ order.product.extraCount }} sáº£n pháº©m khÃ¡c</span>
-            </p>
-          </div>
+                Số lượng: {{ order.product.quantity }}
+                <span v-if="order.product.extraCount">+ {{ order.product.extraCount }} sản phẩm khác</span>
+              </p>
+            </div>
           </div>
 
           <div class="order-total">
-            <span>Tá»•ng tiá»n</span>
+            <span>Tổng tiền</span>
             <strong>{{ formatCurrency(order.total) }}</strong>
           </div>
 
           <div class="order-actions">
             <button type="button" class="action-btn outline-btn" @click="handleViewDetail(order)">
-              Xem chi tiáº¿t
+              Xem chi tiết
             </button>
 
             <button
@@ -167,7 +170,7 @@ const {
                 class="action-btn primary-btn"
                 @click="handleOrderPrimaryAction(order)"
             >
-              Thanh toÃ¡n
+              Thanh toán
             </button>
 
             <button
@@ -176,32 +179,32 @@ const {
                 class="action-btn danger-btn"
                 @click="handleOrderPrimaryAction(order)"
             >
-              Huá»· Ä‘Æ¡n
+              Hủy đơn
             </button>
 
             <button v-if="order.status !== 'pending'" type="button" class="text-action blue"
                     @click="handleReorder(order)">
               <i class="bi bi-arrow-clockwise"></i>
-              Mua láº¡i
+              Mua lại
             </button>
           </div>
         </div>
 
         <div class="order-address">
           <div class="order-address__head">
-            <span>Äá»‹a chá»‰ nháº­n hÃ ng</span>
+            <span>Địa chỉ nhận hàng</span>
           </div>
           <p>
             <i class="bi bi-geo-alt"></i>
-            {{ order.address || 'ChÆ°a cÃ³ Ä‘á»‹a chá»‰' }}
+            {{ order.address || 'Chưa có địa chỉ' }}
           </p>
         </div>
       </article>
 
       <div v-if="filteredOrders.length === 0" class="empty-card">
         <i class="bi bi-bag-x"></i>
-        <h3>KhÃ´ng tÃ¬m tháº¥y Ä‘Æ¡n hÃ ng</h3>
-        <p>HÃ£y thá»­ thay Ä‘á»•i tá»« khÃ³a hoáº·c bá»™ lá»c tráº¡ng thÃ¡i.</p>
+        <h3>Không tìm thấy đơn hàng</h3>
+        <p>Hãy thử thay đổi từ khóa hoặc bộ lọc trạng thái.</p>
       </div>
     </div>
 
@@ -213,21 +216,21 @@ const {
         :total-items="filteredOrders.length"
         :page-start="pageStart"
         :page-end="pageEnd"
-        item-label="Ä‘Æ¡n hÃ ng"
+        item-label="đơn hàng"
         @update:currentPage="currentPage = $event"
         @update:pageSize="pageSize = $event"
     />
 
     <Teleport to="body">
       <div v-if="detailModalOpen" class="order-detail-overlay" @click.self="closeDetailModal">
-        <section class="order-detail-popup" role="dialog" aria-modal="true" aria-label="Chi tiáº¿t Ä‘Æ¡n hÃ ng">
+        <section class="order-detail-popup" role="dialog" aria-modal="true" aria-label="Chi tiết đơn hàng">
           <button type="button" class="popup-close" @click="closeDetailModal">
             <i class="bi bi-x-lg"></i>
           </button>
 
           <div v-if="detailLoading" class="popup-loading">
             <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-            <p>Äang táº£i chi tiáº¿t Ä‘Æ¡n hÃ ng...</p>
+            <p>Đang tải chi tiết đơn hàng...</p>
           </div>
 
           <p v-else-if="detailError" class="popup-error">
@@ -238,13 +241,13 @@ const {
             <div class="popup-header">
               <div>
                 <nav class="popup-breadcrumb">
-                  <span>ÄÆ¡n hÃ ng cá»§a tÃ´i</span>
+                  <span>Đơn hàng của tôi</span>
                   <span>/</span>
-                  <strong>Chi tiáº¿t Ä‘Æ¡n hÃ ng</strong>
+                  <strong>Chi tiết đơn hàng</strong>
                 </nav>
 
-                <h2>Chi tiáº¿t Ä‘Æ¡n hÃ ng</h2>
-                <p>MÃ£ Ä‘Æ¡n hÃ ng: <strong>{{ selectedOrder.order_code || `#${selectedOrder.id}` }}</strong></p>
+                <h2>Chi tiết đơn hàng</h2>
+                <p>Mã đơn hàng: <strong>{{ selectedOrder.order_code || `#${selectedOrder.id}` }}</strong></p>
               </div>
 
               <div class="popup-header-actions">
@@ -261,64 +264,64 @@ const {
                 >
                   <span v-if="retryLoading" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
                   <i v-else class="bi bi-credit-card"></i>
-                  Thanh toÃ¡n VNPay
+                  Thanh toán VNPay
                 </button>
               </div>
             </div>
 
             <div class="popup-layout">
               <section class="detail-card">
-                <h3>ThÃ´ng tin Ä‘Æ¡n hÃ ng</h3>
+                <h3>Thông tin đơn hàng</h3>
                 <div class="popup-info-grid">
                   <div>
-                    <span>NgÃ y Ä‘áº·t</span>
+                    <span>Ngày đặt</span>
                     <strong>{{ formatDate(selectedOrder.ordered_at || selectedOrder.created_at) }}</strong>
                   </div>
                   <div>
-                    <span>Thanh toÃ¡n</span>
+                    <span>Thanh toán</span>
                     <strong class="payment-status" :class="selectedOrder.payment_status === 'paid' ? 'paid' : 'unpaid'">
-                      {{ selectedOrder.payment_status === 'paid' ? 'ÄÃ£ thanh toÃ¡n' : 'ChÆ°a thanh toÃ¡n' }}
+                      {{ selectedOrder.payment_status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán' }}
                     </strong>
                   </div>
                   <div>
-                    <span>NgÆ°á»i nháº­n</span>
+                    <span>Người nhận</span>
                     <strong>{{ selectedOrder.receiver_name }}</strong>
                   </div>
                   <div>
-                    <span>Sá»‘ Ä‘iá»‡n thoáº¡i</span>
+                    <span>Số điện thoại</span>
                     <strong>{{ selectedOrder.receiver_phone }}</strong>
                   </div>
                 </div>
 
                 <div class="address-box">
                   <div class="address-box__head">
-                    <span>Äá»‹a chá»‰ giao hÃ ng</span>
+                    <span>Địa chỉ giao hàng</span>
                   </div>
-                  <p>{{ selectedOrder.shipping_address_text || 'ChÆ°a cÃ³ Ä‘á»‹a chá»‰' }}</p>
+                  <p>{{ selectedOrder.shipping_address_text || 'Chưa có địa chỉ' }}</p>
                 </div>
 
                 <div v-if="selectedOrder.note" class="note-box">
-                  <span>Ghi chÃº</span>
+                  <span>Ghi chú</span>
                   <p>{{ selectedOrder.note }}</p>
                 </div>
 
                 <div v-if="selectedOrderPayment" class="payment-box">
-                  <span>Thanh toÃ¡n</span>
+                  <span>Thanh toán</span>
                   <p>
-                    PhÆ°Æ¡ng thá»©c:
+                    Phương thức:
                     <strong>{{ selectedPaymentMethod.toUpperCase() || 'N/A' }}</strong>
                   </p>
                   <p>
-                    Tráº¡ng thÃ¡i:
+                    Trạng thái:
                     <strong :class="selectedPaymentStatus === 'paid' ? 'paid-text' : 'unpaid-text'">
-                      {{ selectedPaymentStatus === 'paid' ? 'ÄÃ£ thanh toÃ¡n' : 'ChÆ°a thanh toÃ¡n' }}
+                      {{ selectedPaymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán' }}
                     </strong>
                   </p>
                 </div>
               </section>
 
               <section class="detail-card">
-                <h3>Sáº£n pháº©m</h3>
+                <h3>Sản phẩm</h3>
                 <div v-if="selectedOrderItems.length" class="popup-item-list">
                   <article v-for="item in selectedOrderItems" :key="item.id" class="popup-item-row">
                     <img
@@ -338,21 +341,21 @@ const {
               </section>
 
               <aside class="detail-card summary-card popup-summary">
-                <h3>TÃ³m táº¯t</h3>
+                <h3>Tóm tắt</h3>
                 <div class="summary-line">
-                  <span>Táº¡m tÃ­nh</span>
+                  <span>Tạm tính</span>
                   <strong>{{ formatCurrency(selectedOrder.subtotal || 0) }}</strong>
                 </div>
                 <div class="summary-line">
-                  <span>PhÃ­ váº­n chuyá»ƒn</span>
+                  <span>Phí vận chuyển</span>
                   <strong>{{ formatCurrency(selectedOrder.shipping_fee || 0) }}</strong>
                 </div>
                 <div class="summary-line">
-                  <span>Giáº£m giÃ¡</span>
+                  <span>Giảm giá</span>
                   <strong class="discount">{{ formatCurrency(selectedOrder.discount_amount || 0) }}</strong>
                 </div>
                 <div class="summary-total">
-                  <span>Tá»•ng cá»™ng</span>
+                  <span>Tổng cộng</span>
                   <strong>{{ formatCurrency(selectedOrder.total_amount || 0) }}</strong>
                 </div>
 
@@ -1237,4 +1240,3 @@ const {
   }
 }
 </style>
-

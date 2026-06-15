@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Coupon;
+use App\Models\Order;
 use Illuminate\Validation\ValidationException;
 
 class OrderPricingService
@@ -12,12 +13,23 @@ class OrderPricingService
         for ($attempt = 0; $attempt < 5; $attempt++) {
             $candidate = 'ORD-' . now()->format('YmdHis') . '-' . random_int(1000, 9999);
 
-            if (! Coupon::query()->where('code', $candidate)->exists()) {
+            if (! Order::query()->where('order_code', $candidate)->exists()) {
                 return $candidate;
             }
         }
 
         return 'ORD-' . now()->format('YmdHis') . '-' . random_int(10000, 99999);
+    }
+
+    public function resolveShippingFee(string $shippingMethod): float
+    {
+        return match (strtolower(trim($shippingMethod))) {
+            'standard' => 0,
+            'express' => 40000,
+            default => throw ValidationException::withMessages([
+                'shipping_method' => ['Phương thức giao hàng không hợp lệ.'],
+            ]),
+        };
     }
 
     public function resolveCouponDiscount(string $couponCode, float $subtotal): array

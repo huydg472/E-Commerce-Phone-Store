@@ -27,16 +27,16 @@ const toNumber = (value) => {
 const orderStatusSteps = ['pending', 'confirmed', 'processing', 'shipping', 'completed']
 
 const isSelectableOrderStatus = (currentStatus, targetStatus) => {
-  if (currentStatus === 'completed') {
-    return currentStatus === targetStatus
-  }
-
   if (currentStatus === targetStatus) {
     return true
   }
 
-  if (currentStatus === 'cancelled' || targetStatus === 'cancelled') {
-    return currentStatus === targetStatus
+  if (targetStatus === 'cancelled') {
+    return currentStatus !== 'completed' && currentStatus !== 'cancelled'
+  }
+
+  if (currentStatus === 'cancelled') {
+    return targetStatus === 'pending'
   }
 
   const currentIndex = orderStatusSteps.indexOf(currentStatus)

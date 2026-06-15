@@ -1,8 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from 'vue'
 import {useRouter} from 'vue-router'
-import {orderService} from '@/services/orderService'
-import {paymentService} from '@/services/paymentService'
+import {reportService} from '@/services/reportService'
 import {formatDate} from '@/utils/formatDate'
 import {
   formatMoney,
@@ -10,7 +9,6 @@ import {
   formatMonthLabel,
   isInLastDays,
   toNumber,
-  unwrapList,
 } from '@/utils/reportHelpers'
 
 const router = useRouter()
@@ -174,13 +172,11 @@ const loadReport = async () => {
   errorMessage.value = ''
 
   try {
-    const [ordersResponse, paymentsResponse] = await Promise.all([
-      orderService.getAll({per_page: 1000}),
-      paymentService.getAll({per_page: 1000}),
-    ])
+    const response = await reportService.revenue()
+    const payload = response.data?.data ?? response.data ?? {}
 
-    orders.value = unwrapList(ordersResponse)
-    payments.value = unwrapList(paymentsResponse)
+    orders.value = Array.isArray(payload.orders) ? payload.orders : []
+    payments.value = Array.isArray(payload.payments) ? payload.payments : []
   } catch (error) {
     errorMessage.value = error.response?.data?.message || 'Không tải được báo cáo doanh thu.'
   } finally {

@@ -110,27 +110,27 @@ const goToPage = (page) => {
   display: flex;
   justify-content: center;
   margin-top: 0;
-  min-width: 158px;
+  min-width: 172px;
   flex: 0 0 auto;
 }
 
 .pagination-list {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 0;
   margin: 0;
   list-style: none;
-  min-width: 158px;
+  min-width: 172px;
 }
 
 .page-btn {
   flex: 0 0 auto;
-  min-width: 40px;
-  height: 40px;
-  padding: 0 11px;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 12px;
   border: 1px solid #dbe3ef;
-  border-radius: 11px;
+  border-radius: 12px;
   background: #ffffff;
   color: #334155;
   display: inline-flex;
@@ -155,7 +155,7 @@ const goToPage = (page) => {
 
 .page-ellipsis {
   min-width: 18px;
-  height: 40px;
+  height: 42px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

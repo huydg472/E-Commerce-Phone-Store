@@ -114,6 +114,11 @@ export const useCouponStore = defineStore('coupon', {
                 this.appliedCoupon = null
                 this.error = error.response?.data?.message || 'Không áp dụng được mã giảm giá.'
                 this.persist()
+
+                if (error?.response?.status === 422) {
+                    return null
+                }
+
                 throw error
             } finally {
                 this.loading = false

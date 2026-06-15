@@ -212,10 +212,12 @@ onMounted(() => {
             />
           </div>
 
-          <BasePagination
-              v-model:currentPage="currentPage"
-              :total-pages="totalPages"
-          />
+          <div class="product-pagination">
+            <BasePagination
+                v-model:currentPage="currentPage"
+                :total-pages="totalPages"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -322,6 +324,14 @@ onMounted(() => {
   text-align: center;
 }
 
+.product-pagination {
+  margin-top: 28px;
+  padding-top: 10px;
+  border-top: 1px solid #eef2f7;
+  display: flex;
+  justify-content: center;
+}
+
 @media (max-width: 1200px) {
   .product-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -365,6 +375,10 @@ onMounted(() => {
 @media (max-width: 480px) {
   .product-grid {
     grid-template-columns: 1fr;
+  }
+
+  .product-pagination {
+    margin-top: 22px;
   }
 }
 </style>

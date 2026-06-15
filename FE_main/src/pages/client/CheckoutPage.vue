@@ -43,19 +43,19 @@ const {
   <section class="checkout-page">
     <div class="checkout-container">
       <div class="breadcrumb-area">
-        <RouterLink to="/">Trang chá»§</RouterLink>
+        <RouterLink to="/">Trang chủ</RouterLink>
         <i class="bi bi-chevron-right"></i>
-        <RouterLink to="/cart">Giá» hÃ ng</RouterLink>
+        <RouterLink to="/cart">Giỏ hàng</RouterLink>
         <i class="bi bi-chevron-right"></i>
-        <span>Thanh toÃ¡n</span>
+        <span>Thanh toán</span>
       </div>
 
-      <h1 class="page-title">Thanh toÃ¡n</h1>
+      <h1 class="page-title">Thanh toán</h1>
 
       <div v-if="pageLoading" class="checkout-loading">
         <div class="checkout-loading-card">
           <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-          <p>Äang táº£i dá»¯ liá»‡u thanh toÃ¡n...</p>
+          <p>Đang tải dữ liệu thanh toán...</p>
         </div>
       </div>
 
@@ -64,7 +64,7 @@ const {
           <div class="checkout-card">
             <div class="section-title">
               <i class="bi bi-geo-alt"></i>
-              <h2>Äá»‹a chá»‰ giao hÃ ng</h2>
+              <h2>Địa chỉ giao hàng</h2>
             </div>
 
             <div v-if="selectedShippingAddress" class="selected-address-card">
@@ -76,15 +76,15 @@ const {
                   <div class="selected-address-card__header">
                     <strong>{{ selectedShippingAddress.receiver_name }}</strong>
                   </div>
-                  <p>{{ selectedAddressLine || 'ChÆ°a cÃ³ Ä‘á»‹a chá»‰ chi tiáº¿t' }}</p>
+                  <p>{{ selectedAddressLine || 'Chưa có địa chỉ chi tiết' }}</p>
                   <small>
                     <i class="bi bi-telephone"></i>
-                    {{ selectedShippingAddress.receiver_phone || 'ChÆ°a cÃ³ sá»‘ Ä‘iá»‡n thoáº¡i' }}
+                    {{ selectedShippingAddress.receiver_phone || 'Chưa có số điện thoại' }}
                   </small>
                 </div>
               </div>
               <button type="button" class="link-btn" @click="openAddressPicker">
-                Chá»n Ä‘á»‹a chá»‰ khÃ¡c
+                Chọn địa chỉ khác
               </button>
             </div>
 
@@ -93,7 +93,7 @@ const {
           <div class="checkout-card">
             <div class="section-title">
               <i class="bi bi-truck"></i>
-              <h2>PhÆ°Æ¡ng thá»©c giao hÃ ng</h2>
+              <h2>Phương thức giao hàng</h2>
             </div>
 
             <div class="shipping-methods">
@@ -153,10 +153,10 @@ const {
             <div>
               <h3>{{ selectedAddressPickerTitle }}</h3>
               <p v-if="hasSavedAddresses">
-                Chá»n má»™t Ä‘á»‹a chá»‰ khÃ¡c Ä‘ang cÃ³ trong Sá»• Ä‘á»‹a chá»‰ Ä‘á»ƒ dÃ¹ng cho Ä‘Æ¡n nÃ y.
+                Chọn một địa chỉ khác đang có trong Sổ địa chỉ để dùng cho đơn này.
               </p>
               <p v-else>
-                Báº¡n chÆ°a cÃ³ Ä‘á»‹a chá»‰ nÃ o trong Sá»• Ä‘á»‹a chá»‰.
+                Bạn chưa có địa chỉ nào trong Sổ địa chỉ.
               </p>
             </div>
             <button type="button" class="address-modal__close" @click="closeAddressPicker">
@@ -179,7 +179,7 @@ const {
               <div class="saved-address-item__content">
                 <div class="saved-address-item__header">
                   <strong>{{ address.receiver_name }}</strong>
-                  <span v-if="address.is_default" class="saved-address-item__badge">Máº·c Ä‘á»‹nh</span>
+                  <span v-if="address.is_default" class="saved-address-item__badge">Mặc định</span>
                 </div>
                 <p>
                   {{
@@ -193,7 +193,7 @@ const {
                 </p>
                 <small>
                   <i class="bi bi-telephone"></i>
-                  {{ address.receiver_phone || 'ChÆ°a cÃ³ sá»‘ Ä‘iá»‡n thoáº¡i' }}
+                  {{ address.receiver_phone || 'Chưa có số điện thoại' }}
                 </small>
               </div>
             </button>
@@ -201,15 +201,15 @@ const {
 
           <div v-else class="address-modal__empty">
             <i class="bi bi-geo-alt"></i>
-            <p>ChÆ°a cÃ³ Ä‘á»‹a chá»‰ nÃ o trong Sá»• Ä‘á»‹a chá»‰.</p>
+            <p>Chưa có địa chỉ nào trong Sổ địa chỉ.</p>
             <button type="button" class="btn btn-primary" @click="openNewAddressModalFromPicker">
-              ThÃªm Ä‘á»‹a chá»‰ má»›i
+              Thêm địa chỉ mới
             </button>
           </div>
 
           <div v-if="hasSavedAddresses" class="address-modal__footer">
             <button type="button" class="btn btn-outline-secondary" @click="openNewAddressModalFromPicker">
-              ThÃªm Ä‘á»‹a chá»‰ má»›i
+              Thêm địa chỉ mới
             </button>
           </div>
         </div>
@@ -219,11 +219,11 @@ const {
         <div class="address-modal">
           <div class="address-modal__header">
             <div>
-              <h3>{{ hasSavedAddresses ? 'ThÃªm Ä‘á»‹a chá»‰ má»›i' : 'ThÃªm Ä‘á»‹a chá»‰ giao hÃ ng' }}</h3>
+              <h3>{{ hasSavedAddresses ? 'Thêm địa chỉ mới' : 'Thêm địa chỉ giao hàng' }}</h3>
               <p>
                 {{ hasSavedAddresses
-                  ? 'LÆ°u Ä‘á»‹a chá»‰ má»›i vÃ o Sá»• Ä‘á»‹a chá»‰, sau Ä‘Ã³ chá»n ngay cho Ä‘Æ¡n hÃ ng.'
-                  : 'Báº¡n chÆ°a cÃ³ Ä‘á»‹a chá»‰ nÃ o. HÃ£y nháº­p Ä‘á»‹a chá»‰ Ä‘á»ƒ lÆ°u vÃ  dÃ¹ng cho Ä‘Æ¡n hÃ ng nÃ y.' }}
+                  ? 'Lưu địa chỉ mới vào Sổ địa chỉ, sau đó chọn ngay cho đơn hàng.'
+                  : 'Bạn chưa có địa chỉ nào. Hãy nhập địa chỉ để lưu và dùng cho đơn hàng này.' }}
               </p>
             </div>
             <button type="button" class="address-modal__close" @click="closeAddressModal">
@@ -238,52 +238,52 @@ const {
 
           <div class="form-grid">
             <div class="form-group">
-              <label>Há» vÃ  tÃªn <span>*</span></label>
-              <input v-model.trim="addressForm.receiver_name" type="text" class="form-control" placeholder="Nháº­p há» vÃ  tÃªn">
+              <label>Họ và tên <span>*</span></label>
+              <input v-model.trim="addressForm.receiver_name" type="text" class="form-control" placeholder="Nhập họ và tên">
             </div>
 
             <div class="form-group">
-              <label>Sá»‘ Ä‘iá»‡n thoáº¡i <span>*</span></label>
-              <input v-model.trim="addressForm.receiver_phone" type="text" class="form-control" placeholder="Nháº­p sá»‘ Ä‘iá»‡n thoáº¡i">
+              <label>Số điện thoại <span>*</span></label>
+              <input v-model.trim="addressForm.receiver_phone" type="text" class="form-control" placeholder="Nhập số điện thoại">
             </div>
 
             <div class="form-group">
-              <label>Tá»‰nh/ThÃ nh phá»‘ <span>*</span></label>
-              <input v-model.trim="addressForm.province" type="text" class="form-control" placeholder="Nháº­p tá»‰nh/thÃ nh phá»‘">
+              <label>Tỉnh/Thành phố <span>*</span></label>
+              <input v-model.trim="addressForm.province" type="text" class="form-control" placeholder="Nhập tỉnh/thành phố">
             </div>
 
             <div class="form-group">
-              <label>Quáº­n/Huyá»‡n <span>*</span></label>
-              <input v-model.trim="addressForm.district" type="text" class="form-control" placeholder="Nháº­p quáº­n/huyá»‡n">
+              <label>Quận/Huyện <span>*</span></label>
+              <input v-model.trim="addressForm.district" type="text" class="form-control" placeholder="Nhập quận/huyện">
             </div>
 
             <div class="form-group">
-              <label>PhÆ°á»ng/XÃ£ <span>*</span></label>
-              <input v-model.trim="addressForm.ward" type="text" class="form-control" placeholder="Nháº­p phÆ°á»ng/xÃ£">
+              <label>Phường/Xã <span>*</span></label>
+              <input v-model.trim="addressForm.ward" type="text" class="form-control" placeholder="Nhập phường/xã">
             </div>
 
             <div class="form-group">
-              <label>Äá»‹a chá»‰ cá»¥ thá»ƒ <span>*</span></label>
-              <input v-model.trim="addressForm.address_detail" type="text" class="form-control" placeholder="Sá»‘ nhÃ , tÃªn Ä‘Æ°á»ng, tÃ²a nhÃ , cÄƒn há»™...">
+              <label>Địa chỉ cụ thể <span>*</span></label>
+              <input v-model.trim="addressForm.address_detail" type="text" class="form-control" placeholder="Số nhà, tên đường, tòa nhà, căn hộ...">
             </div>
           </div>
 
           <div class="form-group form-group-full note-group">
-            <label>Ghi chÃº</label>
+            <label>Ghi chú</label>
             <textarea
                 v-model.trim="addressForm.note"
                 class="form-control"
                 rows="3"
-                placeholder="VÃ­ dá»¥: Giao hÃ ng giá» hÃ nh chÃ­nh, gá»i trÆ°á»›c khi giao..."
+                placeholder="Ví dụ: Giao hàng giờ hành chính, gọi trước khi giao..."
             ></textarea>
           </div>
 
           <div class="address-modal__footer">
             <button type="button" class="btn btn-outline-secondary" @click="closeAddressModal">
-              Há»§y
+              Hủy
             </button>
             <button type="button" class="btn btn-primary" :disabled="addressModalSaving" @click="saveNewAddressFromModal">
-              {{ addressModalSaving ? 'Äang lÆ°u...' : 'LÆ°u Ä‘á»‹a chá»‰' }}
+              {{ addressModalSaving ? 'Đang lưu...' : 'Lưu địa chỉ' }}
             </button>
           </div>
         </div>

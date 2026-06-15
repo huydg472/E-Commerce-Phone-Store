@@ -56,10 +56,12 @@ defineEmits(['close', 'submit'])
               <input v-model="form.spec_name" type="text" class="control" :class="{ invalid: fieldErrors.spec_name }">
               <small v-if="fieldErrors.spec_name" class="field-error">{{ fieldErrors.spec_name }}</small>
             </div>
+
             <div class="field">
               <label>Thứ tự hiển thị</label>
               <input v-model="form.sort_order" type="number" min="0" class="control" :class="{ invalid: fieldErrors.sort_order }">
               <small v-if="fieldErrors.sort_order" class="field-error">{{ fieldErrors.sort_order }}</small>
+              <small v-else class="field-hint">Không được trùng với thứ tự đã có trong cùng sản phẩm.</small>
             </div>
           </div>
 
@@ -203,6 +205,12 @@ defineEmits(['close', 'submit'])
   color: #dc2626;
   font-size: 12px;
   font-weight: 700;
+}
+
+.field-hint {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .modal-actions {

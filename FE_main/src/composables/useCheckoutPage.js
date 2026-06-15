@@ -541,7 +541,7 @@ export function useCheckoutPage() {
                 receiver_name: form.receiver_name,
                 receiver_phone: form.receiver_phone,
                 shipping_address_text: shippingAddressText.value,
-                shipping_fee: shippingFeeValue.value,
+                shipping_method: selectedShippingMethod.value.id,
                 discount_amount: discountValue.value,
                 coupon_code: couponStore.appliedCode,
                 payment_method: selectedPaymentMethod.value,

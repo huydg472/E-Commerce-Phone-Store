@@ -144,9 +144,8 @@ export function useOrderHistoryPage() {
             const items = unwrapOrderItems(order)
             const firstItem = items[0] || null
             const image = getItemImage(firstItem)
-            const totalQuantity = items.length > 0
-                ? items.reduce((sum, item) => sum + getItemQuantity(item), 0)
-                : getItemQuantity(firstItem)
+            const totalQuantity =
+                items.length > 0 ? items.reduce((sum, item) => sum + getItemQuantity(item), 0) : getItemQuantity(firstItem)
             const previewProducts = items.length > 0
                 ? items.slice(0, 2).map((item) => ({
                     name: getItemName(item),
@@ -312,7 +311,7 @@ export function useOrderHistoryPage() {
         }
 
         if (paymentMethod === 'cod') {
-            const confirmed = window.confirm('Bạn có chắc muốn huỷ đơn hàng này không?')
+            const confirmed = window.confirm('Bạn có chắc muốn hủy đơn hàng này không?')
 
             if (!confirmed) {
                 return
@@ -326,7 +325,7 @@ export function useOrderHistoryPage() {
                     await orderStore.fetchById(order.id).catch(() => {})
                 }
             } catch (error) {
-                errorMessage.value = error?.response?.data?.message || 'Không thể huỷ đơn hàng.'
+                errorMessage.value = error?.response?.data?.message || 'Không thể hủy đơn hàng.'
             }
 
             return
@@ -442,6 +441,7 @@ export function useOrderHistoryPage() {
         handleRetryVnpayPayment,
         handleOrderPrimaryAction,
         handleReorder,
+        getItemImage,
         formatCurrency,
         formatDate,
     }
