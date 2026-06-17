@@ -143,7 +143,7 @@ const categoryStats = computed(() => {
 const stats = computed(() => [
   {label: 'Sản phẩm', value: products.value.length, desc: 'Tổng danh mục sản phẩm', icon: 'bi bi-box-seam', tone: 'blue'},
   {label: 'Đang bán', value: products.value.filter((product) => product.status === 'active').length, desc: 'Sản phẩm hoạt động', icon: 'bi bi-check2-circle', tone: 'green'},
-  {label: 'Nổi bật', value: products.value.filter((product) => product.is_featured).length, desc: 'Sản phẩm featured', icon: 'bi bi-stars', tone: 'orange'},
+  {label: 'Biến thể nổi bật', value: variantRows.value.filter((variant) => Boolean(variant?.is_featured)).length, desc: 'Biến thể featured', icon: 'bi bi-stars', tone: 'orange'},
   {label: 'Biến thể', value: variantRows.value.length, desc: 'Tổng biến thể hiện có', icon: 'bi bi-layers', tone: 'slate'},
 ])
 

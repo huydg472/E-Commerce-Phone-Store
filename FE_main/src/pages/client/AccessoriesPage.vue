@@ -3,8 +3,8 @@ import ProductCard from '@/components/product/ProductCard.vue'
 import ProductFilter from '@/components/product/ProductFilter.vue'
 import BasePagination from '@/components/common/BasePagination.vue'
 import {computed, onMounted, ref, watch} from 'vue'
-import {useRoute} from 'vue-router'
 import {storeToRefs} from 'pinia'
+import {useRoute} from 'vue-router'
 import {useProductStore} from '@/stores/productStore.js'
 import {buildProductCards, normalizeText} from '@/utils/productCardHelpers.js'
 
@@ -18,9 +18,65 @@ const selectedStorages = ref([])
 const selectedSort = ref('newest')
 const selectedPageSize = ref(12)
 const currentPage = ref(1)
-const initialBrandSlug = computed(() => String(route.query.brand ?? ''))
-const initialCategorySlug = computed(() => String(route.query.category ?? ''))
-const selectedCategorySlug = ref('')
+
+const accessorySignals = [
+  'phu kien',
+  'phu-kien',
+  'accessory',
+  'op lung',
+  'bao da',
+  'kinh cuong luc',
+  'tai nghe',
+  'sac nhanh',
+  'pin du phong',
+  'cap sac',
+]
+
+const accessoryCategoryRules = [
+  {
+    label: 'Sạc',
+    keywords: ['charger', 'gan', 'sạc'],
+  },
+  {
+    label: 'Cáp sạc',
+    keywords: ['cable', 'usb-c cable', 'cap sac', 'usb'],
+  },
+  {
+    label: 'Pin dự phòng',
+    keywords: ['power bank', 'powerbank', 'pin du phong'],
+  },
+  {
+    label: 'Sạc không dây',
+    keywords: ['wireless charger', 'magsafe charger', 'magsafe', 'wireless'],
+  },
+  {
+    label: 'Ốp lưng',
+    keywords: ['case', 'op lung', 'bao da', 'armor', 'hybrid', 'liquid air'],
+  },
+  {
+    label: 'Kính cường lực',
+    keywords: ['screen protector', 'privacy', 'anti-glare', 'air guard', 'camera lens', 'kinh cuong luc'],
+  },
+  {
+    label: 'Hub / Dock',
+    keywords: ['hub', 'dock', '4-in-1', '5-in-1', '7-in-1', '9-in-1', '11-in-1'],
+  },
+  {
+    label: 'Tai nghe',
+    keywords: ['tai nghe', 'earbud', 'headphone', 'earphone'],
+  },
+  {
+    label: 'Giá đỡ / Mount',
+    keywords: ['kickstand', 'car mount', 'mount', 'stand', 'holder', 'giá đỡ'],
+  },
+  {
+    label: 'Sạc ô tô',
+    keywords: ['car charger', 'oto', 'ô tô'],
+  },
+]
+
+const productList = computed(() => Array.isArray(products.value) ? products.value : [])
+const productCards = computed(() => buildProductCards(productList.value))
 
 const handleSelectedBrands = (brandIds) => {
   selectedBrands.value = brandIds
@@ -34,8 +90,39 @@ const handleSelectedStorages = (storages) => {
   selectedStorages.value = storages
 }
 
-const productList = computed(() => Array.isArray(products.value) ? products.value : [])
-const productCards = computed(() => buildProductCards(productList.value))
+const isAccessoryCard = (productCard) => {
+  const values = [
+    productCard.name,
+    productCard.categoryName,
+    productCard.categorySlug,
+    productCard.brandName,
+  ]
+
+  return accessorySignals.some((keyword) => {
+    const normalizedKeyword = normalizeText(keyword)
+    return values.some((value) => normalizeText(value).includes(normalizedKeyword))
+  })
+}
+
+const getAccessoryCategory = (productCard) => {
+  const values = [
+    productCard.name,
+    productCard.categoryName,
+    productCard.categorySlug,
+    productCard.brandName,
+  ]
+  const normalizedValues = values.map((value) => normalizeText(value))
+
+  for (const rule of accessoryCategoryRules) {
+    if (rule.keywords.some((keyword) => normalizedValues.some((value) => value.includes(normalizeText(keyword))))) {
+      return rule.label
+    }
+  }
+
+  return 'Khác'
+}
+
+const accessoryCards = computed(() => productCards.value.filter(isAccessoryCard))
 
 const sortOptions = [
   {label: 'Sắp xếp: Mới nhất', value: 'newest'},
@@ -52,42 +139,37 @@ const matchesPriceRange = (price) => {
   }
 
   switch (selectedPriceRange.value) {
-    case 'under-5':
-      return price < 5000000
-    case '5-10':
-      return price >= 5000000 && price < 10000000
-    case '10-20':
-      return price >= 10000000 && price < 20000000
-    case 'over-20':
-      return price >= 20000000
+    case 'under-200k':
+      return price < 200000
+    case '200k-500k':
+      return price >= 200000 && price < 500000
+    case '500k-1m':
+      return price >= 500000 && price < 1000000
+    case 'over-1m':
+      return price >= 1000000
     default:
       return true
   }
 }
 
-const filteredProducts = computed(() => {
-  return productCards.value.filter((productCard) => {
+const filteredAccessories = computed(() => {
+  return accessoryCards.value.filter((productCard) => {
     const brandOk =
         !selectedBrands.value.length ||
         selectedBrands.value.includes(productCard.brandId)
 
     const categoryOk =
-        !selectedCategorySlug.value ||
-        normalizeText(productCard.categorySlug) === normalizeText(selectedCategorySlug.value) ||
-        normalizeText(productCard.categoryName) === normalizeText(selectedCategorySlug.value)
-
-    const romOk =
         !selectedStorages.value.length ||
         selectedStorages.value.some((storage) => {
-          return normalizeText(storage) === normalizeText(productCard.rom)
+          return normalizeText(storage) === normalizeText(getAccessoryCategory(productCard))
         })
 
-    return brandOk && categoryOk && romOk && matchesPriceRange(productCard.price)
+    return brandOk && categoryOk && matchesPriceRange(productCard.price)
   })
 })
 
-const sortedProducts = computed(() => {
-  const products = [...filteredProducts.value]
+const sortedAccessories = computed(() => {
+  const products = [...filteredAccessories.value]
 
   switch (selectedSort.value) {
     case 'price-asc':
@@ -95,21 +177,19 @@ const sortedProducts = computed(() => {
     case 'price-desc':
       return products.sort((a, b) => b.price - a.price)
     case 'name-asc':
-      return products.sort((a, b) => {
-        return a.name.localeCompare(b.name, 'vi', {sensitivity: 'base'})
-      })
+      return products.sort((a, b) => a.name.localeCompare(b.name, 'vi', {sensitivity: 'base'}))
     default:
       return products
   }
 })
 
 const totalPages = computed(() => {
-  return Math.max(1, Math.ceil(sortedProducts.value.length / selectedPageSize.value))
+  return Math.max(1, Math.ceil(sortedAccessories.value.length / selectedPageSize.value))
 })
 
-const visibleProducts = computed(() => {
+const visibleAccessories = computed(() => {
   const startIndex = (currentPage.value - 1) * selectedPageSize.value
-  return sortedProducts.value.slice(startIndex, startIndex + selectedPageSize.value)
+  return sortedAccessories.value.slice(startIndex, startIndex + selectedPageSize.value)
 })
 
 const resetPage = () => {
@@ -120,17 +200,6 @@ watch(
     [selectedBrands, selectedPriceRange, selectedStorages, selectedSort, selectedPageSize],
     resetPage,
     {deep: true}
-)
-
-watch(
-    initialCategorySlug,
-    (nextCategorySlug) => {
-      if (nextCategorySlug) {
-        selectedCategorySlug.value = nextCategorySlug
-        resetPage()
-      }
-    },
-    {immediate: true}
 )
 
 watch(totalPages, (nextTotalPages) => {
@@ -145,18 +214,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="product-list-page">
+  <section class="product-list-page accessories-list-page">
     <div class="container">
       <div class="breadcrumb-area">
         <RouterLink to="/">Trang chủ</RouterLink>
         <i class="bi bi-chevron-right"></i>
-        <span>Sản phẩm</span>
+        <span>Phụ kiện</span>
       </div>
 
       <div class="page-heading">
         <div>
-          <h1>Tất cả sản phẩm</h1>
-          <p>Hiển thị {{ visibleProducts.length }} / {{ filteredProducts.length }} sản phẩm</p>
+          <h1>Phụ kiện điện thoại</h1>
+          <p>Hiển thị {{ visibleAccessories.length }} / {{ filteredAccessories.length }} sản phẩm</p>
         </div>
 
         <div class="heading-action">
@@ -184,21 +253,21 @@ onMounted(() => {
 
       <div class="product-layout">
         <ProductFilter
-            :initial-brand-slug="initialBrandSlug"
-            brand-type="phone"
+            :initial-brand-slug="String(route.query.brand ?? '')"
+            brand-type="accessory"
             @update:selected-brands="handleSelectedBrands"
             @update:selected-price-range="handleSelectedPriceRange"
             @update:selected-storages="handleSelectedStorages"
         />
 
         <div class="product-main">
-          <div v-if="!visibleProducts.length" class="empty-state">
-            Không tìm thấy sản phẩm phù hợp.
+          <div v-if="!visibleAccessories.length" class="empty-state">
+            Không tìm thấy phụ kiện phù hợp.
           </div>
 
           <div v-else class="product-grid">
             <ProductCard
-                v-for="product in visibleProducts"
+                v-for="product in visibleAccessories"
                 :key="product.id"
                 :name="product.name"
                 :image="product.image"
@@ -226,7 +295,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.product-list-page {
+.accessories-list-page {
   padding: 26px 0 56px;
   background: #ffffff;
 }

@@ -30,7 +30,6 @@ const form = reactive({
   thumbnail_preview_url: '',
   short_description: '',
   description: '',
-  is_featured: false,
   status: 'active',
 })
 
@@ -69,7 +68,6 @@ const buildPayload = () => {
     thumbnail_url: form.thumbnail_url.trim() || null,
     short_description: form.short_description.trim() || null,
     description: form.description.trim() || null,
-    is_featured: form.is_featured ? 1 : 0,
     status: form.status,
   }
 

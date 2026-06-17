@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {getToken} from '@/utils/storage'
+import {getToken, removeToken, removeUser} from '@/utils/storage'
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
@@ -28,7 +28,22 @@ api.interceptors.request.use((config) => {
 })
 api.interceptors.response.use(
     (response) => response,
-    (error) => Promise.reject(error),
+    (error) => {
+        if (error.response?.status === 401) {
+            removeToken()
+            removeUser()
+
+            if (typeof window !== 'undefined') {
+                const currentPath = window.location?.pathname || ''
+
+                if (!currentPath.startsWith('/auth/login')) {
+                    window.location.href = '/auth/login'
+                }
+            }
+        }
+
+        return Promise.reject(error)
+    },
 )
 
 export default api

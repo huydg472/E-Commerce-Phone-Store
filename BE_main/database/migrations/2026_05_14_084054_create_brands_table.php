@@ -14,6 +14,7 @@ return new class extends Migration
 
             $table->string('name', 150)->unique();
             $table->string('slug', 180)->unique();
+            $table->string('type', 30)->default('phone');
             $table->string('logo_url', 500)->nullable();
             $table->text('description')->nullable();
             $table->string('status', 20)->default('active');           

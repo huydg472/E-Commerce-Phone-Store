@@ -25,7 +25,6 @@ return new class extends Migration
             $table->string('thumbnail_url', 500)->nullable();
             $table->text('short_description')->nullable();
             $table->text('description')->nullable();
-            $table->boolean('is_featured')->default(false);
             $table->string('status', 20)->default('active');
             $table->timestamps();
         });

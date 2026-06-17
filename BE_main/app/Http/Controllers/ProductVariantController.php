@@ -56,6 +56,7 @@ class ProductVariantController extends Controller
     public function index()
     {
         $productVariant = ProductVariant::query()
+            ->when(request()->filled('is_featured'), fn ($query) => $query->where('is_featured', request()->boolean('is_featured')))
             ->with(['product', 'images'])
             ->orderBy('id')
             ->get();

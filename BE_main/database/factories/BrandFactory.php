@@ -14,9 +14,17 @@ class BrandFactory extends Factory
         return [
             'name' => $name,
             'slug' => Str::slug($name) . '-' . fake()->unique()->numberBetween(1000, 9999),
+            'type' => 'phone',
             'logo_url' => fake()->imageUrl(300, 300, 'technics', true),
             'description' => fake()->sentence(),
             'status' => 'active',
         ];
+    }
+
+    public function accessory(): static
+    {
+        return $this->state(fn () => [
+            'type' => 'accessory',
+        ]);
     }
 }

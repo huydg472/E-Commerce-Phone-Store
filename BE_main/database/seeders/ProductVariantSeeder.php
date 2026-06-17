@@ -137,7 +137,7 @@ class ProductVariantSeeder extends Seeder
 
     public function run(): void
     {
-        Product::with('brand')->orderBy('id')->get()->each(function (Product $product): void {
+        Product::with('brand')->orderBy('id')->get()->values()->each(function (Product $product, int $productIndex): void {
             $profile = $this->profileFor($product);
 
             foreach ($profile['colors'] as $colorIndex => $color) {
@@ -165,6 +165,7 @@ class ProductVariantSeeder extends Seeder
                             'sale_price' => $salePrice,
                             'quantity' => 8 + (($product->id + $colorIndex + $storageIndex) % 28),
                             'status' => 'active',
+                            'is_featured' => $productIndex < 5 && $colorIndex === 0 && $storageIndex === 0,
                             'description' => $product->name . ' ' . $color . ' ' . $storage . ' ' . $profile['ram'],
                         ]
                     );

@@ -26,6 +26,7 @@ const emit = defineEmits(['edit', 'delete', 'toggle'])
         <thead>
         <tr>
           <th>Thương hiệu</th>
+          <th>Loại</th>
           <th>Slug</th>
           <th>Trạng thái</th>
           <th>Cập nhật</th>
@@ -47,6 +48,11 @@ const emit = defineEmits(['edit', 'delete', 'toggle'])
                 <small>{{ brand.description || 'Chưa có mô tả' }}</small>
               </div>
             </div>
+          </td>
+          <td>
+            <span class="type-chip" :class="brand.type === 'accessory' ? 'is-accessory' : 'is-phone'">
+              {{ brand.type === 'accessory' ? 'Phụ kiện' : 'Điện thoại' }}
+            </span>
           </td>
           <td>
             <code class="slug-chip">{{ brand.slug }}</code>
@@ -84,7 +90,7 @@ const emit = defineEmits(['edit', 'delete', 'toggle'])
         </tr>
 
         <tr v-if="!brands.length">
-          <td colspan="5">
+          <td colspan="6">
             <div class="empty-state">
               <i class="bi bi-award"></i>
               <p>Không có thương hiệu phù hợp.</p>
@@ -111,7 +117,7 @@ const emit = defineEmits(['edit', 'delete', 'toggle'])
 }
 
 .admin-table {
-  min-width: 980px;
+  min-width: 1100px;
 }
 
 .admin-table thead th {
@@ -186,6 +192,25 @@ const emit = defineEmits(['edit', 'delete', 'toggle'])
 
 .brand-text small {
   color: #64748b;
+}
+
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.type-chip.is-phone {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.type-chip.is-accessory {
+  color: #0f766e;
+  background: #f0fdfa;
 }
 
 .slug-chip {

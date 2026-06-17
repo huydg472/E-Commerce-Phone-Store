@@ -32,49 +32,49 @@ class StoreProductVariantRequest extends FormRequest
             'price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['nullable', 'numeric', 'min:0', 'lte:price'],
             'quantity' => ['sometimes', 'integer', 'min:0'],
+            'is_featured' => ['sometimes', 'boolean'],
             'status' => ['sometimes', 'string', 'in:active,inactive'],
             'description' => ['nullable', 'string'],
         ];
     }
 
-
     public function messages(): array
     {
         return [
-            'required' => ':attribute không được để trống.',
-            'string' => ':attribute phải là chuỗi ký tự.',
-            'integer' => ':attribute phải là số nguyên.',
-            'numeric' => ':attribute phải là số.',
-            'boolean' => ':attribute phải là true hoặc false.',
-            'array' => ':attribute phải là một danh sách.',
-            'date' => ':attribute phải là ngày hợp lệ.',
-            'url' => ':attribute phải là đường dẫn hợp lệ.',
-            'email' => ':attribute phải là email hợp lệ.',
-            'max' => ':attribute không được vượt quá :max ký tự.',
-            'min' => ':attribute phải có giá trị tối thiểu là :min.',
-            'unique' => ':attribute đã tồn tại.',
-            'exists' => ':attribute không tồn tại trong hệ thống.',
-            'in' => ':attribute không hợp lệ.',
-            'confirmed' => ':attribute xác nhận không khớp.',
-            'not_in' => ':attribute không được bằng :values.',
-            'lte' => ':attribute phải nhỏ hơn hoặc bằng :value.',
+            'required' => ':attribute khÃ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.',
+            'string' => ':attribute pháº£i lÃ  chuá»—i kÃ½ tá»±.',
+            'integer' => ':attribute pháº£i lÃ  sá»‘ nguyÃªn.',
+            'numeric' => ':attribute pháº£i lÃ  sá»‘.',
+            'boolean' => ':attribute pháº£i lÃ  true hoáº·c false.',
+            'array' => ':attribute pháº£i lÃ  má»™t danh sÃ¡ch.',
+            'date' => ':attribute pháº£i lÃ  ngÃ y há»£p lá»‡.',
+            'url' => ':attribute pháº£i lÃ  Ä‘Æ°á»ng dáº«n há»£p lá»‡.',
+            'email' => ':attribute pháº£i lÃ  email há»£p lá»‡.',
+            'max' => ':attribute khÃ´ng Ä‘Æ°á»£c vÆ°á»£t quÃ¡ :max kÃ½ tá»±.',
+            'min' => ':attribute pháº£i cÃ³ giÃ¡ trá»‹ tá»‘i thiá»ƒu lÃ  :min.',
+            'unique' => ':attribute Ä‘Ã£ tá»“n táº¡i.',
+            'exists' => ':attribute khÃ´ng tá»“n táº¡i trong há»‡ thá»‘ng.',
+            'in' => ':attribute khÃ´ng há»£p lá»‡.',
+            'confirmed' => ':attribute xÃ¡c nháº­n khÃ´ng khá»›p.',
+            'not_in' => ':attribute khÃ´ng Ä‘Æ°á»£c báº±ng :values.',
+            'lte' => ':attribute pháº£i nhá» hÆ¡n hoáº·c báº±ng :value.',
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'product_id' => 'Sản phẩm',
-            'color' => 'Màu sắc',
-            'storage' => 'Bộ nhớ',
+            'product_id' => 'Sáº£n pháº©m',
+            'color' => 'MÃ u sáº¯c',
+            'storage' => 'Bá»™ nhá»›',
             'ram' => 'RAM',
             'sku' => 'SKU',
-            'import_price' => 'Giá nhập',
-            'price' => 'Giá bán',
-            'sale_price' => 'Giá khuyến mãi',
-            'quantity' => 'Số lượng',
-            'description' => 'Mô tả',
+            'import_price' => 'GiÃ¡ nháº­p',
+            'price' => 'GiÃ¡ bÃ¡n',
+            'sale_price' => 'GiÃ¡ khuyáº¿n mÃ£i',
+            'quantity' => 'Sá»‘ lÆ°á»£ng',
+            'is_featured' => 'Ná»•i báº­t',
+            'description' => 'MÃ´ táº£',
         ];
     }
-
 }

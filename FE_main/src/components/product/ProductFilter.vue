@@ -8,6 +8,10 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  brandType: {
+    type: String,
+    default: 'phone',
+  },
 })
 
 const emit = defineEmits([
@@ -27,11 +31,14 @@ const openSections = ref({
   price: true,
   storage: true,
 })
-const brandPriority = ['Apple', 'Samsung', 'OPPO', 'Xiaomi', 'Vivo', 'Realme']
+const brandPriority = ['Apple', 'Samsung', 'OPPO', 'Xiaomi', 'Vivo', 'Realme', 'Anker', 'UGREEN', 'Baseus', 'Belkin']
 
-onMounted(() => {
-  brandStore.fetchAll({status: 'active'})
-})
+const normalizeBrandKey = (value) => {
+  return String(value ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+}
 
 const brandList = computed(() => {
   const list = Array.isArray(brands.value) ? brands.value : []
@@ -51,14 +58,48 @@ const brandList = computed(() => {
   })
 })
 
-const priceRanges = [
-  {label: 'Dưới 5 triệu', value: 'under-5'},
-  {label: '5 - 10 triệu', value: '5-10'},
-  {label: '10 - 20 triệu', value: '10-20'},
-  {label: 'Trên 20 triệu', value: 'over-20'},
+const accessoryCategoryLabels = [
+  'Sạc',
+  'Cáp sạc',
+  'Pin dự phòng',
+  'Sạc không dây',
+  'Ốp lưng',
+  'Kính cường lực',
+  'Hub / Dock',
+  'Tai nghe',
+  'Giá đỡ / Mount',
+  'Sạc ô tô',
 ]
 
-const storages = ['64GB', '128GB', '256GB', '512GB', '1TB']
+const priceRanges = computed(() => {
+  if (props.brandType === 'accessory') {
+    return [
+      {label: 'Dưới 200 nghìn', value: 'under-200k'},
+      {label: '200 - 500 nghìn', value: '200k-500k'},
+      {label: '500 nghìn - 1 triệu', value: '500k-1m'},
+      {label: 'Trên 1 triệu', value: 'over-1m'},
+    ]
+  }
+
+  return [
+    {label: 'Dưới 5 triệu', value: 'under-5'},
+    {label: '5 - 10 triệu', value: '5-10'},
+    {label: '10 - 20 triệu', value: '10-20'},
+    {label: 'Trên 20 triệu', value: 'over-20'},
+  ]
+})
+
+const storageFilterTitle = computed(() => {
+  return props.brandType === 'accessory' ? 'Phân loại' : 'Dung lượng'
+})
+
+const storages = computed(() => {
+  if (props.brandType === 'accessory') {
+    return accessoryCategoryLabels
+  }
+
+  return ['64GB', '128GB', '256GB', '512GB', '1TB']
+})
 
 const toggleBrand = (brandId) => {
   const id = String(brandId)
@@ -99,13 +140,6 @@ const toggleSection = (section) => {
   }
 }
 
-const normalizeBrandKey = (value) => {
-  return String(value ?? '')
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-}
-
 watch(
     [brandList, () => props.initialBrandSlug],
     ([nextBrands, nextSlug]) => {
@@ -131,6 +165,17 @@ watch(
       }
     },
     {immediate: true, deep: true}
+)
+
+onMounted(() => {
+  brandStore.fetchAll({status: 'active', type: props.brandType})
+})
+
+watch(
+    () => props.brandType,
+    (nextType) => {
+      brandStore.fetchAll({status: 'active', type: nextType})
+    }
 )
 </script>
 
@@ -212,7 +257,7 @@ watch(
           class="filter-title"
           @click="toggleSection('storage')"
       >
-        <span>Dung lượng</span>
+        <span>{{ storageFilterTitle }}</span>
         <i class="bi bi-chevron-down" :class="{ rotated: openSections.storage }"></i>
       </button>
 
@@ -298,8 +343,8 @@ watch(
 }
 
 .filter-body {
-  padding: 0 16px 16px;
-  overflow: hidden;
+  padding: 10px 16px 16px;
+  overflow: visible;
 }
 
 .collapse-enter-active,
@@ -354,26 +399,41 @@ watch(
 }
 
 .storage-list {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
 
+@media (min-width: 1200px) {
+  .storage-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .storage-btn {
-  height: 34px;
-  min-width: 68px;
-  padding: 0 12px;
+  min-height: 34px;
+  padding: 6px 10px;
   border: 1px solid #dbe3ef;
-  border-radius: 8px;
-  background: #ffffff;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
   color: #334155;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
+  line-height: 1.05;
+  text-align: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, background 0.2s ease;
+  box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
 }
 
 .storage-btn:hover,
 .storage-btn.active {
   border-color: #0d6efd;
-  color: #0d6efd;
+  color: #0b5ed7;
+  background: linear-gradient(180deg, #eef5ff 0%, #e7f0ff 100%);
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.08);
+}
+
+.storage-btn:active {
+  box-shadow: 0 2px 6px rgba(13, 110, 253, 0.08);
 }
 </style>

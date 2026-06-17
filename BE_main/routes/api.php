@@ -139,10 +139,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments/{payment}/vnpay-url', [PaymentController::class, 'createVnpayUrl']);
 
     Route::get('/favorites', [FavoriteController::class, 'index']);
-    Route::post('/favorites', [FavoriteController::class, 'store']);
-    Route::get('/favorites/{productVariant}/status', [FavoriteController::class, 'status']);
     Route::post('/favorites/{productVariant}/toggle', [FavoriteController::class, 'toggle']);
-    Route::delete('/favorites/{productVariant}', [FavoriteController::class, 'destroy']);
 
     Route::get('/shipping-addresses', [ShippingAddressController::class, 'index']);
     Route::post('/shipping-addresses', [ShippingAddressController::class, 'store']);

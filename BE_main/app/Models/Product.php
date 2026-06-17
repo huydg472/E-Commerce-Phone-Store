@@ -18,16 +18,8 @@ class Product extends Model
         'thumbnail_url',
         'short_description',
         'description',
-        'is_featured',
         'status',
     ];
-
-    protected function casts(): array
-    {
-        return [
-            'is_featured' => 'boolean',
-        ];
-    }
 
     public function brand()
     {
@@ -47,10 +39,5 @@ class Product extends Model
     public function productSpecifications()
     {
         return $this->hasMany(ProductSpecification::class);
-    }
-
-    public function favorites()
-    {
-        return $this->hasMany(Favorite::class);
     }
 }

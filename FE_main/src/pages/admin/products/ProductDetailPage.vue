@@ -99,9 +99,6 @@ onMounted(loadProduct)
               <span class="status-tag" :class="product?.status === 'active' ? 'active' : 'inactive'">
                 {{ product?.status === 'active' ? 'Đang hoạt động' : 'Tạm ẩn' }}
               </span>
-              <span class="status-tag featured" :class="{ active: product?.is_featured }">
-                {{ product?.is_featured ? 'Nổi bật' : 'Thường' }}
-              </span>
             </div>
           </div>
 
@@ -385,16 +382,6 @@ onMounted(loadProduct)
 .status-tag.inactive {
   background: #fff7ed;
   color: #c2410c;
-}
-
-.status-tag.featured {
-  background: #f8fafc;
-  color: #475569;
-}
-
-.status-tag.featured.active {
-  background: #fef3c7;
-  color: #b45309;
 }
 
 .hero-metrics {

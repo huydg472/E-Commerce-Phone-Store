@@ -21,6 +21,13 @@ return new class extends Migration
                 ->constrained('shipping_addresses')
                 ->nullOnDelete();
 
+            $table->foreignId('coupon_id')
+                ->nullable()
+                ->constrained('coupons')
+                ->nullOnDelete();
+
+            $table->string('coupon_code', 50)->nullable();
+
             $table->string('order_code', 50)->unique();
             $table->string('receiver_name', 150);
             $table->string('receiver_phone', 20);

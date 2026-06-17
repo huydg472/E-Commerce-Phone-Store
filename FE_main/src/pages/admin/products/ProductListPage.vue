@@ -22,7 +22,6 @@ const search = ref('')
 const selectedStatus = ref('')
 const selectedBrand = ref('')
 const selectedCategory = ref('')
-const selectedFeatured = ref('')
 const loadingError = ref('')
 const deletingId = ref(null)
 
@@ -43,7 +42,6 @@ const filteredProducts = computed(() => {
     const brandName = normalize(product?.brand?.name)
     const categoryName = normalize(product?.category?.name)
     const description = normalize(product?.short_description)
-    const isFeatured = Boolean(product?.is_featured)
 
     const matchesSearch =
         !query ||
@@ -53,11 +51,8 @@ const filteredProducts = computed(() => {
     const matchesBrand = !selectedBrand.value || String(product?.brand_id) === String(selectedBrand.value)
     const matchesCategory =
         !selectedCategory.value || String(product?.category_id) === String(selectedCategory.value)
-    const matchesFeatured =
-        !selectedFeatured.value ||
-        (selectedFeatured.value === 'featured' ? isFeatured : !isFeatured)
 
-    return matchesSearch && matchesStatus && matchesBrand && matchesCategory && matchesFeatured
+    return matchesSearch && matchesStatus && matchesBrand && matchesCategory
   })
 })
 
@@ -76,10 +71,9 @@ const {
 const stats = computed(() => {
   const total = displayProducts.value.length
   const active = displayProducts.value.filter((product) => product?.status === 'active').length
-  const featured = displayProducts.value.filter((product) => product?.is_featured).length
   const inactive = total - active
 
-  return {total, active, featured, inactive}
+  return {total, active, inactive}
 })
 
 const isLoading = computed(() => productLoading.value && !displayProducts.value.length)
@@ -97,7 +91,6 @@ const resetFilters = () => {
   selectedStatus.value = ''
   selectedBrand.value = ''
   selectedCategory.value = ''
-  selectedFeatured.value = ''
 }
 
 const refreshProducts = async () => {
@@ -141,26 +134,6 @@ const handleToggleStatus = async (product) => {
   } catch (error) {
     product.status = previousStatus
     loadingError.value = error.response?.data?.message || 'Không cập nhật được trạng thái sản phẩm.'
-  }
-}
-
-const handleToggleFeatured = async (product) => {
-  const nextFeatured = !Boolean(product?.is_featured)
-  const previousFeatured = Boolean(product?.is_featured)
-
-  product.is_featured = nextFeatured
-  loadingError.value = ''
-
-  try {
-    await productStore.update(product.id, {is_featured: nextFeatured})
-
-    const matchedProduct = displayProducts.value.find((item) => item.id === product.id)
-    if (matchedProduct) {
-      matchedProduct.is_featured = nextFeatured
-    }
-  } catch (error) {
-    product.is_featured = previousFeatured
-    loadingError.value = error.response?.data?.message || 'Không cập nhật được trạng thái nổi bật.'
   }
 }
 
@@ -244,16 +217,6 @@ onMounted(async () => {
         </article>
 
         <article class="stat-card">
-          <span class="stat-icon stat-icon-featured">
-            <i class="bi bi-stars"></i>
-          </span>
-          <div>
-            <strong>{{ stats.featured }}</strong>
-            <span>Nổi bật</span>
-          </div>
-        </article>
-
-        <article class="stat-card">
           <span class="stat-icon stat-icon-inactive">
             <i class="bi bi-slash-circle"></i>
           </span>
@@ -276,12 +239,6 @@ onMounted(async () => {
           <option value="">Tất cả trạng thái</option>
           <option value="active">Đang hoạt động</option>
           <option value="inactive">Tạm ẩn</option>
-        </select>
-
-        <select v-model="selectedFeatured" class="filter-select">
-          <option value="">Tất cả sản phẩm</option>
-          <option value="featured">Sản phẩm nổi bật</option>
-          <option value="normal">Sản phẩm thường</option>
         </select>
 
         <select v-model="selectedBrand" class="filter-select">
@@ -336,7 +293,6 @@ onMounted(async () => {
             <th>Thương hiệu</th>
             <th>Danh mục</th>
             <th>Trạng thái</th>
-            <th>Nổi bật</th>
             <th>Cập nhật</th>
             <th>Thao tác</th>
           </tr>
@@ -382,18 +338,6 @@ onMounted(async () => {
                 <i :class="product.status === 'active' ? 'bi bi-toggle-on' : 'bi bi-toggle-off'"></i>
               </button>
             </td>
-            <td>
-              <button
-                  type="button"
-                  class="featured-pill"
-                  :class="product.is_featured ? 'is-active' : 'is-inactive'"
-                  @click="handleToggleFeatured(product)"
-                  :title="product.is_featured ? 'Nổi bật' : 'Thường'"
-                  :aria-label="product.is_featured ? 'Nổi bật' : 'Thường'"
-              >
-                <i :class="product.is_featured ? 'bi bi-star-fill' : 'bi bi-star'"></i>
-              </button>
-            </td>
             <td>{{ formatDate(product.updated_at || product.created_at) }}</td>
             <td>
               <div class="action-group">
@@ -417,7 +361,7 @@ onMounted(async () => {
           </tr>
 
           <tr v-if="!filteredProducts.length">
-            <td colspan="7">
+            <td colspan="6">
               <div class="empty-state">
                 <i class="bi bi-box"></i>
                 <p>Không có sản phẩm phù hợp với bộ lọc hiện tại.</p>
@@ -531,7 +475,7 @@ onMounted(async () => {
 
 .hero-stats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -585,10 +529,6 @@ onMounted(async () => {
   background: linear-gradient(135deg, #10b981 0%, #22c55e 100%);
 }
 
-.stat-icon-featured {
-  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
-}
-
 .stat-icon-inactive {
   background: linear-gradient(135deg, #64748b 0%, #475569 100%);
 }
@@ -628,7 +568,7 @@ onMounted(async () => {
 
 .filter-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -833,44 +773,6 @@ onMounted(async () => {
   background: #fff7ed;
   color: #c2410c;
   border-color: #fed7aa;
-}
-
-.featured-pill {
-  width: 42px;
-  height: 34px;
-  padding: 0;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  position: relative;
-  overflow: hidden;
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 800;
-  transition: 0.2s ease;
-}
-
-.featured-pill i {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: 15px;
-  line-height: 1;
-}
-
-.featured-pill.is-active {
-  background: #fef3c7;
-  color: #b45309;
-  border-color: #fde68a;
-}
-
-.featured-pill.is-inactive {
-  background: #f8fafc;
-  color: #475569;
-  border-color: #e2e8f0;
 }
 
 .action-group {

@@ -111,6 +111,14 @@ defineEmits(['close', 'submit'])
             </div>
           </div>
 
+          <label class="featured-toggle">
+            <input v-model="form.is_featured" type="checkbox">
+            <span class="featured-toggle-box">
+              <strong>Nổi bật</strong>
+              <small>Ưu tiên biến thể này ở khu vực sản phẩm nổi bật.</small>
+            </span>
+          </label>
+
           <div class="field">
             <label>Mô tả</label>
             <textarea v-model="form.description" class="control textarea" rows="4"></textarea>
@@ -269,6 +277,41 @@ defineEmits(['close', 'submit'])
   color: #dc2626;
   font-size: 12px;
   font-weight: 700;
+}
+
+.featured-toggle {
+  padding: 14px;
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  background: #f8fbff;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.featured-toggle input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #2563eb;
+  flex: 0 0 auto;
+}
+
+.featured-toggle-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.featured-toggle-box strong {
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.featured-toggle-box small {
+  color: #64748b;
+  font-size: 12px;
 }
 
 .modal-actions {

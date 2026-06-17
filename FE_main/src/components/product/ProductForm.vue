@@ -183,17 +183,6 @@ const visibleCategories = computed(() => {
           </select>
           <small v-if="fieldErrors.status" class="field-error">{{ fieldErrors.status }}</small>
         </div>
-
-        <label class="switch-card">
-          <input v-model="form.is_featured" type="checkbox">
-          <span class="switch-ui">
-            <span class="switch-thumb"></span>
-          </span>
-          <span>
-            <strong>Sản phẩm nổi bật</strong>
-            <small>Chuyển trạng thái hiển thị nổi bật trên giao diện bán hàng.</small>
-          </span>
-        </label>
       </div>
 
       <div class="form-actions">
@@ -225,10 +214,6 @@ const visibleCategories = computed(() => {
           <span>
             <i class="bi bi-grid-3x3-gap"></i>
             {{ categories.find((category) => String(category.id) === String(form.category_id))?.name || 'Chưa chọn danh mục' }}
-          </span>
-          <span>
-            <i class="bi bi-lightning-charge"></i>
-            {{ form.is_featured ? 'Nổi bật' : 'Sản phẩm thường' }}
           </span>
           <span>
             <i class="bi bi-dot"></i>
@@ -285,8 +270,15 @@ const visibleCategories = computed(() => {
 .grid-2,
 .publish-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.publish-grid {
+  grid-template-columns: 1fr;
 }
 
 .field {
@@ -341,65 +333,6 @@ const visibleCategories = computed(() => {
   color: #dc2626;
   font-size: 12px;
   font-weight: 700;
-}
-
-.switch-card {
-  min-height: 138px;
-  padding: 16px;
-  border: 1px solid #dbe3ef;
-  border-radius: 16px;
-  background: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  cursor: pointer;
-}
-
-.switch-card input {
-  display: none;
-}
-
-.switch-ui {
-  width: 56px;
-  height: 30px;
-  padding: 3px;
-  border-radius: 999px;
-  background: #cbd5e1;
-  display: inline-flex;
-  align-items: center;
-  transition: background 0.25s ease;
-  flex-shrink: 0;
-}
-
-.switch-thumb {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 5px 12px rgba(15, 23, 42, 0.18);
-  transition: transform 0.25s ease;
-}
-
-.switch-card input:checked + .switch-ui {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-}
-
-.switch-card input:checked + .switch-ui .switch-thumb {
-  transform: translateX(26px);
-}
-
-.switch-card strong {
-  display: block;
-  color: #0f172a;
-  font-size: 14px;
-  font-weight: 900;
-}
-
-.switch-card small {
-  display: block;
-  margin-top: 4px;
-  color: #64748b;
-  font-size: 12px;
 }
 
 .form-actions {

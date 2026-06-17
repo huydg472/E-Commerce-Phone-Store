@@ -12,6 +12,7 @@ const {items: brands, loading: brandLoading} = storeToRefs(brandStore)
 
 const search = ref('')
 const statusFilter = ref('all')
+const typeFilter = ref('all')
 const showModal = ref(false)
 const editingId = ref(null)
 const saving = ref(false)
@@ -29,12 +30,13 @@ const filteredBrands = computed(() => {
 
   return displayBrands.value.filter((brand) => {
     const matchesStatus = statusFilter.value === 'all' || brand?.status === statusFilter.value
+    const matchesType = typeFilter.value === 'all' || brand?.type === typeFilter.value
     const matchesKeyword =
         !query ||
         [brand?.name, brand?.slug, brand?.description, brand?.logo_url]
             .some((field) => normalize(field).includes(query))
 
-    return matchesStatus && matchesKeyword
+    return matchesStatus && matchesType && matchesKeyword
   })
 })
 
@@ -175,8 +177,7 @@ onMounted(loadBrands)
       <div class="hero-copy">
         <p class="eyebrow">Quản lý thương hiệu</p>
         <h1>Danh sách thương hiệu</h1>
-        <p class="subtitle">Quản lý thương hiệu, logo, trạng thái hiển thị và thông tin mô tả trong cùng một màn
-          hình.</p>
+        <p class="subtitle">Quản lý thương hiệu, logo, loại thương hiệu, trạng thái hiển thị và mô tả trong cùng một màn hình.</p>
 
         <div class="hero-actions">
           <button type="button" class="primary-action" @click="openCreateModal">
@@ -184,7 +185,7 @@ onMounted(loadBrands)
             Thêm thương hiệu
           </button>
 
-          <button type="button" class="secondary-action" @click="search = ''; statusFilter = 'all'">
+          <button type="button" class="secondary-action" @click="search = ''; statusFilter = 'all'; typeFilter = 'all'">
             <i class="bi bi-arrow-counterclockwise"></i>
             Xóa bộ lọc
           </button>
@@ -238,6 +239,12 @@ onMounted(loadBrands)
         <option value="all">Tất cả trạng thái</option>
         <option value="active">Hoạt động</option>
         <option value="inactive">Tạm ẩn</option>
+      </select>
+
+      <select v-model="typeFilter" class="filter-select">
+        <option value="all">Tất cả loại</option>
+        <option value="phone">Điện thoại</option>
+        <option value="accessory">Phụ kiện</option>
       </select>
 
       <div class="table-chip">
@@ -584,6 +591,5 @@ onMounted(loadBrands)
     width: 100%;
     max-width: none;
   }
-
 }
 </style>

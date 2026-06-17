@@ -14,6 +14,7 @@ class BrandController extends Controller
     public function index(Request $request): JsonResponse
     {
         $brands = Brand::query()
+            ->when($request->filled('type'), fn ($query) => $query->where('type', $request->type))
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->status))
             ->orderByDesc('id')
             ->get();

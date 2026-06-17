@@ -22,6 +22,7 @@ class ProductVariant extends Model
         'quantity',
         'reserved_quantity',
         'status',
+        'is_featured',
         'description',
     ];
 
@@ -33,6 +34,7 @@ class ProductVariant extends Model
             'sale_price' => 'decimal:2',
             'quantity' => 'integer',
             'reserved_quantity' => 'integer',
+            'is_featured' => 'boolean',
         ];
     }
 
@@ -63,11 +65,6 @@ class ProductVariant extends Model
     public function stockLogs()
     {
         return $this->hasMany(StockLog::class);
-    }
-
-    public function favorites()
-    {
-        return $this->hasMany(Favorite::class);
     }
 
     public function getAvailableQuantityAttribute(): int

@@ -42,7 +42,11 @@ const brandList = computed(() => {
   })
 })
 
-const brandTabs = computed(() => brandList.value.slice(0, 6))
+const phoneBrands = computed(() => {
+  return brandList.value.filter((brand) => String(brand?.type ?? 'phone') === 'phone')
+})
+
+const brandTabs = computed(() => phoneBrands.value.slice(0, 6))
 const productCards = computed(() => buildProductCards(productList.value, placeholder.product))
 const showcaseImages = [
   placeholder.product,
@@ -102,9 +106,14 @@ const scrollFeaturedProducts = (direction) => {
 }
 
 watch(
-    brandList,
+    phoneBrands,
     (list) => {
-      if (!selectedBrand.value && list.length) {
+      const currentBrand = normalizeText(selectedBrand.value)
+      const hasCurrentBrand = list.some((brand) => {
+        return normalizeText(getBrandTabValue(brand)) === currentBrand
+      })
+
+      if ((!selectedBrand.value || !hasCurrentBrand) && list.length) {
         selectedBrand.value = getBrandTabValue(list[0])
       }
     },
@@ -113,7 +122,7 @@ watch(
 
 onMounted(() => {
   productStore.fetchAll({status: 'active', per_page: 500})
-  brandStore.fetchAll({status: 'active'})
+  brandStore.fetchAll({status: 'active', type: 'phone'})
 })
 </script>
 

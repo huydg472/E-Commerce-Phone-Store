@@ -99,7 +99,6 @@ class ProductSeeder extends Seeder
                         'thumbnail_url' => null,
                         'short_description' => $productName . ' chinh hang, bao hanh theo chinh sach cua hang.',
                         'description' => $productName . ' phu hop nhu cau su dung hang ngay, giai tri, chup anh va lam viec di dong.',
-                        'is_featured' => $index < 5,
                         'status' => 'active',
                     ]
                 );

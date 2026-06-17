@@ -79,11 +79,13 @@ const summary = computed(() => {
   const variants = variantRows.value
   const active = variants.filter((variant) => variant?.status === 'active').length
   const inactive = variants.length - active
+  const featured = variants.filter((variant) => Boolean(variant?.is_featured)).length
 
   return {
     total: variants.length,
     active,
     inactive,
+    featured,
   }
 })
 
@@ -98,6 +100,7 @@ const form = reactive({
   sale_price: '',
   quantity: 0,
   status: 'active',
+  is_featured: false,
   description: '',
 })
 
@@ -133,6 +136,7 @@ const resetForm = () => {
   form.sale_price = ''
   form.quantity = 0
   form.status = 'active'
+  form.is_featured = false
   form.description = ''
   editingVariantId.value = null
 }
@@ -167,6 +171,7 @@ const openEditModal = (variant) => {
   form.sale_price = variant?.sale_price ?? ''
   form.quantity = variant?.quantity ?? 0
   form.status = variant?.status ?? 'active'
+  form.is_featured = Boolean(variant?.is_featured)
   form.description = variant?.description ?? ''
   formError.value = ''
   clearFieldErrors()
@@ -202,6 +207,7 @@ const handleSubmit = async () => {
       sale_price: form.sale_price === '' ? null : Number(form.sale_price),
       quantity: Number(form.quantity || 0),
       status: form.status,
+      is_featured: Boolean(form.is_featured),
       description: form.description.trim() || null,
     }
 
@@ -253,6 +259,21 @@ const handleToggleStatus = async (variant) => {
   } catch (error) {
     variant.status = previousStatus
     loadingError.value = error.response?.data?.message || 'Không cập nhật được trạng thái biến thể.'
+  }
+}
+
+const handleToggleFeatured = async (variant) => {
+  const nextFeatured = !Boolean(variant?.is_featured)
+  const previousFeatured = Boolean(variant?.is_featured)
+
+  variant.is_featured = nextFeatured
+  loadingError.value = ''
+
+  try {
+    await variantStore.update(variant.id, {is_featured: nextFeatured})
+  } catch (error) {
+    variant.is_featured = previousFeatured
+    loadingError.value = error.response?.data?.message || 'Không cập nhật được trạng thái nổi bật.'
   }
 }
 
@@ -336,6 +357,10 @@ onMounted(loadData)
             <strong>{{ summary.inactive }}</strong>
             <span>Tạm ẩn</span>
           </article>
+          <article class="stat-card">
+            <strong>{{ summary.featured }}</strong>
+            <span>Nổi bật</span>
+          </article>
         </div>
       </section>
 
@@ -362,6 +387,7 @@ onMounted(loadData)
             <tr>
               <th>Biến thể</th>
               <th>SKU</th>
+              <th>Nổi bật</th>
               <th>Giá</th>
               <th>Sale</th>
               <th>Tồn kho</th>
@@ -380,6 +406,18 @@ onMounted(loadData)
               </td>
               <td>
                 <span class="sku-pill">{{ variant.sku }}</span>
+              </td>
+              <td>
+                <button
+                    type="button"
+                    class="featured-pill"
+                    :class="Boolean(variant.is_featured) ? 'is-active' : 'is-inactive'"
+                    @click="handleToggleFeatured(variant)"
+                    :title="Boolean(variant.is_featured) ? 'Nổi bật' : 'Chưa nổi bật'"
+                    :aria-label="Boolean(variant.is_featured) ? 'Nổi bật' : 'Chưa nổi bật'"
+                >
+                  <i :class="Boolean(variant.is_featured) ? 'bi bi-star-fill' : 'bi bi-star'"></i>
+                </button>
               </td>
               <td>{{ formatMoney(variant.price) }}</td>
               <td>{{ formatMoney(variant.sale_price) }}</td>
@@ -421,7 +459,7 @@ onMounted(loadData)
             </tr>
 
             <tr v-if="!variantRows.length">
-              <td colspan="8">
+              <td colspan="9">
                 <div class="empty-state">
                   <i class="bi bi-layers"></i>
                   <p>Chưa có biến thể nào cho sản phẩm này.</p>
@@ -684,7 +722,7 @@ onMounted(loadData)
 
 .hero-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(110px, 1fr));
+  grid-template-columns: repeat(4, minmax(110px, 1fr));
   gap: 12px;
 }
 
@@ -863,6 +901,44 @@ onMounted(loadData)
   background: #fff7ed;
   color: #c2410c;
   border-color: #fed7aa;
+}
+
+.featured-pill {
+  width: 42px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  position: relative;
+  overflow: hidden;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  transition: 0.2s ease;
+}
+
+.featured-pill i {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.featured-pill.is-active {
+  background: #fff7ed;
+  color: #d97706;
+  border-color: #fed7aa;
+}
+
+.featured-pill.is-inactive {
+  background: #f8fafc;
+  color: #94a3b8;
+  border-color: #e2e8f0;
 }
 
 .action-group {

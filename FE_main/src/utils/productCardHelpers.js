@@ -345,8 +345,10 @@ const getBestVariantByRom = (variants) => {
         return isActiveStatus(variant?.status) && getVariantAvailableQuantity(variant) > 0
     })
     const source = availableVariants.length ? availableVariants : variants
+    const featuredSource = source.filter((variant) => Boolean(variant?.is_featured))
+    const rankedSource = featuredSource.length ? featuredSource : source
 
-    return [...source].sort((a, b) => {
+    return [...rankedSource].sort((a, b) => {
         return getVariantPrice(a) - getVariantPrice(b)
     })[0] ?? null
 }
@@ -410,6 +412,7 @@ const createRomProductCard = (product, rom, variants, placeholderImage = '', all
     const price = getVariantPrice(bestVariant) || getProductFallbackPrice(product)
     const oldPrice = getVariantOldPrice(bestVariant) || getProductFallbackOldPrice(product)
     const stockQuantity = getVariantAvailableQuantity(bestVariant) || Number(product?.quantity ?? 0)
+    const isFeatured = variants.some((variant) => Boolean(variant?.is_featured))
 
     return {
         id: `${product?.id}-${normalizeText(rom) || bestVariant?.id || 'default'}`,
@@ -438,12 +441,7 @@ const createRomProductCard = (product, rom, variants, placeholderImage = '', all
             '',
         price,
         oldPrice: oldPrice > price ? oldPrice : null,
-        isFeatured: Boolean(
-            product?.is_featured ||
-            product?.isFeatured ||
-            bestVariant?.is_featured ||
-            bestVariant?.isFeatured
-        ),
+        isFeatured,
         stockQuantity,
         to: buildProductLink(product, rom, bestVariant),
     }

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->integer('quantity')->default(0);
             $table->integer('reserved_quantity')->default(0);
             $table->string('status', 20)->default('active');
+            $table->boolean('is_featured')->default(false);
             $table->text('description')->nullable();
             $table->timestamps();
 

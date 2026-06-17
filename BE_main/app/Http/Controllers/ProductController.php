@@ -67,10 +67,6 @@ class ProductController extends Controller
             ])
             ->orderBy('id');
 
-        if ($request->filled('is_featured')) {
-            $query->where('is_featured', $request->boolean('is_featured'));
-        }
-
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
@@ -123,7 +119,6 @@ class ProductController extends Controller
             'thumbnail_url' => $data['thumbnail_url'] ?? null,
             'short_description' => $request->short_description,
             'description' => $request->description,
-            'is_featured' => $request->is_featured,
             'status' => $request->status,
         ]);
 

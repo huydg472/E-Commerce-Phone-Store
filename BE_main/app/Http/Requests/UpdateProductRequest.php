@@ -48,7 +48,6 @@ class UpdateProductRequest extends FormRequest
             'thumbnail_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
             'short_description' => ['nullable', 'string'],
             'description' => ['nullable', 'string'],
-            'is_featured' => ['sometimes', 'boolean'],
             'status' => ['sometimes', 'string', 'in:active,inactive'],
         ];
     }
@@ -87,7 +86,6 @@ class UpdateProductRequest extends FormRequest
             'thumbnail_url' => 'Ảnh đại diện sản phẩm',
             'short_description' => 'Mô tả ngắn',
             'description' => 'Mô tả',
-            'is_featured' => 'Sản phẩm nổi bật',
             'status' => 'Trạng thái',
         ];
     }

@@ -144,21 +144,5 @@ export const useFavoriteStore = defineStore('favorite', {
             }
         },
 
-        async remove(productVariantId) {
-            const normalizedId = Number(productVariantId)
-            const previousIds = [...this.variantIds]
-            const previousItems = [...this.items]
-
-            this.variantIds = this.variantIds.filter((id) => id !== normalizedId)
-            this.items = this.items.filter((favorite) => getFavoriteVariantId(favorite) !== normalizedId)
-
-            try {
-                return await favoriteService.delete(normalizedId)
-            } catch (error) {
-                this.variantIds = previousIds
-                this.items = previousItems
-                throw error
-            }
-        },
     },
 })

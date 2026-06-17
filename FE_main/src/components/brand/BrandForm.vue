@@ -30,6 +30,7 @@ const manualSlug = ref(false)
 const form = reactive({
   name: '',
   slug: '',
+  type: 'phone',
   logo_url: '',
   description: '',
   status: 'active',
@@ -47,6 +48,7 @@ const slugify = (value) =>
 const resetForm = () => {
   form.name = ''
   form.slug = ''
+  form.type = 'phone'
   form.logo_url = ''
   form.description = ''
   form.status = 'active'
@@ -63,6 +65,7 @@ const syncForm = () => {
 
   form.name = brand?.name ?? ''
   form.slug = brand?.slug ?? ''
+  form.type = brand?.type ?? 'phone'
   form.logo_url = brand?.logo_url ?? ''
   form.description = brand?.description ?? ''
   form.status = brand?.status ?? 'active'
@@ -107,6 +110,7 @@ const handleSubmit = () => {
   emit('submit', {
     name: form.name.trim(),
     slug: form.slug.trim(),
+    type: form.type,
     logo_url: form.logo_url.trim() || null,
     description: form.description.trim() || null,
     status: form.status,
@@ -162,14 +166,12 @@ const handleSubmit = () => {
 
             <div class="form-row">
               <label>
-                <span>Logo URL</span>
-                <input
-                    v-model.trim="form.logo_url"
-                    type="url"
-                    class="control"
-                    :class="{ invalid: fieldErrors.logo_url }"
-                />
-                <small v-if="fieldErrors.logo_url" class="field-error">{{ fieldErrors.logo_url }}</small>
+                <span>Loại thương hiệu</span>
+                <select v-model="form.type" class="control" :class="{ invalid: fieldErrors.type }">
+                  <option value="phone">Điện thoại</option>
+                  <option value="accessory">Phụ kiện</option>
+                </select>
+                <small v-if="fieldErrors.type" class="field-error">{{ fieldErrors.type }}</small>
               </label>
 
               <label>
@@ -181,6 +183,17 @@ const handleSubmit = () => {
                 <small v-if="fieldErrors.status" class="field-error">{{ fieldErrors.status }}</small>
               </label>
             </div>
+
+            <label class="full-width">
+              <span>Logo URL</span>
+              <input
+                  v-model.trim="form.logo_url"
+                  type="url"
+                  class="control"
+                  :class="{ invalid: fieldErrors.logo_url }"
+              />
+              <small v-if="fieldErrors.logo_url" class="field-error">{{ fieldErrors.logo_url }}</small>
+            </label>
 
             <label class="full-width">
               <span>Mô tả</span>
@@ -212,6 +225,9 @@ const handleSubmit = () => {
             <div class="preview-meta">
               <h4>{{ form.name || 'Tên thương hiệu' }}</h4>
               <p>{{ form.slug || 'slug-thuong-hieu' }}</p>
+              <span class="preview-type" :class="form.type === 'accessory' ? 'is-accessory' : 'is-phone'">
+                {{ form.type === 'accessory' ? 'Phụ kiện' : 'Điện thoại' }}
+              </span>
               <span class="preview-status" :class="form.status === 'active' ? 'is-active' : 'is-inactive'">
                 {{ form.status === 'active' ? 'Hoạt động' : 'Tạm ẩn' }}
               </span>
@@ -426,6 +442,7 @@ textarea.control {
   color: #64748b;
 }
 
+.preview-type,
 .preview-status {
   display: inline-flex;
   align-items: center;
@@ -434,6 +451,17 @@ textarea.control {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 800;
+  margin-right: 8px;
+}
+
+.preview-type.is-phone {
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.preview-type.is-accessory {
+  color: #0f766e;
+  background: #f0fdfa;
 }
 
 .preview-status.is-active {

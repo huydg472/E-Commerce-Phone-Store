@@ -35,7 +35,7 @@ export default [
             {
                 path: 'phu-kien',
                 name: 'products.accessories',
-                component: () => import('@/pages/client/ProductListPage.vue'),
+                component: () => import('@/pages/client/AccessoriesPage.vue'),
             },
             {
                 path: 'cart',
