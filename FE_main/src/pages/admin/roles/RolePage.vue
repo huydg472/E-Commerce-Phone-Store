@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { usePermissionStore } from '@/stores/permissionStore'
-import { useRoleStore } from '@/stores/roleStore'
+import {computed, onMounted, reactive, ref} from 'vue'
+import {useRouter} from 'vue-router'
+import {usePermissionStore} from '@/stores/permissionStore'
+import {useRoleStore} from '@/stores/roleStore'
 import RoleForm from '@/components/role/RoleForm.vue'
 
 const router = useRouter()
@@ -33,9 +33,9 @@ const filteredRoles = computed(() => {
 
   return roles.value.filter((role) => {
     const matchesQuery = !query
-      || [role.name, role.display_name, role.description]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(query))
+        || [role.name, role.display_name, role.description]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(query))
 
     const matchesStatus = statusFilter.value === 'all' || role.status === statusFilter.value
 
@@ -108,8 +108,8 @@ const openEdit = (role) => {
   form.description = role.description || ''
   form.status = role.status || 'active'
   selectedPermissionIds.value = Array.isArray(role.permissions)
-    ? role.permissions.map((permission) => permission.id)
-    : []
+      ? role.permissions.map((permission) => permission.id)
+      : []
   editingRoleId.value = role.id
   showForm.value = true
 }
@@ -227,7 +227,7 @@ onMounted(loadPage)
     <div class="toolbar-card">
       <div class="search-box">
         <i class="bi bi-search"></i>
-        <input v-model.trim="searchQuery" type="text" placeholder="Tìm theo tên, mô tả..." />
+        <input v-model.trim="searchQuery" type="text" placeholder="Tìm theo tên, mô tả..."/>
       </div>
 
       <select v-model="statusFilter" class="filter-select">
@@ -258,77 +258,77 @@ onMounted(loadPage)
       <div v-else class="table-wrap">
         <table class="data-table">
           <colgroup>
-            <col class="col-name" />
-            <col class="col-display" />
-            <col class="col-desc" />
-            <col class="col-count" />
-            <col class="col-status" />
-            <col class="col-actions" />
+            <col class="col-name"/>
+            <col class="col-display"/>
+            <col class="col-desc"/>
+            <col class="col-count"/>
+            <col class="col-status"/>
+            <col class="col-actions"/>
           </colgroup>
 
           <thead>
-            <tr>
-              <th>Mã vai trò</th>
-              <th>Tên hiển thị</th>
-              <th>Mô tả</th>
-              <th>Quyền</th>
-              <th>Trạng thái</th>
-              <th>Thao tác</th>
-            </tr>
+          <tr>
+            <th>Mã vai trò</th>
+            <th>Tên hiển thị</th>
+            <th>Mô tả</th>
+            <th>Quyền</th>
+            <th>Trạng thái</th>
+            <th>Thao tác</th>
+          </tr>
           </thead>
 
           <tbody>
-            <tr v-for="role in filteredRoles" :key="role.id">
-              <td>
-                <strong>{{ role.name }}</strong>
-              </td>
-              <td>
-                <span>{{ role.display_name }}</span>
-              </td>
-              <td>
-                <span class="description">{{ role.description || 'Không có mô tả' }}</span>
-              </td>
-              <td>
-                <span class="count-pill">{{ role.permissions?.length || role.permissions_count || 0 }} quyền</span>
-              </td>
-              <td>
-                <button
+          <tr v-for="role in filteredRoles" :key="role.id">
+            <td>
+              <strong>{{ role.name }}</strong>
+            </td>
+            <td>
+              <span>{{ role.display_name }}</span>
+            </td>
+            <td>
+              <span class="description">{{ role.description || 'Không có mô tả' }}</span>
+            </td>
+            <td>
+              <span class="count-pill">{{ role.permissions?.length || role.permissions_count || 0 }} quyền</span>
+            </td>
+            <td>
+              <button
                   type="button"
                   class="status-pill"
                   :class="role.status === 'active' ? 'active' : 'inactive'"
                   @click="toggleStatus(role)"
-                >
-                  <i :class="role.status === 'active' ? 'bi bi-toggle-on' : 'bi bi-toggle-off'"></i>
-                  {{ role.status === 'active' ? 'Hoạt động' : 'Không hoạt động' }}
+              >
+                <i :class="role.status === 'active' ? 'bi bi-toggle-on' : 'bi bi-toggle-off'"></i>
+                {{ role.status === 'active' ? 'Hoạt động' : 'Không hoạt động' }}
+              </button>
+            </td>
+            <td>
+              <div class="action-group">
+                <button type="button" class="action-btn view" @click="openEdit(role)">
+                  <i class="bi bi-pencil"></i>
                 </button>
-              </td>
-              <td>
-                <div class="action-group">
-                  <button type="button" class="action-btn view" @click="openEdit(role)">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button type="button" class="action-btn danger" @click="removeRole(role)">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
+                <button type="button" class="action-btn danger" @click="removeRole(role)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
     </div>
 
     <RoleForm
-      :visible="showForm"
-      :form="form"
-      :permissions="modulePermissions"
-      v-model:selected-permission-ids="selectedPermissionIds"
-      :error-message="errorMessage"
-      :submitting="saving"
-      :title="editingRoleId ? 'Chỉnh sửa vai trò' : 'Tạo vai trò mới'"
-      :submit-label="editingRoleId ? 'Lưu thay đổi' : 'Tạo mới'"
-      @close="closeForm"
-      @submit="handleSubmit"
+        :visible="showForm"
+        :form="form"
+        :permissions="modulePermissions"
+        v-model:selected-permission-ids="selectedPermissionIds"
+        :error-message="errorMessage"
+        :submitting="saving"
+        :title="editingRoleId ? 'Chỉnh sửa vai trò' : 'Tạo vai trò mới'"
+        :submit-label="editingRoleId ? 'Lưu thay đổi' : 'Tạo mới'"
+        @close="closeForm"
+        @submit="handleSubmit"
     />
   </div>
 </template>
@@ -441,10 +441,21 @@ onMounted(loadPage)
   font-size: 22px;
 }
 
-.stat-icon.blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-.stat-icon.green { background: linear-gradient(135deg, #16a34a, #22c55e); }
-.stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #fb923c); }
-.stat-icon.slate { background: linear-gradient(135deg, #475569, #64748b); }
+.stat-icon.blue {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+.stat-icon.green {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.stat-icon.orange {
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+}
+
+.stat-icon.slate {
+  background: linear-gradient(135deg, #475569, #64748b);
+}
 
 .stat-content strong {
   display: block;
@@ -662,12 +673,29 @@ onMounted(loadPage)
   color: #2563eb;
 }
 
-.col-name { width: 18%; }
-.col-display { width: 20%; }
-.col-desc { width: 28%; }
-.col-count { width: 10%; }
-.col-status { width: 14%; }
-.col-actions { width: 10%; }
+.col-name {
+  width: 18%;
+}
+
+.col-display {
+  width: 20%;
+}
+
+.col-desc {
+  width: 28%;
+}
+
+.col-count {
+  width: 10%;
+}
+
+.col-status {
+  width: 14%;
+}
+
+.col-actions {
+  width: 10%;
+}
 
 @media (max-width: 1199.98px) {
   .hero-card {

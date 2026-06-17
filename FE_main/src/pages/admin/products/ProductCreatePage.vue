@@ -164,16 +164,16 @@ onMounted(loadInitialData)
     </section>
 
     <ProductForm
-      :form="form"
-      :brands="brands"
-      :categories="categories"
-      :field-errors="fieldErrors"
-      :saving="saving"
-      :loading="productLoading"
-      :submit-label="submitLabel"
-      cancel-to="/admin/products"
-      @submit="handleSubmit"
-      @thumbnail-change="handleThumbnailChange"
+        :form="form"
+        :brands="brands"
+        :categories="categories"
+        :field-errors="fieldErrors"
+        :saving="saving"
+        :loading="productLoading"
+        :submit-label="submitLabel"
+        cancel-to="/admin/products"
+        @submit="handleSubmit"
+        @thumbnail-change="handleThumbnailChange"
     />
   </div>
 </template>

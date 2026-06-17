@@ -103,22 +103,22 @@ defineEmits(['submit'])
           <div class="form-group">
             <label>{{ passwordRequired ? 'Mật khẩu' : 'Mật khẩu mới' }}</label>
             <input
-              v-model="form.password"
-              type="password"
-              class="form-control"
-              :required="passwordRequired"
-              :placeholder="passwordRequired ? '' : 'Để trống nếu không đổi'"
+                v-model="form.password"
+                type="password"
+                class="form-control"
+                :required="passwordRequired"
+                :placeholder="passwordRequired ? '' : 'Để trống nếu không đổi'"
             />
           </div>
 
           <div class="form-group">
             <label>{{ passwordRequired ? 'Xác nhận mật khẩu' : 'Xác nhận mật khẩu mới' }}</label>
             <input
-              v-model="form.password_confirmation"
-              type="password"
-              class="form-control"
-              :required="passwordRequired"
-              :placeholder="passwordRequired ? '' : 'Nhập lại mật khẩu'"
+                v-model="form.password_confirmation"
+                type="password"
+                class="form-control"
+                :required="passwordRequired"
+                :placeholder="passwordRequired ? '' : 'Nhập lại mật khẩu'"
             />
           </div>
         </template>
@@ -126,10 +126,10 @@ defineEmits(['submit'])
         <div v-if="showEmailVerifiedAt" class="form-group">
           <label>Email verified at</label>
           <input
-            v-model="form.email_verified_at"
-            type="text"
-            class="form-control"
-            placeholder="YYYY-MM-DD HH:mm:ss"
+              v-model="form.email_verified_at"
+              type="text"
+              class="form-control"
+              placeholder="YYYY-MM-DD HH:mm:ss"
           />
         </div>
       </div>

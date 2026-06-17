@@ -65,22 +65,22 @@ const fetchStatsUsers = async () => {
       const responseData = response.data ?? {}
       const payload = responseData.data ?? responseData ?? null
       const pageItems = Array.isArray(payload)
-        ? payload
-        : (Array.isArray(payload?.data) ? payload.data : [])
+          ? payload
+          : (Array.isArray(payload?.data) ? payload.data : [])
 
       accumulated.push(...pageItems)
 
       const meta = (!Array.isArray(payload) && payload && (
-        Object.prototype.hasOwnProperty.call(payload, 'current_page')
-        || Object.prototype.hasOwnProperty.call(payload, 'last_page')
-        || Object.prototype.hasOwnProperty.call(payload, 'total')
+          Object.prototype.hasOwnProperty.call(payload, 'current_page')
+          || Object.prototype.hasOwnProperty.call(payload, 'last_page')
+          || Object.prototype.hasOwnProperty.call(payload, 'total')
       ))
-        ? payload
-        : ((!Array.isArray(responseData) && responseData && (
-          Object.prototype.hasOwnProperty.call(responseData, 'current_page')
-          || Object.prototype.hasOwnProperty.call(responseData, 'last_page')
-          || Object.prototype.hasOwnProperty.call(responseData, 'total')
-        )) ? responseData : null)
+          ? payload
+          : ((!Array.isArray(responseData) && responseData && (
+              Object.prototype.hasOwnProperty.call(responseData, 'current_page')
+              || Object.prototype.hasOwnProperty.call(responseData, 'last_page')
+              || Object.prototype.hasOwnProperty.call(responseData, 'total')
+          )) ? responseData : null)
 
       lastPage = Number(meta?.last_page) || 1
       page += 1
@@ -141,7 +141,8 @@ onMounted(() => {
   Promise.all([
     fetchUsers(1),
     fetchStatsUsers(),
-  ]).catch(() => {})
+  ]).catch(() => {
+  })
 })
 
 watch(search, () => {

@@ -99,7 +99,8 @@ const handleImageError = (event) => {
       <div class="quantity-box">
         <button type="button" @click="emit('decrease')">−</button>
         <span>{{ quantity }}</span>
-        <button type="button" :disabled="maxQuantity > 0 && quantity >= maxQuantity" @click="emit('increase')">+</button>
+        <button type="button" :disabled="maxQuantity > 0 && quantity >= maxQuantity" @click="emit('increase')">+
+        </button>
       </div>
     </div>
 

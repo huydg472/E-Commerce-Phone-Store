@@ -149,7 +149,8 @@ const handleStatusChange = async (order, nextStatus) => {
 
   try {
     await orderStore.update(order.id, {order_status: nextStatus})
-    await dashboardStore.fetchDashboard().catch(() => {})
+    await dashboardStore.fetchDashboard().catch(() => {
+    })
   } catch (error) {
     if (order.raw) order.raw.order_status = previousStatus
     order.orderStatus = previousStatus

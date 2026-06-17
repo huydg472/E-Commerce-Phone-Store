@@ -42,15 +42,15 @@ const filteredOrders = computed(() => {
 })
 
 const completedOrders = computed(() =>
-  filteredOrders.value.filter((order) => order?.order_status === 'completed'),
+    filteredOrders.value.filter((order) => order?.order_status === 'completed'),
 )
 
 const cancelledOrders = computed(() =>
-  filteredOrders.value.filter((order) => order?.order_status === 'cancelled'),
+    filteredOrders.value.filter((order) => order?.order_status === 'cancelled'),
 )
 
 const revenueTotal = computed(() =>
-  completedOrders.value.reduce((sum, order) => sum + toNumber(order?.total_amount), 0),
+    completedOrders.value.reduce((sum, order) => sum + toNumber(order?.total_amount), 0),
 )
 
 const averageOrderValue = computed(() => {
@@ -468,10 +468,21 @@ onMounted(loadReport)
   flex-shrink: 0;
 }
 
-.tone-blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-.tone-green { background: linear-gradient(135deg, #16a34a, #22c55e); }
-.tone-orange { background: linear-gradient(135deg, #f59e0b, #fb923c); }
-.tone-slate { background: linear-gradient(135deg, #475569, #64748b); }
+.tone-blue {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+.tone-green {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.tone-orange {
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+}
+
+.tone-slate {
+  background: linear-gradient(135deg, #475569, #64748b);
+}
 
 .content-grid {
   display: grid;
@@ -582,10 +593,25 @@ onMounted(loadReport)
   font-weight: 900;
 }
 
-.status-pill.success { background: #ecfdf5; color: #15803d; }
-.status-pill.warning { background: #fff7ed; color: #c2410c; }
-.status-pill.danger { background: #fef2f2; color: #dc2626; }
-.status-pill.info { background: #eff6ff; color: #2563eb; }
+.status-pill.success {
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+.status-pill.warning {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.status-pill.danger {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.status-pill.info {
+  background: #eff6ff;
+  color: #2563eb;
+}
 
 .table-wrap {
   overflow-x: auto;

@@ -18,7 +18,7 @@ class StockLogSeeder extends Seeder
 
         $adminRoleId = Role::where('name', 'admin')->value('id');
         $adminUserId = User::query()
-            ->when($adminRoleId, fn ($query) => $query->where('role_id', $adminRoleId))
+            ->when($adminRoleId, fn($query) => $query->where('role_id', $adminRoleId))
             ->value('id');
 
         ProductVariant::query()->get()->each(function (ProductVariant $variant) use ($adminUserId) {
@@ -45,7 +45,7 @@ class StockLogSeeder extends Seeder
             ->each(function (OrderItem $item) use ($adminUserId) {
                 $variant = ProductVariant::find($item->product_variant_id);
 
-                if (! $variant) {
+                if (!$variant) {
                     return;
                 }
 

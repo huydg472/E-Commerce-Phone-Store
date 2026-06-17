@@ -44,7 +44,7 @@ class ProductSpecificationSeeder extends Seeder
         foreach ($specsByProduct as $productName => $specs) {
             $product = Product::where('name', $productName)->first();
 
-            if (! $product) {
+            if (!$product) {
                 continue;
             }
 

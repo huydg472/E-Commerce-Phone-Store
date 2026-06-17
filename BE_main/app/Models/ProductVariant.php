@@ -69,6 +69,6 @@ class ProductVariant extends Model
 
     public function getAvailableQuantityAttribute(): int
     {
-        return max((int) $this->quantity - (int) $this->reserved_quantity, 0);
+        return max((int)$this->quantity - (int)$this->reserved_quantity, 0);
     }
 }

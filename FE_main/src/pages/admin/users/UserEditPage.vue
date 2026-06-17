@@ -118,17 +118,17 @@ onMounted(loadInitialData)
     </div>
 
     <UserForm
-      v-else
-      :form="form"
-      :roles="roles"
-      :error-message="loadingError"
-      :submitting="isSubmitting"
-      submit-label="Lưu thay đổi"
-      :cancel-to="`/admin/users/${route.params.id}`"
-      :show-password-fields="true"
-      :show-email-verified-at="true"
-      :password-required="false"
-      @submit="handleSubmit"
+        v-else
+        :form="form"
+        :roles="roles"
+        :error-message="loadingError"
+        :submitting="isSubmitting"
+        submit-label="Lưu thay đổi"
+        :cancel-to="`/admin/users/${route.params.id}`"
+        :show-password-fields="true"
+        :show-email-verified-at="true"
+        :password-required="false"
+        @submit="handleSubmit"
     />
   </div>
 </template>

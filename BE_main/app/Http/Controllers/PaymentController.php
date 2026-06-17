@@ -18,9 +18,9 @@ class PaymentController extends Controller
     public function index(): JsonResponse
     {
         $payment = Payment::with([
-                'order.user',
-                'order.orderItems.productVariant.product',
-            ])
+            'order.user',
+            'order.orderItems.productVariant.product',
+        ])
             ->latest()
             ->get();
 
@@ -148,9 +148,9 @@ class PaymentController extends Controller
             'vnp_Version' => $config['version'] ?? '2.1.0',
             'vnp_Command' => 'pay',
             'vnp_TmnCode' => $tmnCode,
-            'vnp_Amount' => (int) round(((float) $payment->amount) * 100),
+            'vnp_Amount' => (int)round(((float)$payment->amount) * 100),
             'vnp_CurrCode' => 'VND',
-            'vnp_TxnRef' => (string) $payment->id,
+            'vnp_TxnRef' => (string)$payment->id,
             'vnp_OrderInfo' => 'Thanh toan don hang ' . $payment->order->order_code,
             'vnp_OrderType' => 'billpayment',
             'vnp_Locale' => $config['locale'] ?? 'vn',
@@ -196,7 +196,7 @@ class PaymentController extends Controller
             return redirect()->away($frontendUrl . '/order-success?payment=failed&reason=invalid_signature');
         }
 
-        $payment = Payment::with('order')->find((int) $request->input('vnp_TxnRef'));
+        $payment = Payment::with('order')->find((int)$request->input('vnp_TxnRef'));
 
         if (!$payment || !$payment->order) {
             return redirect()->away($frontendUrl . '/order-success?payment=failed&reason=payment_not_found');
@@ -210,8 +210,8 @@ class PaymentController extends Controller
         $isSuccess = $request->input('vnp_ResponseCode') === '00'
             && ($transactionStatus === null || $transactionStatus === '00');
 
-        $currentPaymentStatus = strtolower((string) $payment->payment_status);
-        $currentOrderPaymentStatus = strtolower((string) $payment->order->payment_status);
+        $currentPaymentStatus = strtolower((string)$payment->payment_status);
+        $currentOrderPaymentStatus = strtolower((string)$payment->order->payment_status);
 
         if ($isSuccess && ($currentPaymentStatus === 'paid' || $currentOrderPaymentStatus === 'paid')) {
             return redirect()->away($frontendUrl . '/order-success?order_id=' . $payment->order_id . '&payment=success');
@@ -247,8 +247,8 @@ class PaymentController extends Controller
         $hashData = '';
 
         foreach ($params as $key => $value) {
-            $encodedKey = urlencode((string) $key);
-            $encodedValue = urlencode((string) $value);
+            $encodedKey = urlencode((string)$key);
+            $encodedValue = urlencode((string)$value);
 
             $hashData .= ($hashData === '' ? '' : '&') . $encodedKey . '=' . $encodedValue;
             $query .= $encodedKey . '=' . $encodedValue . '&';

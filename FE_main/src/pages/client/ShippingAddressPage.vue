@@ -315,7 +315,8 @@ onMounted(() => {
 
               <div class="form-group">
                 <label>Số điện thoại <span>*</span></label>
-                <input v-model.trim="form.receiver_phone" type="text" class="form-control" placeholder="Nhập số điện thoại">
+                <input v-model.trim="form.receiver_phone" type="text" class="form-control"
+                       placeholder="Nhập số điện thoại">
               </div>
 
               <div class="form-group">
@@ -335,7 +336,8 @@ onMounted(() => {
 
               <div class="form-group">
                 <label>Địa chỉ chi tiết <span>*</span></label>
-                <input v-model.trim="form.address_detail" type="text" class="form-control" placeholder="Số nhà, tên đường, tòa nhà...">
+                <input v-model.trim="form.address_detail" type="text" class="form-control"
+                       placeholder="Số nhà, tên đường, tòa nhà...">
               </div>
             </div>
 

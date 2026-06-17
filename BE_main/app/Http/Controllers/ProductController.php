@@ -14,7 +14,7 @@ class ProductController extends Controller
 {
     private function storeThumbnailFile(StoreProductRequest|UpdateProductRequest $request): ?string
     {
-        if (! $request->hasFile('thumbnail_file')) {
+        if (!$request->hasFile('thumbnail_file')) {
             return null;
         }
 
@@ -25,14 +25,14 @@ class ProductController extends Controller
 
     private function deleteStoredImage(?string $url): void
     {
-        if (! $url) {
+        if (!$url) {
             return;
         }
 
         $path = parse_url($url, PHP_URL_PATH) ?: $url;
         $storagePrefix = '/storage/';
 
-        if (! str_starts_with($path, $storagePrefix)) {
+        if (!str_starts_with($path, $storagePrefix)) {
             return;
         }
 
@@ -59,9 +59,9 @@ class ProductController extends Controller
             ->with([
                 'brand',
                 'category',
-                'productSpecifications' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
-                'productVariants' => fn ($query) => $query
-                    ->when($activeOnly, fn ($variantQuery) => $variantQuery->where('status', 'active'))
+                'productSpecifications' => fn($query) => $query->orderBy('sort_order')->orderBy('id'),
+                'productVariants' => fn($query) => $query
+                    ->when($activeOnly, fn($variantQuery) => $variantQuery->where('status', 'active'))
                     ->orderBy('id')
                     ->with('images'),
             ])
@@ -73,9 +73,9 @@ class ProductController extends Controller
 
         if ($activeOnly) {
             $query
-                ->whereHas('brand', fn ($q) => $q->where('status', 'active'))
-                ->whereHas('category', fn ($q) => $q->where('status', 'active'))
-                ->whereHas('productVariants', fn ($q) => $q->where('status', 'active')->where('quantity', '>', 0));
+                ->whereHas('brand', fn($q) => $q->where('status', 'active'))
+                ->whereHas('category', fn($q) => $q->where('status', 'active'))
+                ->whereHas('productVariants', fn($q) => $q->where('status', 'active')->where('quantity', '>', 0));
         }
 
         if ($request->filled('brand')) {
@@ -122,7 +122,7 @@ class ProductController extends Controller
             'status' => $request->status,
         ]);
 
-        $product->load(['brand', 'category', 'productSpecifications' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'), 'productVariants.images']);
+        $product->load(['brand', 'category', 'productSpecifications' => fn($query) => $query->orderBy('sort_order')->orderBy('id'), 'productVariants.images']);
         $this->attachDisplayPrice($product);
 
         return response()->json([
@@ -134,7 +134,7 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        $product->load(['brand', 'category', 'productSpecifications' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'), 'productVariants.images']);
+        $product->load(['brand', 'category', 'productSpecifications' => fn($query) => $query->orderBy('sort_order')->orderBy('id'), 'productVariants.images']);
         $this->attachDisplayPrice($product);
 
         return response()->json([
@@ -156,7 +156,7 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        $product->load(['brand', 'category', 'productSpecifications' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'), 'productVariants.images']);
+        $product->load(['brand', 'category', 'productSpecifications' => fn($query) => $query->orderBy('sort_order')->orderBy('id'), 'productVariants.images']);
         $this->attachDisplayPrice($product);
 
         return response()->json([
@@ -209,14 +209,14 @@ class ProductController extends Controller
     {
         $product = Product::where('slug', $slug)
             ->where('status', 'active')
-            ->whereHas('brand', fn ($q) => $q->where('status', 'active'))
-            ->whereHas('category', fn ($q) => $q->where('status', 'active'))
-            ->whereHas('productVariants', fn ($q) => $q->where('status', 'active')->where('quantity', '>', 0))
+            ->whereHas('brand', fn($q) => $q->where('status', 'active'))
+            ->whereHas('category', fn($q) => $q->where('status', 'active'))
+            ->whereHas('productVariants', fn($q) => $q->where('status', 'active')->where('quantity', '>', 0))
             ->with([
                 'brand',
                 'category',
-                'productSpecifications' => fn ($query) => $query->orderBy('sort_order')->orderBy('id'),
-                'productVariants' => fn ($query) => $query
+                'productSpecifications' => fn($query) => $query->orderBy('sort_order')->orderBy('id'),
+                'productVariants' => fn($query) => $query
                     ->where('status', 'active')
                     ->orderBy('id')
                     ->with('images'),

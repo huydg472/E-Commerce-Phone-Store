@@ -93,8 +93,10 @@ watch(
 )
 
 onMounted(() => {
-  categoryStore.fetchAll({status: 'active'}).catch(() => {})
-  brandStore.fetchAll({status: 'active'}).catch(() => {})
+  categoryStore.fetchAll({status: 'active'}).catch(() => {
+  })
+  brandStore.fetchAll({status: 'active'}).catch(() => {
+  })
   document.addEventListener('click', handleDocumentClick)
 })
 

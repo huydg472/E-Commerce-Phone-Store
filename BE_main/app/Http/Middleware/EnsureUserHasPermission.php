@@ -15,7 +15,7 @@ class EnsureUserHasPermission
     {
         $user = $request->user();
 
-        if (! $user) {
+        if (!$user) {
             return response()->json([
                 'message' => 'Unauthenticated.',
             ], 401);
@@ -31,13 +31,13 @@ class EnsureUserHasPermission
             return $next($request);
         }
 
-        if (! $user->isAdminOrStaff()) {
+        if (!$user->isAdminOrStaff()) {
             return response()->json([
                 'message' => 'Forbidden.',
             ], 403);
         }
 
-        if (! $user->hasPermission($permissions)) {
+        if (!$user->hasPermission($permissions)) {
             return response()->json([
                 'message' => 'Forbidden.',
             ], 403);

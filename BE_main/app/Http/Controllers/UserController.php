@@ -16,7 +16,7 @@ class UserController extends Controller
             ->with('role')
             ->orderBy('id');
 
-        $search = trim((string) $request->query('q', ''));
+        $search = trim((string)$request->query('q', ''));
 
         if ($search !== '') {
             $query->where(function ($searchQuery) use ($search) {
@@ -33,7 +33,7 @@ class UserController extends Controller
             });
         }
 
-        $perPage = max(1, min((int) $request->integer('per_page', 10), 50));
+        $perPage = max(1, min((int)$request->integer('per_page', 10), 50));
         $user = $query->paginate($perPage)->withQueryString();
 
         return response()->json([

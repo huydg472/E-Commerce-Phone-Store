@@ -91,7 +91,7 @@ class CouponController extends Controller
         $this->authorizeCouponAction(request(), 'coupons.update');
 
         $coupon->update([
-            'is_active' => ! $coupon->is_active,
+            'is_active' => !$coupon->is_active,
         ]);
 
         return response()->json([
@@ -104,8 +104,8 @@ class CouponController extends Controller
     public function apply(ApplyCouponRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $subtotal = (float) $validated['subtotal'];
-        $code = strtoupper(trim((string) $validated['code']));
+        $subtotal = (float)$validated['subtotal'];
+        $code = strtoupper(trim((string)$validated['code']));
 
         $result = DB::transaction(function () use ($code, $subtotal) {
             $coupon = Coupon::query()
@@ -113,13 +113,13 @@ class CouponController extends Controller
                 ->lockForUpdate()
                 ->first();
 
-            if (! $coupon) {
+            if (!$coupon) {
                 throw ValidationException::withMessages([
                     'code' => ['Mã giảm giá không tồn tại.'],
                 ]);
             }
 
-            if (! $coupon->is_active) {
+            if (!$coupon->is_active) {
                 throw ValidationException::withMessages([
                     'code' => ['Mã giảm giá hiện không khả dụng.'],
                 ]);
@@ -143,7 +143,7 @@ class CouponController extends Controller
                 ]);
             }
 
-            if ($subtotal < (float) $coupon->min_order_amount) {
+            if ($subtotal < (float)$coupon->min_order_amount) {
                 throw ValidationException::withMessages([
                     'code' => ['Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã.'],
                 ]);
@@ -170,11 +170,11 @@ class CouponController extends Controller
     private function calculateDiscount(Coupon $coupon, float $subtotal): float
     {
         $discount = $coupon->type === 'percentage'
-            ? $subtotal * ((float) $coupon->value / 100)
-            : (float) $coupon->value;
+            ? $subtotal * ((float)$coupon->value / 100)
+            : (float)$coupon->value;
 
         if ($coupon->max_discount !== null) {
-            $discount = min($discount, (float) $coupon->max_discount);
+            $discount = min($discount, (float)$coupon->max_discount);
         }
 
         return max(min($discount, $subtotal), 0);
@@ -184,7 +184,7 @@ class CouponController extends Controller
     {
         $user = $request->user();
 
-        if (! $user || ! $user->hasPermission($permission)) {
+        if (!$user || !$user->hasPermission($permission)) {
             abort(403, 'Forbidden.');
         }
     }

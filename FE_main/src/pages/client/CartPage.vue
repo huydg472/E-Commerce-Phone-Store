@@ -354,7 +354,7 @@ onMounted(async () => {
               />
             </template>
 
-            <CartEmpty v-else />
+            <CartEmpty v-else/>
 
             <div v-if="mappedCartItems.length" class="continue-shopping">
               <RouterLink to="/products">

@@ -198,7 +198,8 @@ const visibleCategories = computed(() => {
 
     <aside class="preview-card">
       <div class="preview-image">
-        <img :src="form.thumbnail_preview_url || form.thumbnail_url || '/images/default-product.png'" :alt="form.name || 'Xem trước sản phẩm'">
+        <img :src="form.thumbnail_preview_url || form.thumbnail_url || '/images/default-product.png'"
+             :alt="form.name || 'Xem trước sản phẩm'">
       </div>
 
       <div class="preview-body">
@@ -213,7 +214,9 @@ const visibleCategories = computed(() => {
           </span>
           <span>
             <i class="bi bi-grid-3x3-gap"></i>
-            {{ categories.find((category) => String(category.id) === String(form.category_id))?.name || 'Chưa chọn danh mục' }}
+            {{
+              categories.find((category) => String(category.id) === String(form.category_id))?.name || 'Chưa chọn danh mục'
+            }}
           </span>
           <span>
             <i class="bi bi-dot"></i>

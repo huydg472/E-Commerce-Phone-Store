@@ -12,9 +12,9 @@ class OrderInventoryService
     public function normalizeOrderItems(array $items): array
     {
         $groupedItems = collect($items)
-            ->filter(fn ($item) => is_array($item))
-            ->groupBy(fn ($item) => (int) ($item['product_variant_id'] ?? 0))
-            ->filter(fn ($group, $variantId) => (int) $variantId > 0);
+            ->filter(fn($item) => is_array($item))
+            ->groupBy(fn($item) => (int)($item['product_variant_id'] ?? 0))
+            ->filter(fn($group, $variantId) => (int)$variantId > 0);
 
         if ($groupedItems->isEmpty()) {
             throw ValidationException::withMessages([
@@ -22,7 +22,7 @@ class OrderInventoryService
             ]);
         }
 
-        $variantIds = $groupedItems->keys()->map(fn ($value) => (int) $value)->values()->all();
+        $variantIds = $groupedItems->keys()->map(fn($value) => (int)$value)->values()->all();
 
         $variants = ProductVariant::query()
             ->with(['product.brand', 'product.category'])
@@ -35,7 +35,7 @@ class OrderInventoryService
         $subtotal = 0.0;
 
         foreach ($groupedItems as $variantId => $group) {
-            $variant = $variants->get((int) $variantId);
+            $variant = $variants->get((int)$variantId);
 
             if (!$variant) {
                 throw ValidationException::withMessages([
@@ -54,7 +54,7 @@ class OrderInventoryService
                 ]);
             }
 
-            $quantity = (int) $group->sum(fn ($item) => max((int) ($item['quantity'] ?? 0), 0));
+            $quantity = (int)$group->sum(fn($item) => max((int)($item['quantity'] ?? 0), 0));
 
             if ($quantity < 1) {
                 throw ValidationException::withMessages([
@@ -68,7 +68,7 @@ class OrderInventoryService
                 ]);
             }
 
-            $unitPrice = (float) ($variant->sale_price ?? $variant->price ?? 0);
+            $unitPrice = (float)($variant->sale_price ?? $variant->price ?? 0);
             $itemTotal = $unitPrice * $quantity;
 
             $normalizedItems[] = [
@@ -110,7 +110,7 @@ class OrderInventoryService
         $variants = $this->loadVariantsForOrderItems($orderItems);
 
         foreach ($orderItems as $orderItem) {
-            $variant = $variants->get((int) $orderItem->product_variant_id);
+            $variant = $variants->get((int)$orderItem->product_variant_id);
 
             if (!$variant) {
                 throw ValidationException::withMessages([
@@ -118,9 +118,9 @@ class OrderInventoryService
                 ]);
             }
 
-            $quantity = (int) $orderItem->quantity;
-            $reservedBefore = (int) $variant->reserved_quantity;
-            $stockBefore = (int) $variant->quantity;
+            $quantity = (int)$orderItem->quantity;
+            $reservedBefore = (int)$variant->reserved_quantity;
+            $stockBefore = (int)$variant->quantity;
             $hasReservedStock = $reservedBefore >= $quantity;
 
             if ($stockBefore < $quantity) {
@@ -164,7 +164,7 @@ class OrderInventoryService
         $variants = $this->loadVariantsForOrderItems($orderItems);
 
         foreach ($orderItems as $orderItem) {
-            $variant = $variants->get((int) $orderItem->product_variant_id);
+            $variant = $variants->get((int)$orderItem->product_variant_id);
 
             if (!$variant) {
                 throw ValidationException::withMessages([
@@ -172,8 +172,8 @@ class OrderInventoryService
                 ]);
             }
 
-            $quantity = (int) $orderItem->quantity;
-            $stockBefore = (int) $variant->quantity;
+            $quantity = (int)$orderItem->quantity;
+            $stockBefore = (int)$variant->quantity;
 
             $variant->update([
                 'quantity' => $stockBefore + $quantity,
@@ -203,7 +203,7 @@ class OrderInventoryService
         $variants = $this->loadVariantsForOrderItems($orderItems);
 
         foreach ($orderItems as $orderItem) {
-            $variant = $variants->get((int) $orderItem->product_variant_id);
+            $variant = $variants->get((int)$orderItem->product_variant_id);
 
             if (!$variant) {
                 throw ValidationException::withMessages([
@@ -211,8 +211,8 @@ class OrderInventoryService
                 ]);
             }
 
-            $quantity = (int) $orderItem->quantity;
-            $reservedBefore = (int) $variant->reserved_quantity;
+            $quantity = (int)$orderItem->quantity;
+            $reservedBefore = (int)$variant->reserved_quantity;
             $reservedAfter = $reservedBefore + ($direction * $quantity);
 
             if ($reservedAfter < 0) {
@@ -257,7 +257,7 @@ class OrderInventoryService
 
     private function availableQuantity(ProductVariant $variant): int
     {
-        return max((int) $variant->quantity - (int) $variant->reserved_quantity, 0);
+        return max((int)$variant->quantity - (int)$variant->reserved_quantity, 0);
     }
 
     private function formatVariantName(ProductVariant $variant): string

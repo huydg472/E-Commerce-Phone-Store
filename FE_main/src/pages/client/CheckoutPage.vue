@@ -221,9 +221,11 @@ const {
             <div>
               <h3>{{ hasSavedAddresses ? 'Thêm địa chỉ mới' : 'Thêm địa chỉ giao hàng' }}</h3>
               <p>
-                {{ hasSavedAddresses
-                  ? 'Lưu địa chỉ mới vào Sổ địa chỉ, sau đó chọn ngay cho đơn hàng.'
-                  : 'Bạn chưa có địa chỉ nào. Hãy nhập địa chỉ để lưu và dùng cho đơn hàng này.' }}
+                {{
+                  hasSavedAddresses
+                      ? 'Lưu địa chỉ mới vào Sổ địa chỉ, sau đó chọn ngay cho đơn hàng.'
+                      : 'Bạn chưa có địa chỉ nào. Hãy nhập địa chỉ để lưu và dùng cho đơn hàng này.'
+                }}
               </p>
             </div>
             <button type="button" class="address-modal__close" @click="closeAddressModal">
@@ -239,17 +241,20 @@ const {
           <div class="form-grid">
             <div class="form-group">
               <label>Họ và tên <span>*</span></label>
-              <input v-model.trim="addressForm.receiver_name" type="text" class="form-control" placeholder="Nhập họ và tên">
+              <input v-model.trim="addressForm.receiver_name" type="text" class="form-control"
+                     placeholder="Nhập họ và tên">
             </div>
 
             <div class="form-group">
               <label>Số điện thoại <span>*</span></label>
-              <input v-model.trim="addressForm.receiver_phone" type="text" class="form-control" placeholder="Nhập số điện thoại">
+              <input v-model.trim="addressForm.receiver_phone" type="text" class="form-control"
+                     placeholder="Nhập số điện thoại">
             </div>
 
             <div class="form-group">
               <label>Tỉnh/Thành phố <span>*</span></label>
-              <input v-model.trim="addressForm.province" type="text" class="form-control" placeholder="Nhập tỉnh/thành phố">
+              <input v-model.trim="addressForm.province" type="text" class="form-control"
+                     placeholder="Nhập tỉnh/thành phố">
             </div>
 
             <div class="form-group">
@@ -264,7 +269,8 @@ const {
 
             <div class="form-group">
               <label>Địa chỉ cụ thể <span>*</span></label>
-              <input v-model.trim="addressForm.address_detail" type="text" class="form-control" placeholder="Số nhà, tên đường, tòa nhà, căn hộ...">
+              <input v-model.trim="addressForm.address_detail" type="text" class="form-control"
+                     placeholder="Số nhà, tên đường, tòa nhà, căn hộ...">
             </div>
           </div>
 
@@ -282,7 +288,8 @@ const {
             <button type="button" class="btn btn-outline-secondary" @click="closeAddressModal">
               Hủy
             </button>
-            <button type="button" class="btn btn-primary" :disabled="addressModalSaving" @click="saveNewAddressFromModal">
+            <button type="button" class="btn btn-primary" :disabled="addressModalSaving"
+                    @click="saveNewAddressFromModal">
               {{ addressModalSaving ? 'Đang lưu...' : 'Lưu địa chỉ' }}
             </button>
           </div>

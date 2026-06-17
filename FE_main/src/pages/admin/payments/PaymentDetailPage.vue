@@ -1,12 +1,12 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import {computed, onMounted, reactive, ref, watch} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
 import OrderItem from '@/components/order/OrderItem.vue'
 import OrderStatusBadge from '@/components/order/OrderStatusBadge.vue'
 import PaymentStatusBadge from '@/components/payment/PaymentStatusBadge.vue'
-import { usePaymentStore } from '@/stores/paymentStore'
-import { formatCurrency } from '@/utils/formatCurrency'
-import { formatDate } from '@/utils/formatDate'
+import {usePaymentStore} from '@/stores/paymentStore'
+import {formatCurrency} from '@/utils/formatCurrency'
+import {formatDate} from '@/utils/formatDate'
 
 const route = useRoute()
 const router = useRouter()
@@ -89,10 +89,10 @@ watch(payment, (value) => {
 })
 
 watch(
-  () => route.params.id,
-  () => {
-    void loadPage()
-  }
+    () => route.params.id,
+    () => {
+      void loadPage()
+    }
 )
 
 onMounted(loadPage)
@@ -123,7 +123,7 @@ onMounted(loadPage)
     <template v-else-if="payment">
       <div class="hero-card">
         <div class="hero-main">
-          <PaymentStatusBadge :status="payment.payment_status" />
+          <PaymentStatusBadge :status="payment.payment_status"/>
           <div class="hero-line">
             <strong>Mã giao dịch:</strong>
             <span>{{ payment.transaction_code || 'Chưa có' }}</span>
@@ -171,7 +171,7 @@ onMounted(loadPage)
             </div>
             <div>
               <span>Trạng thái</span>
-              <PaymentStatusBadge :status="payment.payment_status" />
+              <PaymentStatusBadge :status="payment.payment_status"/>
             </div>
             <div>
               <span>Số tiền</span>
@@ -201,7 +201,7 @@ onMounted(loadPage)
             <div v-for="item in orderSummary" :key="item.label">
               <span>{{ item.label }}</span>
               <strong v-if="item.label === 'Trạng thái đơn'">
-                <OrderStatusBadge :status="item.value" />
+                <OrderStatusBadge :status="item.value"/>
               </strong>
               <strong v-else>{{ item.value }}</strong>
             </div>
@@ -217,7 +217,7 @@ onMounted(loadPage)
           <h2>Sản phẩm trong đơn</h2>
 
           <div v-if="orderItems.length" class="item-list">
-            <OrderItem v-for="item in orderItems" :key="item.id" :item="item" />
+            <OrderItem v-for="item in orderItems" :key="item.id" :item="item"/>
           </div>
 
           <div v-else class="empty-state">

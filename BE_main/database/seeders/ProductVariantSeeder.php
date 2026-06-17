@@ -21,7 +21,7 @@ class ProductVariantSeeder extends Seeder
     {
         $tokens = preg_split('/[^A-Z0-9]+/', Str::upper(Str::ascii($product->slug)), -1, PREG_SPLIT_NO_EMPTY) ?: [];
         $productCode = collect($tokens)
-            ->map(fn (string $token) => preg_match('/\d/', $token) ? $token : Str::substr($token, 0, 1))
+            ->map(fn(string $token) => preg_match('/\d/', $token) ? $token : Str::substr($token, 0, 1))
             ->join('');
 
         return implode('-', [
@@ -160,7 +160,7 @@ class ProductVariantSeeder extends Seeder
                             'storage' => $storage,
                             'ram' => $profile['ram'],
                             'sku' => $sku,
-                            'import_price' => (int) round($price * 0.82, -3),
+                            'import_price' => (int)round($price * 0.82, -3),
                             'price' => $price,
                             'sale_price' => $salePrice,
                             'quantity' => 8 + (($product->id + $colorIndex + $storageIndex) % 28),

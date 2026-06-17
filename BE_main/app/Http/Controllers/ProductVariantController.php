@@ -13,7 +13,7 @@ class ProductVariantController extends Controller
 {
     private function codePart(?string $value): string
     {
-        $code = Str::upper(Str::ascii((string) $value));
+        $code = Str::upper(Str::ascii((string)$value));
         $code = preg_replace('/[^A-Z0-9]+/', '', $code) ?: '';
 
         return $code ?: 'NA';
@@ -24,7 +24,7 @@ class ProductVariantController extends Controller
         $source = Str::upper(Str::ascii($product->slug ?: $product->name));
         $tokens = preg_split('/[^A-Z0-9]+/', $source, -1, PREG_SPLIT_NO_EMPTY) ?: [];
         $code = collect($tokens)
-            ->map(fn (string $token) => preg_match('/\d/', $token) ? $token : Str::substr($token, 0, 1))
+            ->map(fn(string $token) => preg_match('/\d/', $token) ? $token : Str::substr($token, 0, 1))
             ->join('');
 
         return Str::limit($code ?: 'SP' . $product->id, 30, '');
@@ -44,7 +44,7 @@ class ProductVariantController extends Controller
         $suffix = 2;
 
         while (ProductVariant::where('sku', $sku)
-            ->when($ignoreId, fn ($query) => $query->whereKeyNot($ignoreId))
+            ->when($ignoreId, fn($query) => $query->whereKeyNot($ignoreId))
             ->exists()) {
             $sku = Str::limit($baseSku, 95, '') . '-' . $suffix;
             $suffix++;
@@ -56,7 +56,7 @@ class ProductVariantController extends Controller
     public function index()
     {
         $productVariant = ProductVariant::query()
-            ->when(request()->filled('is_featured'), fn ($query) => $query->where('is_featured', request()->boolean('is_featured')))
+            ->when(request()->filled('is_featured'), fn($query) => $query->where('is_featured', request()->boolean('is_featured')))
             ->with(['product', 'images'])
             ->orderBy('id')
             ->get();

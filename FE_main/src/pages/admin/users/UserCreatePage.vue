@@ -90,17 +90,17 @@ onMounted(async () => {
     </div>
 
     <UserForm
-      v-else
-      :form="form"
-      :roles="roles"
-      :error-message="loadingError"
-      :submitting="isSubmitting"
-      submit-label="Tạo mới"
-      cancel-to="/admin/users"
-      :show-password-fields="true"
-      :show-email-verified-at="false"
-      :password-required="true"
-      @submit="handleSubmit"
+        v-else
+        :form="form"
+        :roles="roles"
+        :error-message="loadingError"
+        :submitting="isSubmitting"
+        submit-label="Tạo mới"
+        cancel-to="/admin/users"
+        :show-password-fields="true"
+        :show-email-verified-at="false"
+        :password-required="true"
+        @submit="handleSubmit"
     />
   </div>
 </template>

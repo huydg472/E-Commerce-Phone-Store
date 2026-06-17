@@ -15,7 +15,7 @@ class OrderSeeder extends Seeder
         $customerRoleId = Role::where('name', 'customer')->value('id');
 
         $users = User::query()
-            ->when($customerRoleId, fn ($query) => $query->where('role_id', $customerRoleId))
+            ->when($customerRoleId, fn($query) => $query->where('role_id', $customerRoleId))
             ->limit(5)
             ->get();
 
@@ -36,7 +36,7 @@ class OrderSeeder extends Seeder
                 ]);
 
             $isCompleted = $index % 3 === 0;
-            $orderCode = 'ORD-DEMO-' . str_pad((string) ($index + 1), 4, '0', STR_PAD_LEFT);
+            $orderCode = 'ORD-DEMO-' . str_pad((string)($index + 1), 4, '0', STR_PAD_LEFT);
 
             Order::updateOrCreate(
                 ['order_code' => $orderCode],

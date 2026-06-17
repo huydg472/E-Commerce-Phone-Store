@@ -1,10 +1,10 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import {computed, onMounted, ref} from 'vue'
+import {useRouter} from 'vue-router'
 import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
-import { useClientPagination } from '@/composables/useClientPagination.js'
-import { useStockLogStore } from '@/stores/stockLogStore'
-import { formatDate } from '@/utils/formatDate'
+import {useClientPagination} from '@/composables/useClientPagination.js'
+import {useStockLogStore} from '@/stores/stockLogStore'
+import {formatDate} from '@/utils/formatDate'
 
 const router = useRouter()
 const stockLogStore = useStockLogStore()
@@ -46,19 +46,19 @@ const getProductName = (log) => {
   const variant = getVariant(log)
 
   return (
-    product?.name ||
-    log?.product_name ||
-    variant?.product_name ||
-    variant?.product?.name ||
-    'Không rõ'
+      product?.name ||
+      log?.product_name ||
+      variant?.product_name ||
+      variant?.product?.name ||
+      'Không rõ'
   )
 }
 
 const getVariantSummary = (log) => {
   const variant = getVariant(log)
   const parts = [variant?.color, variant?.storage, variant?.ram]
-    .map((value) => String(value ?? '').trim())
-    .filter(Boolean)
+      .map((value) => String(value ?? '').trim())
+      .filter(Boolean)
 
   return parts.length ? parts.join(' · ') : 'Không màu'
 }
@@ -78,18 +78,18 @@ const filteredLogs = computed(() => {
     const order = log.order || {}
 
     const matchesQuery = !query
-      || [
-        variant.sku,
-        variant.color,
-        variant.storage,
-        product.name,
-        user.name,
-        user.email,
-        order.order_code,
-        log.note,
-      ]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query))
+        || [
+          variant.sku,
+          variant.color,
+          variant.storage,
+          product.name,
+          user.name,
+          user.email,
+          order.order_code,
+          log.note,
+        ]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(query))
 
     const matchesType = typeFilter.value === 'all' || log.type === typeFilter.value
 
@@ -183,7 +183,7 @@ onMounted(loadPage)
     <div class="toolbar-card">
       <div class="search-box">
         <i class="bi bi-search"></i>
-        <input v-model.trim="searchQuery" type="text" placeholder="Tìm theo SKU, sản phẩm, người thao tác..." />
+        <input v-model.trim="searchQuery" type="text" placeholder="Tìm theo SKU, sản phẩm, người thao tác..."/>
       </div>
 
       <select v-model="typeFilter" class="filter-select">
@@ -217,71 +217,71 @@ onMounted(loadPage)
       <div v-else class="table-wrap">
         <table class="data-table">
           <colgroup>
-            <col class="col-product" />
-            <col class="col-user" />
-            <col class="col-order" />
-            <col class="col-type" />
-            <col class="col-before" />
-            <col class="col-change" />
-            <col class="col-after" />
-            <col class="col-time" />
-            <col class="col-note" />
+            <col class="col-product"/>
+            <col class="col-user"/>
+            <col class="col-order"/>
+            <col class="col-type"/>
+            <col class="col-before"/>
+            <col class="col-change"/>
+            <col class="col-after"/>
+            <col class="col-time"/>
+            <col class="col-note"/>
           </colgroup>
 
           <thead>
-            <tr>
-              <th>Sản phẩm</th>
-              <th>Người thao tác</th>
-              <th>Đơn hàng</th>
-              <th>Loại</th>
-              <th>Tồn trước</th>
-              <th>Thay đổi</th>
-              <th>Tồn sau</th>
-              <th>Thời gian</th>
-              <th>Ghi chú</th>
-            </tr>
+          <tr>
+            <th>Sản phẩm</th>
+            <th>Người thao tác</th>
+            <th>Đơn hàng</th>
+            <th>Loại</th>
+            <th>Tồn trước</th>
+            <th>Thay đổi</th>
+            <th>Tồn sau</th>
+            <th>Thời gian</th>
+            <th>Ghi chú</th>
+          </tr>
           </thead>
 
           <tbody>
-            <tr v-for="log in paginatedLogs" :key="log.id">
-              <td>
-                <strong>{{ getProductName(log) }}</strong>
-                <div class="muted">
-                  {{ getVariantSku(log) }} ·
-                  {{ getVariantSummary(log) }}
-                </div>
-              </td>
-              <td>
-                <strong>{{ log.user?.name || 'Hệ thống' }}</strong>
-                <div class="muted">{{ log.user?.email || 'Tự động' }}</div>
-              </td>
-              <td>
-                <strong>{{ log.order?.order_code || 'Không có' }}</strong>
-                <div class="muted">#{{ log.order_id || 'N/A' }}</div>
-              </td>
-              <td>
+          <tr v-for="log in paginatedLogs" :key="log.id">
+            <td>
+              <strong>{{ getProductName(log) }}</strong>
+              <div class="muted">
+                {{ getVariantSku(log) }} ·
+                {{ getVariantSummary(log) }}
+              </div>
+            </td>
+            <td>
+              <strong>{{ log.user?.name || 'Hệ thống' }}</strong>
+              <div class="muted">{{ log.user?.email || 'Tự động' }}</div>
+            </td>
+            <td>
+              <strong>{{ log.order?.order_code || 'Không có' }}</strong>
+              <div class="muted">#{{ log.order_id || 'N/A' }}</div>
+            </td>
+            <td>
                 <span class="type-pill" :class="typeClasses[log.type] || 'default'">
                   {{ typeLabel(log.type) }}
                 </span>
-              </td>
-              <td>
-                <strong>{{ log.quantity_before }}</strong>
-              </td>
-              <td>
-                <strong :class="Number(log.quantity_change) >= 0 ? 'increase' : 'decrease'">
-                  {{ log.quantity_change > 0 ? `+${log.quantity_change}` : log.quantity_change }}
-                </strong>
-              </td>
-              <td>
-                <strong>{{ log.quantity_after }}</strong>
-              </td>
-              <td>
-                <span>{{ formatDate(log.created_at) }}</span>
-              </td>
-              <td>
-                <span class="note-text">{{ log.note || 'Không có ghi chú' }}</span>
-              </td>
-            </tr>
+            </td>
+            <td>
+              <strong>{{ log.quantity_before }}</strong>
+            </td>
+            <td>
+              <strong :class="Number(log.quantity_change) >= 0 ? 'increase' : 'decrease'">
+                {{ log.quantity_change > 0 ? `+${log.quantity_change}` : log.quantity_change }}
+              </strong>
+            </td>
+            <td>
+              <strong>{{ log.quantity_after }}</strong>
+            </td>
+            <td>
+              <span>{{ formatDate(log.created_at) }}</span>
+            </td>
+            <td>
+              <span class="note-text">{{ log.note || 'Không có ghi chú' }}</span>
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -400,10 +400,21 @@ onMounted(loadPage)
   font-size: 22px;
 }
 
-.stat-icon.blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-.stat-icon.green { background: linear-gradient(135deg, #16a34a, #22c55e); }
-.stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #fb923c); }
-.stat-icon.slate { background: linear-gradient(135deg, #475569, #64748b); }
+.stat-icon.blue {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+.stat-icon.green {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.stat-icon.orange {
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+}
+
+.stat-icon.slate {
+  background: linear-gradient(135deg, #475569, #64748b);
+}
 
 .stat-content strong {
   display: block;
@@ -606,15 +617,41 @@ onMounted(loadPage)
   color: #2563eb;
 }
 
-.col-product { width: 22%; }
-.col-user { width: 14%; }
-.col-order { width: 12%; }
-.col-type { width: 10%; }
-.col-before { width: 9%; }
-.col-change { width: 9%; }
-.col-after { width: 9%; }
-.col-time { width: 13%; }
-.col-note { width: 12%; }
+.col-product {
+  width: 22%;
+}
+
+.col-user {
+  width: 14%;
+}
+
+.col-order {
+  width: 12%;
+}
+
+.col-type {
+  width: 10%;
+}
+
+.col-before {
+  width: 9%;
+}
+
+.col-change {
+  width: 9%;
+}
+
+.col-after {
+  width: 9%;
+}
+
+.col-time {
+  width: 13%;
+}
+
+.col-note {
+  width: 12%;
+}
 
 @media (max-width: 1199.98px) {
   .hero-card {

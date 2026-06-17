@@ -101,7 +101,7 @@ const {
                   class="favorite-detail-btn"
                   :class="{ active: currentProductFavorite }"
                   :disabled="favoriteLoading || !currentProductVariantId"
-              @click="handleFavoriteToggle"
+                  @click="handleFavoriteToggle"
               >
                 <i :class="currentProductFavorite ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
                 {{ currentProductFavorite ? 'Đã yêu thích' : 'Yêu thích' }}
@@ -170,8 +170,8 @@ const {
             </div>
           </div>
 
-        <div class="related-section">
-          <div class="related-header">
+          <div class="related-section">
+            <div class="related-header">
               <h2>Sản phẩm liên quan</h2>
 
               <button type="button">

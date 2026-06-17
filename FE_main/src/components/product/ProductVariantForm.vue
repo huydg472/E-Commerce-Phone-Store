@@ -58,7 +58,8 @@ defineEmits(['close', 'submit'])
             </div>
             <div class="field">
               <label>Dung lượng</label>
-              <input v-model="form.storage" type="text" class="control" :class="{ invalid: fieldErrors.storage }" placeholder="128GB">
+              <input v-model="form.storage" type="text" class="control" :class="{ invalid: fieldErrors.storage }"
+                     placeholder="128GB">
               <small v-if="fieldErrors.storage" class="field-error">{{ fieldErrors.storage }}</small>
             </div>
           </div>
@@ -66,12 +67,14 @@ defineEmits(['close', 'submit'])
           <div class="grid-2">
             <div class="field">
               <label>RAM</label>
-              <input v-model="form.ram" type="text" class="control" :class="{ invalid: fieldErrors.ram }" placeholder="8GB">
+              <input v-model="form.ram" type="text" class="control" :class="{ invalid: fieldErrors.ram }"
+                     placeholder="8GB">
               <small v-if="fieldErrors.ram" class="field-error">{{ fieldErrors.ram }}</small>
             </div>
             <div class="field">
               <label>SKU</label>
-              <input v-model="form.sku" type="text" class="control readonly-control" :class="{ invalid: fieldErrors.sku }" readonly>
+              <input v-model="form.sku" type="text" class="control readonly-control"
+                     :class="{ invalid: fieldErrors.sku }" readonly>
               <small class="field-hint">SKU tu sinh theo san pham, mau sac, dung luong va RAM.</small>
               <small v-if="fieldErrors.sku" class="field-error">{{ fieldErrors.sku }}</small>
             </div>
@@ -80,17 +83,20 @@ defineEmits(['close', 'submit'])
           <div class="grid-3">
             <div class="field">
               <label>Giá nhập</label>
-              <input v-model="form.import_price" type="number" min="0" class="control" :class="{ invalid: fieldErrors.import_price }">
+              <input v-model="form.import_price" type="number" min="0" class="control"
+                     :class="{ invalid: fieldErrors.import_price }">
               <small v-if="fieldErrors.import_price" class="field-error">{{ fieldErrors.import_price }}</small>
             </div>
             <div class="field">
               <label>Giá bán</label>
-              <input v-model="form.price" type="number" min="0" class="control" :class="{ invalid: fieldErrors.price }" required>
+              <input v-model="form.price" type="number" min="0" class="control" :class="{ invalid: fieldErrors.price }"
+                     required>
               <small v-if="fieldErrors.price" class="field-error">{{ fieldErrors.price }}</small>
             </div>
             <div class="field">
               <label>Giá sale</label>
-              <input v-model="form.sale_price" type="number" min="0" class="control" :class="{ invalid: fieldErrors.sale_price }">
+              <input v-model="form.sale_price" type="number" min="0" class="control"
+                     :class="{ invalid: fieldErrors.sale_price }">
               <small v-if="fieldErrors.sale_price" class="field-error">{{ fieldErrors.sale_price }}</small>
             </div>
           </div>
@@ -98,7 +104,8 @@ defineEmits(['close', 'submit'])
           <div class="grid-2">
             <div class="field">
               <label>Số lượng</label>
-              <input v-model="form.quantity" type="number" min="0" class="control" :class="{ invalid: fieldErrors.quantity }">
+              <input v-model="form.quantity" type="number" min="0" class="control"
+                     :class="{ invalid: fieldErrors.quantity }">
               <small v-if="fieldErrors.quantity" class="field-error">{{ fieldErrors.quantity }}</small>
             </div>
             <div class="field">

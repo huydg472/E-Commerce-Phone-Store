@@ -96,6 +96,6 @@ class User extends Authenticatable
 
         return collect($this->role?->permissions ?? [])
             ->pluck('name')
-            ->contains(fn ($name) => in_array($name, $permissionNames, true));
+            ->contains(fn($name) => in_array($name, $permissionNames, true));
     }
 }

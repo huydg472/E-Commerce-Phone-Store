@@ -161,7 +161,8 @@ const saveChanges = async () => {
       order_status: form.order_status,
       note: form.note.trim() || null,
     })
-    await dashboardStore.fetchDashboard().catch(() => {})
+    await dashboardStore.fetchDashboard().catch(() => {
+    })
   } catch (error) {
     errorMessage.value = error.response?.data?.message || 'Không cập nhật được đơn hàng.'
   } finally {
@@ -217,7 +218,7 @@ onMounted(loadOrder)
     <template v-else-if="order">
       <div class="hero-card">
         <div class="hero-main">
-          <OrderStatusBadge :status="order.order_status" />
+          <OrderStatusBadge :status="order.order_status"/>
           <div class="hero-line">
             <strong>Mã đơn:</strong>
             <span>{{ order.order_code || `#${order.id}` }}</span>
@@ -231,7 +232,7 @@ onMounted(loadOrder)
         <div class="hero-meta">
           <div class="meta-chip">
             <span>Thanh toán</span>
-            <PaymentStatusBadge :status="order.payment_status" />
+            <PaymentStatusBadge :status="order.payment_status"/>
           </div>
           <div class="meta-chip">
             <span>Phương thức</span>
@@ -273,7 +274,7 @@ onMounted(loadOrder)
             </div>
             <div>
               <span>Trạng thái giao</span>
-              <OrderStatusBadge :status="order.order_status" />
+              <OrderStatusBadge :status="order.order_status"/>
             </div>
           </div>
 
@@ -304,7 +305,7 @@ onMounted(loadOrder)
           <h2>Sản phẩm</h2>
 
           <div v-if="orderItems.length" class="item-list">
-            <OrderItem v-for="item in orderItems" :key="item.id" :item="item" />
+            <OrderItem v-for="item in orderItems" :key="item.id" :item="item"/>
           </div>
 
           <div v-else class="empty-state">
@@ -323,15 +324,15 @@ onMounted(loadOrder)
 
           <div class="summary-line">
             <span>Thanh toán</span>
-            <PaymentStatusBadge :status="order.payment_status" />
+            <PaymentStatusBadge :status="order.payment_status"/>
           </div>
 
           <div class="summary-line">
             <span>Trạng thái hiện tại</span>
-            <OrderStatusBadge :status="form.order_status" />
+            <OrderStatusBadge :status="form.order_status"/>
           </div>
 
-          <OrderTimeline :steps="statusSteps" />
+          <OrderTimeline :steps="statusSteps"/>
 
           <div class="form-stack">
             <label>

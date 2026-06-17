@@ -452,11 +452,11 @@ const groupProductByRom = (product, placeholderImage = '') => {
     const variants = getVisibleProductVariants(product)
 
     if (!allVariants.length) {
-      return [createRomProductCard(product, '', [], placeholderImage)]
+        return [createRomProductCard(product, '', [], placeholderImage)]
     }
 
     if (!variants.length) {
-      return []
+        return []
     }
 
     const romGroups = new Map()

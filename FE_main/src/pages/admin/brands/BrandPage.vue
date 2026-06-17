@@ -177,7 +177,8 @@ onMounted(loadBrands)
       <div class="hero-copy">
         <p class="eyebrow">Quản lý thương hiệu</p>
         <h1>Danh sách thương hiệu</h1>
-        <p class="subtitle">Quản lý thương hiệu, logo, loại thương hiệu, trạng thái hiển thị và mô tả trong cùng một màn hình.</p>
+        <p class="subtitle">Quản lý thương hiệu, logo, loại thương hiệu, trạng thái hiển thị và mô tả trong cùng một màn
+          hình.</p>
 
         <div class="hero-actions">
           <button type="button" class="primary-action" @click="openCreateModal">

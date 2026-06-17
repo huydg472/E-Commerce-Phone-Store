@@ -325,8 +325,8 @@ const {
                 <div v-if="selectedOrderItems.length" class="popup-item-list">
                   <article v-for="item in selectedOrderItems" :key="item.id" class="popup-item-row">
                     <img
-                      :src="getItemImage(item)"
-                      :alt="item.product_name"
+                        :src="getItemImage(item)"
+                        :alt="item.product_name"
                     />
                     <div class="popup-item-info">
                       <h4>{{ item.product_name }}</h4>

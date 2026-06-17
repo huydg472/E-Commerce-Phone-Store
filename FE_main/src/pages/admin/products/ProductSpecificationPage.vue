@@ -332,15 +332,15 @@ onMounted(loadData)
     </template>
 
     <ProductSpecificationForm
-      :visible="showModal"
-      :title="editingSpecificationId ? 'Chỉnh sửa thông số' : 'Thêm thông số'"
-      :product-name="product?.name || ''"
-      :form="form"
-      :field-errors="fieldErrors"
-      :form-error="formError"
-      :saving="saving"
-      @close="closeModal"
-      @submit="handleSubmit"
+        :visible="showModal"
+        :title="editingSpecificationId ? 'Chỉnh sửa thông số' : 'Thêm thông số'"
+        :product-name="product?.name || ''"
+        :form="form"
+        :field-errors="fieldErrors"
+        :form-error="formError"
+        :saving="saving"
+        @close="closeModal"
+        @submit="handleSubmit"
     />
 
     <Teleport v-if="false" to="body">

@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('product_variant_images', function (Blueprint $table) {
@@ -18,7 +17,7 @@ return new class extends Migration
 
             $table->string('image_url', 500);
             $table->string('alt_text', 225)->nullable();
-            $table->integer('sort_order')->default(0);           
+            $table->integer('sort_order')->default(0);
             $table->timestamps();
 
             $table->unique(['product_variant_id', 'image_url']);

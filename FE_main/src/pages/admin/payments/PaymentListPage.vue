@@ -1,12 +1,12 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import {computed, onMounted, ref} from 'vue'
+import {useRouter} from 'vue-router'
 import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
 import PaymentStatusBadge from '@/components/payment/PaymentStatusBadge.vue'
-import { useClientPagination } from '@/composables/useClientPagination.js'
-import { usePaymentStore } from '@/stores/paymentStore'
-import { formatCurrency } from '@/utils/formatCurrency'
-import { formatDate } from '@/utils/formatDate'
+import {useClientPagination} from '@/composables/useClientPagination.js'
+import {usePaymentStore} from '@/stores/paymentStore'
+import {formatCurrency} from '@/utils/formatCurrency'
+import {formatDate} from '@/utils/formatDate'
 
 const router = useRouter()
 const paymentStore = usePaymentStore()
@@ -42,17 +42,17 @@ const filteredPayments = computed(() => {
     const order = payment.order || {}
     const customer = order.user || {}
     const matchesQuery = !query
-      || [
-        payment.transaction_code,
-        payment.payment_method,
-        payment.payment_status,
-        order.order_code,
-        order.receiver_name,
-        customer.name,
-        customer.email,
-      ]
-        .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(query))
+        || [
+          payment.transaction_code,
+          payment.payment_method,
+          payment.payment_status,
+          order.order_code,
+          order.receiver_name,
+          customer.name,
+          customer.email,
+        ]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(query))
 
     const matchesStatus = statusFilter.value === 'all' || payment.payment_status === statusFilter.value
     const matchesMethod = methodFilter.value === 'all' || payment.payment_method === methodFilter.value
@@ -164,7 +164,7 @@ onMounted(loadPage)
     <div class="toolbar-card">
       <div class="search-box">
         <i class="bi bi-search"></i>
-        <input v-model.trim="searchQuery" type="text" placeholder="Tìm theo mã giao dịch, đơn hàng, khách..." />
+        <input v-model.trim="searchQuery" type="text" placeholder="Tìm theo mã giao dịch, đơn hàng, khách..."/>
       </div>
 
       <select v-model="statusFilter" class="filter-select">
@@ -206,66 +206,69 @@ onMounted(loadPage)
       <div v-else class="table-wrap">
         <table class="data-table">
           <colgroup>
-            <col class="col-id" />
-            <col class="col-order" />
-            <col class="col-customer" />
-            <col class="col-method" />
-            <col class="col-status" />
-            <col class="col-amount" />
-            <col class="col-date" />
-            <col class="col-actions" />
+            <col class="col-id"/>
+            <col class="col-order"/>
+            <col class="col-customer"/>
+            <col class="col-method"/>
+            <col class="col-status"/>
+            <col class="col-amount"/>
+            <col class="col-date"/>
+            <col class="col-actions"/>
           </colgroup>
 
           <thead>
-            <tr>
-              <th>Mã TT</th>
-              <th>Đơn hàng</th>
-              <th>Khách hàng</th>
-              <th>Phương thức</th>
-              <th>Trạng thái</th>
-              <th>Số tiền</th>
-              <th>Ngày thanh toán</th>
-              <th>Thao tác</th>
-            </tr>
+          <tr>
+            <th>Mã TT</th>
+            <th>Đơn hàng</th>
+            <th>Khách hàng</th>
+            <th>Phương thức</th>
+            <th>Trạng thái</th>
+            <th>Số tiền</th>
+            <th>Ngày thanh toán</th>
+            <th>Thao tác</th>
+          </tr>
           </thead>
 
           <tbody>
-            <tr v-for="payment in paginatedPayments" :key="payment.id">
-              <td>
-                <strong>#{{ payment.id }}</strong>
-                <div class="muted">{{ payment.transaction_code || 'Không có mã GD' }}</div>
-              </td>
-              <td>
-                <strong>{{ payment.order?.order_code || `#${payment.order_id}` }}</strong>
-                <div class="muted">Đơn #{{ payment.order_id }}</div>
-              </td>
-              <td>
-                <strong>{{ payment.order?.user?.name || payment.order?.receiver_name || 'Không rõ' }}</strong>
-                <div class="muted">{{ payment.order?.user?.email || payment.order?.receiver_phone || 'Chưa có liên hệ' }}</div>
-              </td>
-              <td>
-                <span class="method-pill">{{ paymentMethodLabel(payment.payment_method) }}</span>
-              </td>
-              <td>
-                <PaymentStatusBadge :status="payment.payment_status" />
-              </td>
-              <td>
-                <strong>{{ formatCurrency(payment.amount || 0) }}</strong>
-              </td>
-              <td>
-                <span>{{ formatDate(payment.paid_at || payment.updated_at || payment.created_at) }}</span>
-              </td>
-              <td>
-                <div class="action-group">
-                  <button type="button" class="action-btn view" @click="goDetail(payment.id)">
-                    <i class="bi bi-eye"></i>
-                  </button>
-                  <button type="button" class="action-btn danger" @click="removePayment(payment)">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
+          <tr v-for="payment in paginatedPayments" :key="payment.id">
+            <td>
+              <strong>#{{ payment.id }}</strong>
+              <div class="muted">{{ payment.transaction_code || 'Không có mã GD' }}</div>
+            </td>
+            <td>
+              <strong>{{ payment.order?.order_code || `#${payment.order_id}` }}</strong>
+              <div class="muted">Đơn #{{ payment.order_id }}</div>
+            </td>
+            <td>
+              <strong>{{ payment.order?.user?.name || payment.order?.receiver_name || 'Không rõ' }}</strong>
+              <div class="muted">{{
+                  payment.order?.user?.email || payment.order?.receiver_phone || 'Chưa có liên hệ'
+                }}
+              </div>
+            </td>
+            <td>
+              <span class="method-pill">{{ paymentMethodLabel(payment.payment_method) }}</span>
+            </td>
+            <td>
+              <PaymentStatusBadge :status="payment.payment_status"/>
+            </td>
+            <td>
+              <strong>{{ formatCurrency(payment.amount || 0) }}</strong>
+            </td>
+            <td>
+              <span>{{ formatDate(payment.paid_at || payment.updated_at || payment.created_at) }}</span>
+            </td>
+            <td>
+              <div class="action-group">
+                <button type="button" class="action-btn view" @click="goDetail(payment.id)">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button type="button" class="action-btn danger" @click="removePayment(payment)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -384,10 +387,21 @@ onMounted(loadPage)
   font-size: 22px;
 }
 
-.stat-icon.blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-.stat-icon.green { background: linear-gradient(135deg, #16a34a, #22c55e); }
-.stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #fb923c); }
-.stat-icon.slate { background: linear-gradient(135deg, #475569, #64748b); }
+.stat-icon.blue {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+.stat-icon.green {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.stat-icon.orange {
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+}
+
+.stat-icon.slate {
+  background: linear-gradient(135deg, #475569, #64748b);
+}
 
 .stat-content strong {
   display: block;
@@ -577,14 +591,37 @@ onMounted(loadPage)
   color: #2563eb;
 }
 
-.col-id { width: 14%; }
-.col-order { width: 15%; }
-.col-customer { width: 18%; }
-.col-method { width: 12%; }
-.col-status { width: 14%; }
-.col-amount { width: 12%; }
-.col-date { width: 15%; }
-.col-actions { width: 10%; }
+.col-id {
+  width: 14%;
+}
+
+.col-order {
+  width: 15%;
+}
+
+.col-customer {
+  width: 18%;
+}
+
+.col-method {
+  width: 12%;
+}
+
+.col-status {
+  width: 14%;
+}
+
+.col-amount {
+  width: 12%;
+}
+
+.col-date {
+  width: 15%;
+}
+
+.col-actions {
+  width: 10%;
+}
 
 @media (max-width: 1199.98px) {
   .hero-card {

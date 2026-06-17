@@ -16,7 +16,7 @@ class UpdateCouponRequest extends FormRequest
     {
         if ($this->has('code')) {
             $this->merge([
-                'code' => strtoupper(trim((string) $this->input('code'))),
+                'code' => strtoupper(trim((string)$this->input('code'))),
             ]);
         }
     }

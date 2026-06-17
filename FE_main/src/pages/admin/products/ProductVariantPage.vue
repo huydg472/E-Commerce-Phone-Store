@@ -486,15 +486,15 @@ onMounted(loadData)
     </template>
 
     <ProductVariantForm
-      :visible="showModal"
-      :title="editingVariantId ? 'Chỉnh sửa biến thể' : 'Thêm biến thể'"
-      :product-name="product?.name || ''"
-      :form="form"
-      :field-errors="fieldErrors"
-      :form-error="formError"
-      :saving="saving"
-      @close="closeModal"
-      @submit="handleSubmit"
+        :visible="showModal"
+        :title="editingVariantId ? 'Chỉnh sửa biến thể' : 'Thêm biến thể'"
+        :product-name="product?.name || ''"
+        :form="form"
+        :field-errors="fieldErrors"
+        :form-error="formError"
+        :saving="saving"
+        @close="closeModal"
+        @submit="handleSubmit"
     />
 
     <Teleport v-if="false" to="body">

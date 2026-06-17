@@ -59,7 +59,8 @@ defineEmits(['close', 'submit'])
 
             <div class="field">
               <label>Thứ tự hiển thị</label>
-              <input v-model="form.sort_order" type="number" min="0" class="control" :class="{ invalid: fieldErrors.sort_order }">
+              <input v-model="form.sort_order" type="number" min="0" class="control"
+                     :class="{ invalid: fieldErrors.sort_order }">
               <small v-if="fieldErrors.sort_order" class="field-error">{{ fieldErrors.sort_order }}</small>
               <small v-else class="field-hint">Không được trùng với thứ tự đã có trong cùng sản phẩm.</small>
             </div>

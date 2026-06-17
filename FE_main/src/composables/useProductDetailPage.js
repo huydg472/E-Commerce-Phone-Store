@@ -403,8 +403,14 @@ export function useProductDetailPage() {
         const primaryVariant = selectedVariant ?? getVariants(product)[0] ?? null
         const defaultSpecs = [
             {label: 'Thương hiệu', value: getFirstValue(product?.brand?.name, product?.brand_name, product?.brandName)},
-            {label: 'Danh mục', value: getFirstValue(product?.category?.name, product?.category_name, product?.categoryName)},
-            {label: 'Dung lượng', value: getFirstValue(getVariantRom(primaryVariant), product?.storage, product?.capacity)},
+            {
+                label: 'Danh mục',
+                value: getFirstValue(product?.category?.name, product?.category_name, product?.categoryName)
+            },
+            {
+                label: 'Dung lượng',
+                value: getFirstValue(getVariantRom(primaryVariant), product?.storage, product?.capacity)
+            },
             {
                 label: 'Màu sắc',
                 value: getFirstValue(primaryVariant?.color?.name, primaryVariant?.color_name, primaryVariant?.colorName, product?.color_name, product?.color),
@@ -585,8 +591,10 @@ export function useProductDetailPage() {
             activeBottomTab.value = 'description'
 
             if (authStore.isLoggedIn) {
-                await cartStore.fetchAll().catch(() => {})
-                await favoriteStore.ensureLoaded().catch(() => {})
+                await cartStore.fetchAll().catch(() => {
+                })
+                await favoriteStore.ensureLoaded().catch(() => {
+                })
             }
         } catch (error) {
             currentProduct.value = null

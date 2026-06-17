@@ -412,17 +412,17 @@ onMounted(loadData)
     </template>
 
     <ProductImageUpload
-      :visible="showModal"
-      :title="editingImageId ? 'Chỉnh sửa ảnh' : 'Thêm ảnh'"
-      :product-name="product?.name || ''"
-      :form="form"
-      :variants="currentVariants"
-      :field-errors="fieldErrors"
-      :form-error="formError"
-      :saving="saving"
-      @close="closeModal"
-      @submit="handleSubmit"
-      @image-change="handleImageChange"
+        :visible="showModal"
+        :title="editingImageId ? 'Chỉnh sửa ảnh' : 'Thêm ảnh'"
+        :product-name="product?.name || ''"
+        :form="form"
+        :variants="currentVariants"
+        :field-errors="fieldErrors"
+        :form-error="formError"
+        :saving="saving"
+        @close="closeModal"
+        @submit="handleSubmit"
+        @image-change="handleImageChange"
     />
   </div>
 </template>

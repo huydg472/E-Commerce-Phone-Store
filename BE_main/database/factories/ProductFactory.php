@@ -19,13 +19,13 @@ class ProductFactory extends Factory
             ?? Category::factory()->create()->id;
 
         $name = fake()->randomElement([
-            'Samsung Galaxy A36 5G',
-            'Samsung Galaxy A26 5G',
-            'iPhone 15',
-            'Xiaomi Redmi Note 13',
-            'OPPO Reno 11',
-            'Vivo V30',
-        ]) . ' ' . fake()->unique()->numberBetween(100, 999999);
+                'Samsung Galaxy A36 5G',
+                'Samsung Galaxy A26 5G',
+                'iPhone 15',
+                'Xiaomi Redmi Note 13',
+                'OPPO Reno 11',
+                'Vivo V30',
+            ]) . ' ' . fake()->unique()->numberBetween(100, 999999);
 
         return [
             'brand_id' => $brandId,

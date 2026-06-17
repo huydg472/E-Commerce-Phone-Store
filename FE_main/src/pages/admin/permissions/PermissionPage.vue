@@ -1,9 +1,9 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import {computed, onMounted, reactive, ref} from 'vue'
+import {useRouter} from 'vue-router'
 import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
-import { useClientPagination } from '@/composables/useClientPagination.js'
-import { usePermissionStore } from '@/stores/permissionStore'
+import {useClientPagination} from '@/composables/useClientPagination.js'
+import {usePermissionStore} from '@/stores/permissionStore'
 
 const router = useRouter()
 const permissionStore = usePermissionStore()
@@ -41,9 +41,9 @@ const filteredPermissions = computed(() => {
 
   return permissions.value.filter((permission) => {
     const matchesQuery = !query
-      || [permission.name, permission.display_name, permission.module, permission.action, permission.description]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(query))
+        || [permission.name, permission.display_name, permission.module, permission.action, permission.description]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(query))
 
     const matchesModule = moduleFilter.value === 'all' || permission.module === moduleFilter.value
 
@@ -225,7 +225,7 @@ onMounted(loadPage)
     <div class="toolbar-card">
       <div class="search-box">
         <i class="bi bi-search"></i>
-        <input v-model.trim="searchQuery" type="text" placeholder="Tìm theo tên, module, hành động..." />
+        <input v-model.trim="searchQuery" type="text" placeholder="Tìm theo tên, module, hành động..."/>
       </div>
 
       <select v-model="moduleFilter" class="filter-select">
@@ -257,53 +257,53 @@ onMounted(loadPage)
       <div v-else class="table-wrap">
         <table class="data-table">
           <colgroup>
-            <col class="col-name" />
-            <col class="col-display" />
-            <col class="col-module" />
-            <col class="col-action" />
-            <col class="col-desc" />
-            <col class="col-actions" />
+            <col class="col-name"/>
+            <col class="col-display"/>
+            <col class="col-module"/>
+            <col class="col-action"/>
+            <col class="col-desc"/>
+            <col class="col-actions"/>
           </colgroup>
 
           <thead>
-            <tr>
-              <th>Mã quyền</th>
-              <th>Tên hiển thị</th>
-              <th>Module</th>
-              <th>Hành động</th>
-              <th>Mô tả</th>
-              <th>Thao tác</th>
-            </tr>
+          <tr>
+            <th>Mã quyền</th>
+            <th>Tên hiển thị</th>
+            <th>Module</th>
+            <th>Hành động</th>
+            <th>Mô tả</th>
+            <th>Thao tác</th>
+          </tr>
           </thead>
 
           <tbody>
-            <tr v-for="permission in paginatedPermissions" :key="permission.id">
-              <td>
-                <strong>{{ permission.name }}</strong>
-              </td>
-              <td>
-                <span>{{ permission.display_name }}</span>
-              </td>
-              <td>
-                <span class="module-pill">{{ permission.module }}</span>
-              </td>
-              <td>
-                <span class="action-pill">{{ permission.action }}</span>
-              </td>
-              <td>
-                <span class="description">{{ permission.description || 'Không có mô tả' }}</span>
-              </td>
-              <td>
-                <div class="action-group">
-                  <button type="button" class="action-btn view" @click="openEdit(permission)">
-                    <i class="bi bi-pencil"></i>
-                  </button>
-                  <button type="button" class="action-btn danger" @click="removePermission(permission)">
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
+          <tr v-for="permission in paginatedPermissions" :key="permission.id">
+            <td>
+              <strong>{{ permission.name }}</strong>
+            </td>
+            <td>
+              <span>{{ permission.display_name }}</span>
+            </td>
+            <td>
+              <span class="module-pill">{{ permission.module }}</span>
+            </td>
+            <td>
+              <span class="action-pill">{{ permission.action }}</span>
+            </td>
+            <td>
+              <span class="description">{{ permission.description || 'Không có mô tả' }}</span>
+            </td>
+            <td>
+              <div class="action-group">
+                <button type="button" class="action-btn view" @click="openEdit(permission)">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button type="button" class="action-btn danger" @click="removePermission(permission)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -344,31 +344,33 @@ onMounted(loadPage)
             <div class="form-grid">
               <div class="form-group">
                 <label>Mã quyền</label>
-                <input v-model.trim="form.name" type="text" class="form-control" placeholder="VD: product_create" required />
+                <input v-model.trim="form.name" type="text" class="form-control" placeholder="VD: product_create"
+                       required/>
               </div>
 
               <div class="form-group">
                 <label>Tên hiển thị</label>
-                <input v-model.trim="form.display_name" type="text" class="form-control" placeholder="VD: Tạo sản phẩm" required />
+                <input v-model.trim="form.display_name" type="text" class="form-control" placeholder="VD: Tạo sản phẩm"
+                       required/>
               </div>
 
               <div class="form-group">
                 <label>Module</label>
-                <input v-model.trim="form.module" type="text" class="form-control" placeholder="VD: product" required />
+                <input v-model.trim="form.module" type="text" class="form-control" placeholder="VD: product" required/>
               </div>
 
               <div class="form-group">
                 <label>Hành động</label>
-                <input v-model.trim="form.action" type="text" class="form-control" placeholder="VD: create" required />
+                <input v-model.trim="form.action" type="text" class="form-control" placeholder="VD: create" required/>
               </div>
 
               <div class="form-group full">
                 <label>Mô tả</label>
                 <textarea
-                  v-model.trim="form.description"
-                  class="form-control form-textarea"
-                  rows="4"
-                  placeholder="Mô tả ngắn về quyền..."
+                    v-model.trim="form.description"
+                    class="form-control form-textarea"
+                    rows="4"
+                    placeholder="Mô tả ngắn về quyền..."
                 ></textarea>
               </div>
             </div>
@@ -495,10 +497,21 @@ onMounted(loadPage)
   font-size: 22px;
 }
 
-.stat-icon.blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-.stat-icon.green { background: linear-gradient(135deg, #16a34a, #22c55e); }
-.stat-icon.orange { background: linear-gradient(135deg, #f59e0b, #fb923c); }
-.stat-icon.slate { background: linear-gradient(135deg, #475569, #64748b); }
+.stat-icon.blue {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+.stat-icon.green {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.stat-icon.orange {
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+}
+
+.stat-icon.slate {
+  background: linear-gradient(135deg, #475569, #64748b);
+}
 
 .stat-content strong {
   display: block;

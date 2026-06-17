@@ -23,7 +23,7 @@ class BrandFactory extends Factory
 
     public function accessory(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'type' => 'accessory',
         ]);
     }

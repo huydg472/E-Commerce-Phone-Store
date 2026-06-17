@@ -13,7 +13,7 @@ class OrderPricingService
         for ($attempt = 0; $attempt < 5; $attempt++) {
             $candidate = 'ORD-' . now()->format('YmdHis') . '-' . random_int(1000, 9999);
 
-            if (! Order::query()->where('order_code', $candidate)->exists()) {
+            if (!Order::query()->where('order_code', $candidate)->exists()) {
                 return $candidate;
             }
         }
@@ -46,13 +46,13 @@ class OrderPricingService
             ->lockForUpdate()
             ->first();
 
-        if (! $coupon) {
+        if (!$coupon) {
             throw ValidationException::withMessages([
                 'coupon_code' => ['Mã giảm giá không tồn tại.'],
             ]);
         }
 
-        if (! $coupon->is_active) {
+        if (!$coupon->is_active) {
             throw ValidationException::withMessages([
                 'coupon_code' => ['Mã giảm giá hiện không khả dụng.'],
             ]);
@@ -76,7 +76,7 @@ class OrderPricingService
             ]);
         }
 
-        if ($subtotal < (float) $coupon->min_order_amount) {
+        if ($subtotal < (float)$coupon->min_order_amount) {
             throw ValidationException::withMessages([
                 'coupon_code' => ['Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã.'],
             ]);
@@ -91,11 +91,11 @@ class OrderPricingService
     public function calculateCouponDiscount(Coupon $coupon, float $subtotal): float
     {
         $discount = $coupon->type === 'percentage'
-            ? $subtotal * ((float) $coupon->value / 100)
-            : (float) $coupon->value;
+            ? $subtotal * ((float)$coupon->value / 100)
+            : (float)$coupon->value;
 
         if ($coupon->max_discount !== null) {
-            $discount = min($discount, (float) $coupon->max_discount);
+            $discount = min($discount, (float)$coupon->max_discount);
         }
 
         return max(min($discount, $subtotal), 0);

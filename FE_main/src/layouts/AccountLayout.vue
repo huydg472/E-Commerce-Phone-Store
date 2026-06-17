@@ -7,11 +7,11 @@ import AccountSidebar from '@/components/account/AccountSidebar.vue'
     <div class="account-container">
       <div class="account-grid">
         <div class="account-sidebar-col">
-          <AccountSidebar />
+          <AccountSidebar/>
         </div>
 
         <div class="account-content-col">
-          <RouterView />
+          <RouterView/>
         </div>
       </div>
     </div>

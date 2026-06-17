@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('brands', function (Blueprint $table) {
@@ -17,7 +16,7 @@ return new class extends Migration
             $table->string('type', 30)->default('phone');
             $table->string('logo_url', 500)->nullable();
             $table->text('description')->nullable();
-            $table->string('status', 20)->default('active');           
+            $table->string('status', 20)->default('active');
             $table->timestamps();
         });
 

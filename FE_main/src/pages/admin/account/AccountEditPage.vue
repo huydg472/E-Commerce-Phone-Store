@@ -105,20 +105,20 @@ onMounted(loadData)
     </div>
 
     <UserForm
-      v-else
-      :form="form"
-      :roles="[]"
-      :error-message="loadingError"
-      :submitting="isSubmitting"
-      submit-label="Lưu hồ sơ"
-      :cancel-to="cancelTo"
-      :show-password-fields="false"
-      :show-role-select="false"
-      :show-status-select="false"
-      :show-username-field="false"
-      :show-email-verified-at="false"
-      :password-required="false"
-      @submit="handleSubmit"
+        v-else
+        :form="form"
+        :roles="[]"
+        :error-message="loadingError"
+        :submitting="isSubmitting"
+        submit-label="Lưu hồ sơ"
+        :cancel-to="cancelTo"
+        :show-password-fields="false"
+        :show-role-select="false"
+        :show-status-select="false"
+        :show-username-field="false"
+        :show-email-verified-at="false"
+        :password-required="false"
+        @submit="handleSubmit"
     />
   </div>
 </template>

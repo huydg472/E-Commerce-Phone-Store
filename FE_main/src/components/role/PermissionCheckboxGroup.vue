@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 
 const props = defineProps({
   permissions: {
@@ -70,9 +70,9 @@ const permissionLabel = (permission) => {
       <div class="permission-list">
         <label v-for="permission in group.items" :key="permission.id" class="permission-item">
           <input
-            :checked="checkedIds.includes(permission.id)"
-            type="checkbox"
-            @change="togglePermission(permission.id)"
+              :checked="checkedIds.includes(permission.id)"
+              type="checkbox"
+              @change="togglePermission(permission.id)"
           />
           <div>
             <strong>{{ permissionLabel(permission) }}</strong>

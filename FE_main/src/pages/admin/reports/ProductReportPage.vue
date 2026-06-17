@@ -35,15 +35,15 @@ const getVariantFirstImage = (variant) => {
       null
 
   return (
-    firstImage?.image_url ||
-    firstImage?.imageUrl ||
-    firstImage?.url ||
-    firstImage?.image ||
-    firstImage?.image_path ||
-    variant?.thumbnail_url ||
-    variant?.thumbnailUrl ||
-    variant?.image ||
-    ''
+      firstImage?.image_url ||
+      firstImage?.imageUrl ||
+      firstImage?.url ||
+      firstImage?.image ||
+      firstImage?.image_path ||
+      variant?.thumbnail_url ||
+      variant?.thumbnailUrl ||
+      variant?.image ||
+      ''
   )
 }
 
@@ -74,9 +74,9 @@ const variantRows = computed(() => {
 })
 
 const lowStockVariants = computed(() =>
-  variantRows.value
-      .filter((variant) => variant.stock <= 5)
-      .sort((left, right) => left.stock - right.stock),
+    variantRows.value
+        .filter((variant) => variant.stock <= 5)
+        .sort((left, right) => left.stock - right.stock),
 )
 
 const {
@@ -141,10 +141,34 @@ const categoryStats = computed(() => {
 })
 
 const stats = computed(() => [
-  {label: 'Sản phẩm', value: products.value.length, desc: 'Tổng danh mục sản phẩm', icon: 'bi bi-box-seam', tone: 'blue'},
-  {label: 'Đang bán', value: products.value.filter((product) => product.status === 'active').length, desc: 'Sản phẩm hoạt động', icon: 'bi bi-check2-circle', tone: 'green'},
-  {label: 'Biến thể nổi bật', value: variantRows.value.filter((variant) => Boolean(variant?.is_featured)).length, desc: 'Biến thể featured', icon: 'bi bi-stars', tone: 'orange'},
-  {label: 'Biến thể', value: variantRows.value.length, desc: 'Tổng biến thể hiện có', icon: 'bi bi-layers', tone: 'slate'},
+  {
+    label: 'Sản phẩm',
+    value: products.value.length,
+    desc: 'Tổng danh mục sản phẩm',
+    icon: 'bi bi-box-seam',
+    tone: 'blue'
+  },
+  {
+    label: 'Đang bán',
+    value: products.value.filter((product) => product.status === 'active').length,
+    desc: 'Sản phẩm hoạt động',
+    icon: 'bi bi-check2-circle',
+    tone: 'green'
+  },
+  {
+    label: 'Biến thể nổi bật',
+    value: variantRows.value.filter((variant) => Boolean(variant?.is_featured)).length,
+    desc: 'Biến thể featured',
+    icon: 'bi bi-stars',
+    tone: 'orange'
+  },
+  {
+    label: 'Biến thể',
+    value: variantRows.value.length,
+    desc: 'Tổng biến thể hiện có',
+    icon: 'bi bi-layers',
+    tone: 'slate'
+  },
 ])
 
 const loadReport = async () => {
@@ -219,7 +243,7 @@ onMounted(loadReport)
 
           <div v-if="topSellingVariants.length" class="top-seller-list">
             <article v-for="item in topSellingVariants" :key="item.productName + item.variantLabel" class="seller-item">
-              <img :src="item.image" :alt="item.productName" />
+              <img :src="item.image" :alt="item.productName"/>
               <div class="seller-main">
                 <strong>{{ item.productName }}</strong>
                 <span>Phiên bản: {{ item.variantLabel }}</span>
@@ -282,7 +306,7 @@ onMounted(loadReport)
             <tr v-for="variant in paginatedLowStockVariants" :key="variant.id">
               <td>
                 <div class="product-cell">
-                  <img :src="variant.image" :alt="variant.productName" />
+                  <img :src="variant.image" :alt="variant.productName"/>
                   <div>
                     <strong>{{ variant.productName }}</strong>
                     <small>{{ variant.brandName }} · {{ variant.categoryName }}</small>
@@ -470,10 +494,21 @@ onMounted(loadReport)
   flex-shrink: 0;
 }
 
-.tone-blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-.tone-green { background: linear-gradient(135deg, #16a34a, #22c55e); }
-.tone-orange { background: linear-gradient(135deg, #f59e0b, #fb923c); }
-.tone-slate { background: linear-gradient(135deg, #475569, #64748b); }
+.tone-blue {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+.tone-green {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.tone-orange {
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+}
+
+.tone-slate {
+  background: linear-gradient(135deg, #475569, #64748b);
+}
 
 .content-grid {
   display: grid;

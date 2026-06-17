@@ -11,7 +11,7 @@ class ProductVariantImageController extends Controller
 {
     private function storeImageFile(StoreProductVariantImageRequest|UpdateProductVariantImageRequest $request): ?string
     {
-        if (! $request->hasFile('image_file')) {
+        if (!$request->hasFile('image_file')) {
             return null;
         }
 
@@ -22,14 +22,14 @@ class ProductVariantImageController extends Controller
 
     private function deleteStoredImage(?string $url): void
     {
-        if (! $url) {
+        if (!$url) {
             return;
         }
 
         $path = parse_url($url, PHP_URL_PATH) ?: $url;
         $storagePrefix = '/storage/';
 
-        if (! str_starts_with($path, $storagePrefix)) {
+        if (!str_starts_with($path, $storagePrefix)) {
             return;
         }
 

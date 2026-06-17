@@ -17,7 +17,7 @@ class StockLogFactory extends Factory
         $adminRoleId = Role::where('name', 'admin')->value('id');
 
         $userId = User::query()
-            ->when($adminRoleId, fn ($query) => $query->where('role_id', $adminRoleId))
+            ->when($adminRoleId, fn($query) => $query->where('role_id', $adminRoleId))
             ->value('id')
             ?? User::query()->value('id')
             ?? User::factory()->create()->id;

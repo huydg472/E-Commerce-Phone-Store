@@ -81,9 +81,9 @@ const paymentStatusStats = computed(() => {
 })
 
 const revenueTotal = computed(() =>
-  orders.value
-      .filter((order) => order?.order_status === 'completed')
-      .reduce((sum, order) => sum + toNumber(order?.total_amount), 0),
+    orders.value
+        .filter((order) => order?.order_status === 'completed')
+        .reduce((sum, order) => sum + toNumber(order?.total_amount), 0),
 )
 
 const averageOrderValue = computed(() => {
@@ -148,9 +148,27 @@ const {
 
 const stats = computed(() => [
   {label: 'Tổng đơn', value: orders.value.length, desc: 'Toàn bộ đơn hàng', icon: 'bi bi-bag', tone: 'blue'},
-  {label: 'Đang giao', value: statusStats.value.find((item) => item.key === 'shipping')?.count || 0, desc: 'Đơn đang xử lý giao hàng', icon: 'bi bi-truck', tone: 'orange'},
-  {label: 'Hoàn thành', value: statusStats.value.find((item) => item.key === 'completed')?.count || 0, desc: 'Đơn đã chốt doanh thu', icon: 'bi bi-check-circle', tone: 'green'},
-  {label: 'Doanh thu', value: formatMoney(revenueTotal.value), desc: `TB ${formatMoney(averageOrderValue.value)}/đơn`, icon: 'bi bi-cash-stack', tone: 'slate'},
+  {
+    label: 'Đang giao',
+    value: statusStats.value.find((item) => item.key === 'shipping')?.count || 0,
+    desc: 'Đơn đang xử lý giao hàng',
+    icon: 'bi bi-truck',
+    tone: 'orange'
+  },
+  {
+    label: 'Hoàn thành',
+    value: statusStats.value.find((item) => item.key === 'completed')?.count || 0,
+    desc: 'Đơn đã chốt doanh thu',
+    icon: 'bi bi-check-circle',
+    tone: 'green'
+  },
+  {
+    label: 'Doanh thu',
+    value: formatMoney(revenueTotal.value),
+    desc: `TB ${formatMoney(averageOrderValue.value)}/đơn`,
+    icon: 'bi bi-cash-stack',
+    tone: 'slate'
+  },
 ])
 
 const loadReport = async () => {
@@ -502,10 +520,21 @@ onMounted(loadReport)
   flex-shrink: 0;
 }
 
-.tone-blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-.tone-green { background: linear-gradient(135deg, #16a34a, #22c55e); }
-.tone-orange { background: linear-gradient(135deg, #f59e0b, #fb923c); }
-.tone-slate { background: linear-gradient(135deg, #475569, #64748b); }
+.tone-blue {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+.tone-green {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.tone-orange {
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+}
+
+.tone-slate {
+  background: linear-gradient(135deg, #475569, #64748b);
+}
 
 .content-grid {
   display: grid;
@@ -576,11 +605,30 @@ onMounted(loadReport)
   font-weight: 900;
 }
 
-.status-pill.primary { background: #eff6ff; color: #2563eb; }
-.status-pill.success { background: #ecfdf5; color: #15803d; }
-.status-pill.warning { background: #fff7ed; color: #c2410c; }
-.status-pill.info { background: #f5f3ff; color: #7c3aed; }
-.status-pill.danger { background: #fef2f2; color: #dc2626; }
+.status-pill.primary {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.status-pill.success {
+  background: #ecfdf5;
+  color: #15803d;
+}
+
+.status-pill.warning {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.status-pill.info {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.status-pill.danger {
+  background: #fef2f2;
+  color: #dc2626;
+}
 
 .table-wrap {
   overflow-x: auto;

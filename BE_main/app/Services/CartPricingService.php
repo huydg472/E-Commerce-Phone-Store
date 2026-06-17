@@ -14,8 +14,8 @@ class CartPricingService
 
         foreach ($cart->items as $item) {
             $variant = $item->productVariant;
-            $price = (float) ($variant?->sale_price ?? $variant?->price ?? 0);
-            $itemSubtotal = $price * (int) $item->quantity;
+            $price = (float)($variant?->sale_price ?? $variant?->price ?? 0);
+            $itemSubtotal = $price * (int)$item->quantity;
 
             $item->setAttribute('price', $price);
             $item->setAttribute('subtotal', $itemSubtotal);

@@ -13,7 +13,8 @@ class CartController extends Controller
 {
     public function __construct(
         private readonly CartPricingService $pricingService,
-    ) {
+    )
+    {
     }
 
     public function index(Request $request): JsonResponse
@@ -26,7 +27,7 @@ class CartController extends Controller
 
         $carts = $query->get();
 
-        $carts->each(fn (Cart $cart) => $this->pricingService->applyPricing($cart));
+        $carts->each(fn(Cart $cart) => $this->pricingService->applyPricing($cart));
 
         return response()->json([
             'success' => true,

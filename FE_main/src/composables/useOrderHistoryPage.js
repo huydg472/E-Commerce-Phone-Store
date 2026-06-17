@@ -319,10 +319,12 @@ export function useOrderHistoryPage() {
 
             try {
                 await orderStore.cancel(order.id)
-                await orderStore.fetchAll().catch(() => {})
+                await orderStore.fetchAll().catch(() => {
+                })
 
                 if (selectedOrder.value?.id === order.id) {
-                    await orderStore.fetchById(order.id).catch(() => {})
+                    await orderStore.fetchById(order.id).catch(() => {
+                    })
                 }
             } catch (error) {
                 errorMessage.value = error?.response?.data?.message || 'Không thể hủy đơn hàng.'
@@ -397,7 +399,8 @@ export function useOrderHistoryPage() {
                 })
             }
 
-            await cartStore.fetchAll().catch(() => {})
+            await cartStore.fetchAll().catch(() => {
+            })
             await router.push({name: 'cart'})
         } catch (error) {
             errorMessage.value = error?.response?.data?.message || 'Không thể thêm lại sản phẩm vào giỏ hàng.'

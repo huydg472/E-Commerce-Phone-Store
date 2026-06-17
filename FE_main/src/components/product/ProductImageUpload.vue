@@ -56,13 +56,16 @@ defineEmits(['close', 'submit', 'image-change'])
         <form class="modal-form" @submit.prevent="$emit('submit')">
           <div class="field">
             <label>Biến thể</label>
-            <select v-model="form.product_variant_id" class="control" :class="{ invalid: fieldErrors.product_variant_id }">
+            <select v-model="form.product_variant_id" class="control"
+                    :class="{ invalid: fieldErrors.product_variant_id }">
               <option value="">-- Chọn biến thể --</option>
               <option v-for="variant in variants" :key="variant.id" :value="String(variant.id)">
                 {{ variant.color }} · {{ variant.storage }} · {{ variant.ram }}
               </option>
             </select>
-            <small v-if="fieldErrors.product_variant_id" class="field-error">{{ fieldErrors.product_variant_id }}</small>
+            <small v-if="fieldErrors.product_variant_id" class="field-error">{{
+                fieldErrors.product_variant_id
+              }}</small>
           </div>
 
           <div class="field">
@@ -90,7 +93,8 @@ defineEmits(['close', 'submit', 'image-change'])
 
           <div class="field">
             <label>Thứ tự hiển thị</label>
-            <input v-model="form.sort_order" type="number" min="0" class="control" :class="{ invalid: fieldErrors.sort_order }">
+            <input v-model="form.sort_order" type="number" min="0" class="control"
+                   :class="{ invalid: fieldErrors.sort_order }">
             <small v-if="fieldErrors.sort_order" class="field-error">{{ fieldErrors.sort_order }}</small>
           </div>
 

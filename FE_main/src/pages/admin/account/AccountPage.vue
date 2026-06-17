@@ -203,9 +203,8 @@ onMounted(async () => {
 .hero-card {
   border: 1px solid #dbe5f6;
   border-radius: 24px;
-  background:
-      radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 34%),
-      linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 34%),
+  linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
   box-shadow: 0 16px 38px rgba(15, 23, 42, 0.06);
   padding: 26px;
   display: grid;

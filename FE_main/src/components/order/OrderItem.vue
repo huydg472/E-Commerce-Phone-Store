@@ -1,6 +1,6 @@
 <script setup>
-import { computed } from 'vue'
-import { formatCurrency } from '@/utils/formatCurrency'
+import {computed} from 'vue'
+import {formatCurrency} from '@/utils/formatCurrency'
 
 const props = defineProps({
   item: {
@@ -11,10 +11,10 @@ const props = defineProps({
 
 const imageSrc = computed(() => {
   return (
-    props.item?.productVariant?.product?.thumbnail_url ||
-    props.item?.productVariant?.product?.thumbnailUrl ||
-    props.item?.productVariant?.product?.image ||
-    '/images/default-product.png'
+      props.item?.productVariant?.product?.thumbnail_url ||
+      props.item?.productVariant?.product?.thumbnailUrl ||
+      props.item?.productVariant?.product?.image ||
+      '/images/default-product.png'
   )
 })
 
@@ -23,7 +23,7 @@ const variantName = computed(() => props.item?.variant_name || props.item?.produ
 
 <template>
   <article class="order-item">
-    <img :src="imageSrc" :alt="item.product_name" />
+    <img :src="imageSrc" :alt="item.product_name"/>
 
     <div class="item-info">
       <h3>{{ item.product_name }}</h3>

@@ -40,7 +40,8 @@ const clearPendingCartItems = async () => {
 
     if (Array.isArray(ids) && ids.length > 0) {
       await Promise.allSettled(ids.map((id) => cartStore.remove(id)))
-      await cartStore.fetchAll().catch(() => {})
+      await cartStore.fetchAll().catch(() => {
+      })
     }
   } finally {
     localStorage.removeItem('pending_payment_cart_item_ids')

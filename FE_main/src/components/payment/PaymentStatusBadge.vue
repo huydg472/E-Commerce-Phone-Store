@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 
 const props = defineProps({
   status: {
@@ -9,11 +9,11 @@ const props = defineProps({
 })
 
 const statusMap = {
-  unpaid: { label: 'Chưa thanh toán', className: 'unpaid' },
-  pending: { label: 'Chờ thanh toán', className: 'pending' },
-  paid: { label: 'Đã thanh toán', className: 'paid' },
-  failed: { label: 'Thất bại', className: 'failed' },
-  refunded: { label: 'Đã hoàn tiền', className: 'refunded' },
+  unpaid: {label: 'Chưa thanh toán', className: 'unpaid'},
+  pending: {label: 'Chờ thanh toán', className: 'pending'},
+  paid: {label: 'Đã thanh toán', className: 'paid'},
+  failed: {label: 'Thất bại', className: 'failed'},
+  refunded: {label: 'Đã hoàn tiền', className: 'refunded'},
 }
 
 const meta = computed(() => statusMap[props.status] || statusMap.unpaid)

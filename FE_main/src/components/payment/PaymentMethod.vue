@@ -79,10 +79,14 @@ const paymentMethods = [
                 </defs>
                 <g transform="translate(4 4)">
                   <rect x="0" y="6" width="18" height="18" rx="4" transform="rotate(45 9 15)" fill="url(#vnpayBlue)"/>
-                  <path d="M5 15c0-4.4 3.6-8 8-8" fill="none" stroke="#6aa2ff" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>
-                  <path d="M7 15c0-3.3 2.7-6 6-6" fill="none" stroke="#6aa2ff" stroke-width="1.4" stroke-linecap="round" opacity=".75"/>
-                  <path d="M9 15c0-2.2 1.8-4 4-4" fill="none" stroke="#6aa2ff" stroke-width="1.3" stroke-linecap="round" opacity=".7"/>
-                  <rect x="14.5" y="2.5" width="18" height="18" rx="4" transform="rotate(45 23.5 11.5)" fill="url(#vnpayRed)"/>
+                  <path d="M5 15c0-4.4 3.6-8 8-8" fill="none" stroke="#6aa2ff" stroke-width="1.6" stroke-linecap="round"
+                        opacity=".85"/>
+                  <path d="M7 15c0-3.3 2.7-6 6-6" fill="none" stroke="#6aa2ff" stroke-width="1.4" stroke-linecap="round"
+                        opacity=".75"/>
+                  <path d="M9 15c0-2.2 1.8-4 4-4" fill="none" stroke="#6aa2ff" stroke-width="1.3" stroke-linecap="round"
+                        opacity=".7"/>
+                  <rect x="14.5" y="2.5" width="18" height="18" rx="4" transform="rotate(45 23.5 11.5)"
+                        fill="url(#vnpayRed)"/>
                 </g>
                 <text x="47" y="18" class="vnpay-mark__main">VN</text>
                 <text x="76" y="18" class="vnpay-mark__accent">PAY</text>

@@ -12,10 +12,10 @@ defineProps({
     <span>Dòng trạng thái</span>
     <div class="timeline">
       <div
-        v-for="step in steps"
-        :key="step.key"
-        class="timeline-step"
-        :class="{ done: step.done, current: step.current }"
+          v-for="step in steps"
+          :key="step.key"
+          class="timeline-step"
+          :class="{ done: step.done, current: step.current }"
       >
         <i :class="step.done ? 'bi bi-check-circle-fill' : 'bi bi-circle'"></i>
         <span>{{ step.label }}</span>

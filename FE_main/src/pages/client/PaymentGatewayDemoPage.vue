@@ -37,7 +37,7 @@ let successTimer = null
 const gatewayMeta = computed(() => gateways[selectedGateway.value] ?? gateways.vnpay)
 const orderLabel = computed(() => (orderId.value ? `#${orderId.value}` : 'DEMO-ORDER'))
 const formattedAmount = computed(() =>
-  new Intl.NumberFormat('vi-VN', {maximumFractionDigits: 0}).format(Number(amount.value || 0)),
+    new Intl.NumberFormat('vi-VN', {maximumFractionDigits: 0}).format(Number(amount.value || 0)),
 )
 const progressPercent = computed(() => Math.max(0, Math.min(100, ((10 - countdown.value) / 10) * 100)))
 
@@ -110,9 +110,9 @@ const buildQrMatrix = (seedText) => {
   for (let y = 0; y < size; y += 1) {
     for (let x = 0; x < size; x += 1) {
       const inFinder =
-        (x < 7 && y < 7) ||
-        (x >= size - 7 && y < 7) ||
-        (x < 7 && y >= size - 7)
+          (x < 7 && y < 7) ||
+          (x >= size - 7 && y < 7) ||
+          (x < 7 && y >= size - 7)
 
       if (inFinder) {
         continue
@@ -129,7 +129,7 @@ const buildQrMatrix = (seedText) => {
 }
 
 const qrMatrix = computed(() =>
-  buildQrMatrix(`${selectedGateway.value}:${orderLabel.value}:${Number(amount.value || 0)}`),
+    buildQrMatrix(`${selectedGateway.value}:${orderLabel.value}:${Number(amount.value || 0)}`),
 )
 
 const clearCountdownTimer = () => {
@@ -248,12 +248,12 @@ const resetFlow = () => {
 }
 
 watch(
-  () => route.query,
-  () => {
-    applyRouteQuery()
-    startPayment()
-  },
-  {immediate: true, deep: true},
+    () => route.query,
+    () => {
+      applyRouteQuery()
+      startPayment()
+    },
+    {immediate: true, deep: true},
 )
 
 onBeforeUnmount(() => {
@@ -290,12 +290,12 @@ onBeforeUnmount(() => {
 
           <div class="gateway-switch">
             <button
-              v-for="gateway in gateways"
-              :key="gateway.key"
-              type="button"
-              class="gateway-switch__btn"
-              :class="{active: selectedGateway === gateway.key}"
-              @click="selectGateway(gateway.key)"
+                v-for="gateway in gateways"
+                :key="gateway.key"
+                type="button"
+                class="gateway-switch__btn"
+                :class="{active: selectedGateway === gateway.key}"
+                @click="selectGateway(gateway.key)"
             >
               {{ gateway.name }}
             </button>
@@ -346,15 +346,15 @@ onBeforeUnmount(() => {
                 <div class="qr-frame" :class="`qr-frame--${gatewayMeta.accent}`">
                   <div class="qr-grid" :class="{ 'qr-grid--paid': paymentState === 'paid' }">
                     <span
-                      v-for="(row, rowIndex) in qrMatrix"
-                      :key="rowIndex"
-                      class="qr-row"
+                        v-for="(row, rowIndex) in qrMatrix"
+                        :key="rowIndex"
+                        class="qr-row"
                     >
                       <i
-                        v-for="(cell, cellIndex) in row"
-                        :key="cellIndex"
-                        class="qr-cell"
-                        :class="{ 'qr-cell--on': cell, 'qr-cell--off': !cell }"
+                          v-for="(cell, cellIndex) in row"
+                          :key="cellIndex"
+                          class="qr-cell"
+                          :class="{ 'qr-cell--on': cell, 'qr-cell--off': !cell }"
                       />
                     </span>
                   </div>
@@ -366,7 +366,7 @@ onBeforeUnmount(() => {
                   </div>
 
                   <div class="qr-scanline" aria-hidden="true">
-                    <span />
+                    <span/>
                   </div>
 
                   <div class="qr-mask">
@@ -383,7 +383,7 @@ onBeforeUnmount(() => {
                   <span>{{ statusLabel }}</span>
                 </div>
                 <div class="progress-line" aria-hidden="true">
-                  <span :style="{width: `${progressPercent}%`}" />
+                  <span :style="{width: `${progressPercent}%`}"/>
                 </div>
               </div>
             </div>
@@ -393,7 +393,8 @@ onBeforeUnmount(() => {
                 <span class="qr-sidecard__tag">{{ gatewayMeta.name }}</span>
                 <strong>Hướng dẫn quét</strong>
                 <p>
-                  Dùng ứng dụng ngân hàng hoặc ví điện tử để quét mã bên trái, rồi xác nhận trong app để hoàn tất giao dịch.
+                  Dùng ứng dụng ngân hàng hoặc ví điện tử để quét mã bên trái, rồi xác nhận trong app để hoàn tất giao
+                  dịch.
                 </p>
               </div>
 
@@ -433,7 +434,8 @@ onBeforeUnmount(() => {
               </div>
 
               <p class="qr-note">
-                Giao diện này được dựng để mô phỏng màn hình quét QR thực tế: ít chữ, tập trung vào mã QR, trạng thái và số tiền.
+                Giao diện này được dựng để mô phỏng màn hình quét QR thực tế: ít chữ, tập trung vào mã QR, trạng thái và
+                số tiền.
               </p>
             </aside>
           </div>
@@ -474,10 +476,10 @@ onBeforeUnmount(() => {
 
         <div class="timeline">
           <div
-            v-for="(step, index) in paymentSteps"
-            :key="step.title"
-            class="timeline-item"
-            :class="{active: step.active, done: step.done}"
+              v-for="(step, index) in paymentSteps"
+              :key="step.title"
+              class="timeline-item"
+              :class="{active: step.active, done: step.done}"
           >
             <div class="timeline-item__dot">
               <span>{{ index + 1 }}</span>
@@ -528,15 +530,16 @@ onBeforeUnmount(() => {
           <i class="bi bi-shield-check"></i>
           <div>
             <strong>Đang chờ kết quả</strong>
-            <p>Trang này mô phỏng giao diện thanh toán thật để test luồng VNPay và MoMo theo trạng thái đã thanh toán nhưng chưa xác nhận.</p>
+            <p>Trang này mô phỏng giao diện thanh toán thật để test luồng VNPay và MoMo theo trạng thái đã thanh toán
+              nhưng chưa xác nhận.</p>
           </div>
         </div>
 
         <button
-          v-if="paymentState === 'paid'"
-          type="button"
-          class="success-btn"
-          @click="router.push({name: 'order.success', query: {order_id: orderId}})"
+            v-if="paymentState === 'paid'"
+            type="button"
+            class="success-btn"
+            @click="router.push({name: 'order.success', query: {order_id: orderId}})"
         >
           <i class="bi bi-arrow-right-circle"></i>
           Chuyển đến trang thành công
@@ -560,10 +563,9 @@ onBeforeUnmount(() => {
   padding: 28px;
   border-radius: 24px;
   border: 1px solid #e5edf7;
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 28%),
-    radial-gradient(circle at bottom left, rgba(244, 63, 94, 0.10), transparent 24%),
-    linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 28%),
+  radial-gradient(circle at bottom left, rgba(244, 63, 94, 0.10), transparent 24%),
+  linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
   box-shadow: 0 18px 46px rgba(15, 23, 42, 0.06);
 }
 
@@ -778,9 +780,8 @@ h1 {
   content: '';
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 24%),
-    radial-gradient(circle at bottom left, rgba(244, 63, 94, 0.10), transparent 20%);
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 24%),
+  radial-gradient(circle at bottom left, rgba(244, 63, 94, 0.10), transparent 20%);
   pointer-events: none;
 }
 

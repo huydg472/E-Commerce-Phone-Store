@@ -194,17 +194,17 @@ onMounted(loadData)
     </section>
 
     <ProductForm
-      v-else
-      :form="form"
-      :brands="brands"
-      :categories="categories"
-      :field-errors="fieldErrors"
-      :saving="saving"
-      :loading="productLoading"
-      submit-label="Lưu thay đổi"
-      cancel-to="/admin/products"
-      @submit="handleSubmit"
-      @thumbnail-change="handleThumbnailChange"
+        v-else
+        :form="form"
+        :brands="brands"
+        :categories="categories"
+        :field-errors="fieldErrors"
+        :saving="saving"
+        :loading="productLoading"
+        submit-label="Lưu thay đổi"
+        cancel-to="/admin/products"
+        @submit="handleSubmit"
+        @thumbnail-change="handleThumbnailChange"
     />
   </div>
 </template>

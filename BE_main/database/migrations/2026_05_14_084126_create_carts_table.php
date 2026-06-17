@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('carts', function (Blueprint $table) {
@@ -16,7 +15,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnDelete();
 
-            $table->string('status', 20)->default('active');     
+            $table->string('status', 20)->default('active');
             $table->timestamps();
 
             $table->unique('user_id');

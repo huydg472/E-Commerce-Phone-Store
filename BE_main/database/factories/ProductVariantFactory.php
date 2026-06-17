@@ -16,7 +16,7 @@ class ProductVariantFactory extends Factory
             ?? Product::factory()->create()->id;
 
         $price = fake()->numberBetween(4_000_000, 30_000_000);
-        $salePrice = fake()->boolean(35) ? fake()->numberBetween((int) ($price * 0.85), $price) : null;
+        $salePrice = fake()->boolean(35) ? fake()->numberBetween((int)($price * 0.85), $price) : null;
         $quantity = fake()->numberBetween(0, 80);
 
         return [
@@ -25,7 +25,7 @@ class ProductVariantFactory extends Factory
             'storage' => fake()->randomElement(['64GB', '128GB', '256GB', '512GB']),
             'ram' => fake()->randomElement(['4GB', '6GB', '8GB', '12GB']),
             'sku' => 'SKU-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(6)) . '-' . $counter++,
-            'import_price' => fake()->numberBetween(3_000_000, max(3_000_000, (int) ($price * 0.8))),
+            'import_price' => fake()->numberBetween(3_000_000, max(3_000_000, (int)($price * 0.8))),
             'price' => $price,
             'sale_price' => $salePrice,
             'quantity' => $quantity,
@@ -38,14 +38,14 @@ class ProductVariantFactory extends Factory
     public function accessoryForProduct(Product $product, array $overrides = []): static
     {
         return $this->state(function () use ($product, $overrides) {
-            $name = strtolower((string) $product->name);
+            $name = strtolower((string)$product->name);
             $storage = $overrides['storage'] ?? $this->guessAccessoryStorage($name);
             $color = $overrides['color'] ?? $this->guessAccessoryColor($name);
             $price = $overrides['price'] ?? $this->guessAccessoryPrice($name);
             $quantity = $overrides['quantity'] ?? fake()->numberBetween(12, 120);
             $salePrice = array_key_exists('sale_price', $overrides)
                 ? $overrides['sale_price']
-                : (fake()->boolean(35) ? max(0, $price - fake()->numberBetween(10_000, (int) max(30_000, $price * 0.18))) : null);
+                : (fake()->boolean(35) ? max(0, $price - fake()->numberBetween(10_000, (int)max(30_000, $price * 0.18))) : null);
 
             return array_merge([
                 'product_id' => $product->id,
@@ -53,12 +53,12 @@ class ProductVariantFactory extends Factory
                 'storage' => $storage,
                 'ram' => 'N/A',
                 'sku' => 'ACC-' . Str::upper(Str::slug($product->slug)) . '-' . Str::upper(Str::random(6)),
-                'import_price' => (int) round($price * 0.72, -2),
+                'import_price' => (int)round($price * 0.72, -2),
                 'price' => $price,
                 'sale_price' => $salePrice && $salePrice <= $price ? $salePrice : null,
                 'quantity' => $quantity,
                 'status' => 'active',
-                'is_featured' => (bool) ($overrides['is_featured'] ?? false),
+                'is_featured' => (bool)($overrides['is_featured'] ?? false),
                 'description' => $product->name . ' ' . $storage,
             ], $overrides);
         });

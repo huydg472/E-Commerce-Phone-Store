@@ -18,8 +18,9 @@ class OrderController extends Controller
 {
     public function __construct(
         private readonly OrderInventoryService $inventoryService,
-        private readonly OrderPricingService $pricingService,
-    ) {
+        private readonly OrderPricingService   $pricingService,
+    )
+    {
     }
 
     public function index(Request $request): JsonResponse
@@ -59,15 +60,15 @@ class OrderController extends Controller
             }
         }
 
-        $shippingMethod = (string) ($data['shipping_method'] ?? 'standard');
+        $shippingMethod = (string)($data['shipping_method'] ?? 'standard');
         $shippingFee = $this->pricingService->resolveShippingFee($shippingMethod);
-        $couponCode = strtoupper(trim((string) ($data['coupon_code'] ?? '')));
+        $couponCode = strtoupper(trim((string)($data['coupon_code'] ?? '')));
         $paymentMethod = $data['payment_method'] ?? 'cod';
 
         $order = DB::transaction(function () use ($data, $items, $paymentMethod, $shippingFee, $couponCode) {
             $inventory = $this->inventoryService->normalizeOrderItems($items);
             $normalizedItems = $inventory['items'];
-            $subtotal = (float) $inventory['subtotal'];
+            $subtotal = (float)$inventory['subtotal'];
             $couponResult = $this->pricingService->resolveCouponDiscount($couponCode, $subtotal);
             $discountAmount = $couponResult['discount_amount'];
             $coupon = $couponResult['coupon'];
@@ -199,7 +200,7 @@ class OrderController extends Controller
             ], 422);
         }
 
-        $paymentMethod = strtolower((string) $order->payment?->payment_method);
+        $paymentMethod = strtolower((string)$order->payment?->payment_method);
 
         if ($paymentMethod !== 'cod') {
             return response()->json([
@@ -297,6 +298,7 @@ class OrderController extends Controller
             'data' => $order
         ], 200);
     }
+
     private function isAllowedStatusTransition(string $currentStatus, string $nextStatus): bool
     {
         if ($currentStatus === $nextStatus) {

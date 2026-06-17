@@ -56,7 +56,8 @@ const refreshFavorites = async () => {
     return
   }
 
-  await favoriteStore.ensureLoaded().catch(() => {})
+  await favoriteStore.ensureLoaded().catch(() => {
+  })
 }
 
 watch(isLoggedIn, () => {

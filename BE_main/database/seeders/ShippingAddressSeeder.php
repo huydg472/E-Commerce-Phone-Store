@@ -14,7 +14,7 @@ class ShippingAddressSeeder extends Seeder
         $customerRoleId = Role::where('name', 'customer')->value('id');
 
         User::query()
-            ->when($customerRoleId, fn ($query) => $query->where('role_id', $customerRoleId))
+            ->when($customerRoleId, fn($query) => $query->where('role_id', $customerRoleId))
             ->get()
             ->each(function (User $user) {
                 ShippingAddress::updateOrCreate(

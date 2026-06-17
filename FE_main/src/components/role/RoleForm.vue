@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import {computed} from 'vue'
 import PermissionCheckboxGroup from '@/components/role/PermissionCheckboxGroup.vue'
 
 const props = defineProps({
@@ -68,12 +68,13 @@ const selectedIds = computed({
           <div class="form-grid">
             <div class="form-group">
               <label>Mã vai trò</label>
-              <input v-model.trim="form.name" type="text" class="form-control" placeholder="VD: manager" required />
+              <input v-model.trim="form.name" type="text" class="form-control" placeholder="VD: manager" required/>
             </div>
 
             <div class="form-group">
               <label>Tên hiển thị</label>
-              <input v-model.trim="form.display_name" type="text" class="form-control" placeholder="VD: Quản lý" required />
+              <input v-model.trim="form.display_name" type="text" class="form-control" placeholder="VD: Quản lý"
+                     required/>
             </div>
 
             <div class="form-group">
@@ -87,10 +88,10 @@ const selectedIds = computed({
             <div class="form-group full">
               <label>Mô tả</label>
               <textarea
-                v-model.trim="form.description"
-                class="form-control form-textarea"
-                rows="4"
-                placeholder="Mô tả ngắn về vai trò..."
+                  v-model.trim="form.description"
+                  class="form-control form-textarea"
+                  rows="4"
+                  placeholder="Mô tả ngắn về vai trò..."
               ></textarea>
             </div>
           </div>
@@ -104,8 +105,8 @@ const selectedIds = computed({
           </div>
 
           <PermissionCheckboxGroup
-            v-model="selectedIds"
-            :permissions="permissions"
+              v-model="selectedIds"
+              :permissions="permissions"
           />
 
           <div class="form-actions">

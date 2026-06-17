@@ -3,79 +3,79 @@ import {computed} from 'vue'
 import BasePagination from '@/components/common/BasePagination.vue'
 
 const props = defineProps({
-    currentPage: {
-        type: Number,
-        default: 1,
-    },
-    totalPages: {
-        type: Number,
-        default: 1,
-    },
-    pageSize: {
-        type: Number,
-        default: 5,
-    },
-    pageSizeOptions: {
-      type: Array,
-      default: () => [5, 10, 20, 50],
-    },
-    totalItems: {
-        type: Number,
-        default: 0,
-    },
-    pageStart: {
-        type: Number,
-        default: 0,
-    },
-    pageEnd: {
-        type: Number,
-        default: 0,
-    },
-    itemLabel: {
-        type: String,
-        default: 'mục',
-    },
+  currentPage: {
+    type: Number,
+    default: 1,
+  },
+  totalPages: {
+    type: Number,
+    default: 1,
+  },
+  pageSize: {
+    type: Number,
+    default: 5,
+  },
+  pageSizeOptions: {
+    type: Array,
+    default: () => [5, 10, 20, 50],
+  },
+  totalItems: {
+    type: Number,
+    default: 0,
+  },
+  pageStart: {
+    type: Number,
+    default: 0,
+  },
+  pageEnd: {
+    type: Number,
+    default: 0,
+  },
+  itemLabel: {
+    type: String,
+    default: 'mục',
+  },
 })
 
 const emit = defineEmits(['update:currentPage', 'update:pageSize'])
 
 const selectedPageSize = computed({
-    get: () => props.pageSize,
-    set: (value) => emit('update:pageSize', Number(value)),
+  get: () => props.pageSize,
+  set: (value) => emit('update:pageSize', Number(value)),
 })
 
 const updatePage = (page) => {
-    emit('update:currentPage', page)
+  emit('update:currentPage', page)
 }
 </script>
 
 <template>
-    <div v-if="totalItems > 0" class="pagination-toolbar">
-        <div class="pagination-summary">
-            Hiển thị {{ pageStart }}-{{ pageEnd }} trong tổng số {{ totalItems }} {{ itemLabel }}
-        </div>
-
-        <div class="pagination-actions">
-            <label class="page-size-filter">
-                <span>Hiển thị</span>
-                <select v-model="selectedPageSize">
-                    <option
-                        v-for="size in pageSizeOptions"
-                        :key="size"
-                        :value="size"
-                    >
-                        {{ size }}
-                    </option>
-                </select>
-            </label>
-
-            <BasePagination
-                :current-page="currentPage"
-                :total-pages="totalPages"
-                @update:currentPage="updatePage"
-            />
-        </div>
+  <div v-if="totalItems > 0" class="pagination-toolbar">
+    <div class="pagination-summary">
+      Hiển thị {{ pageStart }}-{{ pageEnd }} trong tổng số {{ totalItems }} {{ itemLabel }}
     </div>
+
+    <div class="pagination-actions">
+      <label class="page-size-filter">
+        <span>Hiển thị</span>
+        <select v-model="selectedPageSize">
+          <option
+              v-for="size in pageSizeOptions"
+              :key="size"
+              :value="size"
+          >
+            {{ size }}
+          </option>
+        </select>
+      </label>
+
+      <BasePagination
+          :current-page="currentPage"
+          :total-pages="totalPages"
+          @update:currentPage="updatePage"
+      />
+    </div>
+  </div>
 </template>
 
 <style scoped>

@@ -289,7 +289,7 @@ onMounted(loadCoupons)
     <section class="toolbar-card">
       <div class="search-box">
         <i class="bi bi-search"></i>
-        <input v-model.trim="search" type="search" placeholder="Tìm theo mã, tên, mô tả..." />
+        <input v-model.trim="search" type="search" placeholder="Tìm theo mã, tên, mô tả..."/>
       </div>
 
       <div class="filter-row">
@@ -450,11 +450,11 @@ onMounted(loadCoupons)
             <div class="grid-2">
               <div class="field">
                 <label>Mã coupon</label>
-                <input v-model="form.code" type="text" class="control" placeholder="SALE2026" required />
+                <input v-model="form.code" type="text" class="control" placeholder="SALE2026" required/>
               </div>
               <div class="field">
                 <label>Tên coupon</label>
-                <input v-model="form.name" type="text" class="control" placeholder="Giảm giá tháng 6" required />
+                <input v-model="form.name" type="text" class="control" placeholder="Giảm giá tháng 6" required/>
               </div>
             </div>
 
@@ -468,43 +468,45 @@ onMounted(loadCoupons)
               </div>
               <div class="field">
                 <label>Giá trị giảm</label>
-                <input v-model="form.value" type="number" min="0" step="0.01" class="control" required />
+                <input v-model="form.value" type="number" min="0" step="0.01" class="control" required/>
               </div>
             </div>
 
             <div class="grid-3">
               <div class="field">
                 <label>Giảm tối đa</label>
-                <input v-model="form.max_discount" type="number" min="0" step="0.01" class="control" placeholder="Bỏ trống nếu không giới hạn" />
+                <input v-model="form.max_discount" type="number" min="0" step="0.01" class="control"
+                       placeholder="Bỏ trống nếu không giới hạn"/>
               </div>
               <div class="field">
                 <label>Đơn tối thiểu</label>
-                <input v-model="form.min_order_amount" type="number" min="0" step="0.01" class="control" />
+                <input v-model="form.min_order_amount" type="number" min="0" step="0.01" class="control"/>
               </div>
               <div class="field">
                 <label>Giới hạn lượt dùng</label>
-                <input v-model="form.usage_limit" type="number" min="1" class="control" placeholder="Không giới hạn" />
+                <input v-model="form.usage_limit" type="number" min="1" class="control" placeholder="Không giới hạn"/>
               </div>
             </div>
 
             <div class="grid-2">
               <div class="field">
                 <label>Ngày bắt đầu</label>
-                <input v-model="form.starts_at" type="datetime-local" class="control" />
+                <input v-model="form.starts_at" type="datetime-local" class="control"/>
               </div>
               <div class="field">
                 <label>Ngày kết thúc</label>
-                <input v-model="form.ends_at" type="datetime-local" class="control" />
+                <input v-model="form.ends_at" type="datetime-local" class="control"/>
               </div>
             </div>
 
             <div class="field">
               <label>Mô tả</label>
-              <textarea v-model="form.description" class="control textarea" rows="4" placeholder="Nội dung mô tả coupon..." />
+              <textarea v-model="form.description" class="control textarea" rows="4"
+                        placeholder="Nội dung mô tả coupon..."/>
             </div>
 
             <label class="switch-row">
-              <input v-model="form.is_active" type="checkbox" />
+              <input v-model="form.is_active" type="checkbox"/>
               <span>Kích hoạt coupon ngay</span>
             </label>
 
@@ -633,10 +635,21 @@ onMounted(loadCoupons)
   font-size: 22px;
 }
 
-.tone-blue { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-.tone-green { background: linear-gradient(135deg, #16a34a, #22c55e); }
-.tone-orange { background: linear-gradient(135deg, #f59e0b, #fb923c); }
-.tone-slate { background: linear-gradient(135deg, #475569, #64748b); }
+.tone-blue {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+}
+
+.tone-green {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.tone-orange {
+  background: linear-gradient(135deg, #f59e0b, #fb923c);
+}
+
+.tone-slate {
+  background: linear-gradient(135deg, #475569, #64748b);
+}
 
 .stat-card strong {
   display: block;

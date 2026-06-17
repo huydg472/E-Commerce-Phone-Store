@@ -17,7 +17,7 @@ class CategoryController extends Controller
     public function index(Request $request): JsonResponse
     {
         $categories = Category::query()
-            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->status))
+            ->when($request->filled('status'), fn($query) => $query->where('status', $request->status))
             ->latest()
             ->get();
 

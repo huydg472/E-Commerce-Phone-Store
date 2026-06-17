@@ -14,7 +14,7 @@ class CartSeeder extends Seeder
         $customerRoleId = Role::where('name', 'customer')->value('id');
 
         User::query()
-            ->when($customerRoleId, fn ($query) => $query->where('role_id', $customerRoleId))
+            ->when($customerRoleId, fn($query) => $query->where('role_id', $customerRoleId))
             ->limit(5)
             ->get()
             ->each(function (User $user) {

@@ -16,7 +16,8 @@ class CartItemController extends Controller
 {
     public function __construct(
         private readonly CartPricingService $pricingService,
-    ) {
+    )
+    {
     }
 
     public function index(Request $request): JsonResponse
@@ -58,7 +59,7 @@ class CartItemController extends Controller
     public function store(StoreCartItemRequest $request): JsonResponse
     {
         $user = $request->user();
-        $quantity = max((int) ($request->quantity ?? 1), 1);
+        $quantity = max((int)($request->quantity ?? 1), 1);
 
         $variant = ProductVariant::with(['product.brand', 'product.category'])
             ->findOrFail($request->product_variant_id);
@@ -75,7 +76,7 @@ class CartItemController extends Controller
             ], 400);
         }
 
-        if ((int) $variant->available_quantity < $quantity) {
+        if ((int)$variant->available_quantity < $quantity) {
             return response()->json([
                 'status' => false,
                 'message' => 'Số lượng tồn kho không đủ.'
@@ -100,7 +101,7 @@ class CartItemController extends Controller
         if ($cartItem) {
             $newQuantity = $cartItem->quantity + $quantity;
 
-            if ((int) $variant->available_quantity < $newQuantity) {
+            if ((int)$variant->available_quantity < $newQuantity) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Số lượng trong giỏ vượt quá tồn kho.'
@@ -172,7 +173,7 @@ class CartItemController extends Controller
             ], 400);
         }
 
-        if ((int) $variant->available_quantity < (int) $data['quantity']) {
+        if ((int)$variant->available_quantity < (int)$data['quantity']) {
             return response()->json([
                 'success' => false,
                 'message' => 'Số lượng tồn kho không đủ.',

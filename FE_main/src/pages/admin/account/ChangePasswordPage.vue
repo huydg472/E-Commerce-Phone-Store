@@ -64,7 +64,8 @@ const handleSubmit = async () => {
 
 onMounted(async () => {
   if (!authStore.user) {
-    await authStore.fetchMe().catch(() => {})
+    await authStore.fetchMe().catch(() => {
+    })
   }
 })
 </script>
