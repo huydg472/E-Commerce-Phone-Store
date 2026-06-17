@@ -87,19 +87,19 @@ const filteredProducts = computed(() => {
 })
 
 const sortedProducts = computed(() => {
-  const products = [...filteredProducts.value]
+  const sortedList = [...filteredProducts.value]
 
   switch (selectedSort.value) {
     case 'price-asc':
-      return products.sort((a, b) => a.price - b.price)
+      return sortedList.sort((a, b) => a.price - b.price)
     case 'price-desc':
-      return products.sort((a, b) => b.price - a.price)
+      return sortedList.sort((a, b) => b.price - a.price)
     case 'name-asc':
-      return products.sort((a, b) => {
+      return sortedList.sort((a, b) => {
         return a.name.localeCompare(b.name, 'vi', {sensitivity: 'base'})
       })
     default:
-      return products
+      return sortedList
   }
 })
 
@@ -119,7 +119,6 @@ const resetPage = () => {
 watch(
     [selectedBrands, selectedPriceRange, selectedStorages, selectedSort, selectedPageSize],
     resetPage,
-    {deep: true}
 )
 
 watch(

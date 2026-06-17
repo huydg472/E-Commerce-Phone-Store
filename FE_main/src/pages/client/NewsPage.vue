@@ -1,514 +1,585 @@
 <script setup>
-const featuredPost = {
-  id: 1,
-  slug: 'danh-gia-iphone-16-pro-max',
-  title: 'Đánh giá iPhone 16 Pro Max: Nâng cấp xứng đáng, trải nghiệm đỉnh cao',
-  excerpt:
-      'iPhone 16 Pro Max mang đến hiệu năng mạnh mẽ hơn, camera cải tiến và thời lượng pin ấn tượng. Đây có phải là chiếc iPhone tốt nhất hiện nay?',
-  category: 'Đánh giá',
-  published_at: '20/05/2024',
-  reading_minutes: 6,
-  image_url: 'https://placehold.co/720x360/e5e7eb/111827?text=iPhone+16+Pro+Max'
+import {computed, onMounted, ref, watch} from 'vue'
+import {newsService} from '@/services/newsService'
+import {formatDate} from '@/utils/formatDate'
+import {useClientPagination} from '@/composables/useClientPagination.js'
+import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
+
+const loading = ref(true)
+const errorMessage = ref('')
+const search = ref('')
+const selectedCategory = ref('all')
+const posts = ref([])
+const categories = ref([])
+
+const normalize = (value) => String(value ?? '').trim().toLowerCase()
+
+const loadData = async () => {
+  loading.value = true
+  errorMessage.value = ''
+
+  try {
+    const [postsResponse, categoriesResponse] = await Promise.all([
+      newsService.getPublicPosts(),
+      newsService.getPublicCategories(),
+    ])
+
+    const postsPayload = postsResponse.data?.data ?? postsResponse.data ?? []
+    const categoriesPayload = categoriesResponse.data?.data ?? categoriesResponse.data ?? []
+
+    posts.value = Array.isArray(postsPayload) ? postsPayload : []
+    categories.value = Array.isArray(categoriesPayload) ? categoriesPayload : []
+  } catch (error) {
+    errorMessage.value = error.response?.data?.message || 'Không tải được tin tức.'
+  } finally {
+    loading.value = false
+  }
 }
 
-const posts = [
-  {
-    id: 2,
-    slug: 'samsung-galaxy-z-fold6-ra-mat',
-    title: 'Samsung Galaxy Z Fold6 ra mắt: Mỏng hơn, nhẹ hơn, mạnh mẽ hơn',
-    excerpt:
-        'Galaxy Z Fold6 có thiết kế mỏng nhẹ hơn đáng kể, hiệu năng vượt trội với chip Snapdragon 8 Gen 3.',
-    category: 'Tin công nghệ',
-    published_at: '18/05/2024',
-    reading_minutes: 4,
-    image_url: 'https://placehold.co/420x240/e8e9ff/111827?text=Galaxy+Z+Fold6'
-  },
-  {
-    id: 3,
-    slug: 'oppo-reno11-5g-thiet-ke-thoi-thuong',
-    title: 'OPPO Reno11 5G: Thiết kế thời thượng, camera chân dung ấn tượng',
-    excerpt:
-        'Khám phá OPPO Reno11 5G với thiết kế sang trọng, camera 64MP và sạc nhanh 67W siêu tốc.',
-    category: 'Tin công nghệ',
-    published_at: '15/05/2024',
-    reading_minutes: 3,
-    image_url: 'https://placehold.co/420x240/f5e8ff/111827?text=OPPO+Reno11+5G'
-  },
-  {
-    id: 4,
-    slug: 'apple-m4-hieu-nang-but-pha',
-    title: 'Apple M4: Hiệu năng bứt phá, tối ưu cho AI và đồ họa',
-    excerpt:
-        'Chip M4 mới của Apple mang đến hiệu năng CPU và GPU vượt trội, tối ưu cho công việc sáng tạo và AI.',
-    category: 'Đánh giá',
-    published_at: '12/05/2024',
-    reading_minutes: 5,
-    image_url: 'https://placehold.co/420x240/e0f2fe/111827?text=Apple+M4'
-  },
-  {
-    id: 5,
-    slug: 'uu-dai-thang-5-giam-den-3-trieu',
-    title: 'Ưu đãi tháng 5: Giảm đến 3 triệu đồng cho điện thoại chính hãng',
-    excerpt:
-        'Nhiều mẫu điện thoại chính hãng đang có ưu đãi hấp dẫn tại Zin Mobile. Số lượng có hạn!',
-    category: 'Khuyến mãi',
-    published_at: '10/05/2024',
-    reading_minutes: 2,
-    image_url: 'https://placehold.co/420x240/dbeafe/111827?text=Uu+dai+den+3+trieu'
-  }
-]
+const activeCategories = computed(() => categories.value.filter((category) => category?.status === 'active'))
 
-const popularPosts = [
-  {
-    id: 1,
-    slug: 'danh-gia-iphone-16-pro-max',
-    title: 'Đánh giá iPhone 16 Pro Max: Nâng cấp xứng đáng',
-    published_at: '20/05/2024',
-    image_url: 'https://placehold.co/90x70/e5e7eb/111827?text=iPhone'
-  },
-  {
-    id: 2,
-    slug: 'samsung-galaxy-z-fold6-ra-mat',
-    title: 'Samsung Galaxy Z Fold6 ra mắt: Mỏng hơn, nhẹ hơn',
-    published_at: '18/05/2024',
-    image_url: 'https://placehold.co/90x70/e8e9ff/111827?text=Fold6'
-  },
-  {
-    id: 4,
-    slug: 'apple-m4-hieu-nang-but-pha',
-    title: 'Apple M4: Hiệu năng bứt phá, tối ưu cho AI và đồ họa',
-    published_at: '12/05/2024',
-    image_url: 'https://placehold.co/90x70/e0f2fe/111827?text=M4'
-  },
-  {
-    id: 5,
-    slug: 'uu-dai-thang-5-giam-den-3-trieu',
-    title: 'Ưu đãi tháng 5: Giảm đến 3 triệu đồng',
-    published_at: '10/05/2024',
-    image_url: 'https://placehold.co/90x70/dbeafe/111827?text=Sale'
-  }
-]
+const filteredPosts = computed(() => {
+  const query = normalize(search.value)
 
-const topics = [
-  {
-    id: 1,
-    name: 'Đánh giá',
-    slug: 'danh-gia',
-    total: 24
-  },
-  {
-    id: 2,
-    name: 'Tin công nghệ',
-    slug: 'tin-cong-nghe',
-    total: 32
-  },
-  {
-    id: 3,
-    name: 'Khuyến mãi',
-    slug: 'khuyen-mai',
-    total: 18
-  },
-  {
-    id: 4,
-    name: 'Thủ thuật',
-    slug: 'thu-thuat',
-    total: 15
-  },
-  {
-    id: 5,
-    name: 'So sánh',
-    slug: 'so-sanh',
-    total: 12
-  }
-]
+  return (Array.isArray(posts.value) ? posts.value : []).filter((post) => {
+    const categorySlug = String(post?.category?.slug ?? '')
+    const matchesCategory = selectedCategory.value === 'all' || categorySlug === selectedCategory.value
+    const matchesQuery =
+        !query ||
+        [post?.title, post?.excerpt, post?.category?.name]
+            .filter(Boolean)
+            .some((field) => normalize(field).includes(query))
+
+    return matchesCategory && matchesQuery
+  })
+})
+
+const featuredPost = computed(() => {
+  return filteredPosts.value.find((post) => Boolean(post?.is_featured)) ?? filteredPosts.value[0] ?? null
+})
+
+const gridPosts = computed(() => {
+  const featuredId = featuredPost.value?.id
+  return filteredPosts.value.filter((post) => post?.id !== featuredId)
+})
+
+const popularPosts = computed(() => {
+  return [...(Array.isArray(posts.value) ? posts.value : [])]
+      .sort((left, right) => Number(right?.views_count ?? 0) - Number(left?.views_count ?? 0))
+      .slice(0, 4)
+})
+
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  paginatedItems,
+  pageStart,
+  pageEnd,
+} = useClientPagination(gridPosts, {
+  defaultPageSize: 8,
+  pageSizeOptions: [8, 12, 16],
+})
+
+watch([search, selectedCategory], () => {
+  currentPage.value = 1
+})
+
+onMounted(loadData)
 </script>
+
 <template>
   <main class="news-page">
-    <div class="container">
-      <!-- Breadcrumb -->
-      <nav class="news-breadcrumb" aria-label="breadcrumb">
-        <ol class="breadcrumb mb-2">
-          <li class="breadcrumb-item">
-            <RouterLink to="/">Trang chủ</RouterLink>
-          </li>
-          <li class="breadcrumb-item active" aria-current="page">
-            Tin tức
-          </li>
-        </ol>
-      </nav>
+    <div class="news-shell">
+      <section class="hero-card">
+        <div class="hero-copy">
+          <p class="eyebrow">Tin tức công nghệ</p>
+          <h1>Khám phá tin mới, đánh giá và xu hướng mua sắm</h1>
+          <p class="subtitle">
+            Cập nhật bài viết nổi bật, mẹo hay, khuyến mãi và so sánh thiết bị ngay trên ZinMobile.
+          </p>
 
-      <!-- Page title -->
-      <div class="page-heading">
-        <h1>Tin tức công nghệ</h1>
-        <p>Cập nhật xu hướng, đánh giá sản phẩm và thủ thuật công nghệ mới nhất.</p>
-      </div>
+          <div class="search-row">
+            <input
+                v-model.trim="search"
+                type="search"
+                class="search-input"
+                placeholder="Tìm bài viết, chủ đề hoặc mô tả..."
+            />
+          </div>
 
-      <div class="row g-4 align-items-start">
-        <!-- Main content -->
-        <div class="col-lg-9">
-          <!-- Featured article -->
-          <article class="featured-card">
-            <div class="row g-0 align-items-center">
-              <div class="col-md-6">
-                <div class="featured-image-wrap">
-                  <img
-                      :src="featuredPost.image_url"
-                      :alt="featuredPost.title"
-                      class="featured-image"
-                  />
+          <div class="category-chips">
+            <button
+                type="button"
+                class="chip"
+                :class="{ active: selectedCategory === 'all' }"
+                @click="selectedCategory = 'all'"
+            >
+              Tất cả
+            </button>
+            <button
+                v-for="category in activeCategories"
+                :key="category.id"
+                type="button"
+                class="chip"
+                :class="{ active: selectedCategory === category.slug }"
+                @click="selectedCategory = category.slug"
+            >
+              {{ category.name }}
+            </button>
+          </div>
+        </div>
 
-                  <span class="featured-badge">
-                    Nổi bật
-                  </span>
-                </div>
-              </div>
+        <div class="hero-metrics">
+          <article class="metric-card">
+            <strong>{{ posts.length }}</strong>
+            <span>Bài viết</span>
+          </article>
+          <article class="metric-card">
+            <strong>{{ activeCategories.length }}</strong>
+            <span>Chủ đề</span>
+          </article>
+          <article class="metric-card">
+            <strong>{{ popularPosts.length }}</strong>
+            <span>Nổi bật</span>
+          </article>
+        </div>
+      </section>
 
-              <div class="col-md-6">
-                <div class="featured-content">
-                  <p class="post-category">
-                    {{ featuredPost.category }}
-                  </p>
+      <section v-if="loading" class="state-card">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p>Đang tải tin tức...</p>
+      </section>
 
-                  <h2>
-                    {{ featuredPost.title }}
-                  </h2>
+      <section v-else-if="errorMessage" class="state-card error">
+        <i class="bi bi-exclamation-triangle"></i>
+        <p>{{ errorMessage }}</p>
+      </section>
 
-                  <p class="featured-desc">
-                    {{ featuredPost.excerpt }}
-                  </p>
+      <template v-else>
+        <section v-if="featuredPost" class="featured-card">
+          <RouterLink :to="`/tin-tuc/${featuredPost.slug}`" class="featured-image-link">
+            <img :src="featuredPost.featured_image_url" :alt="featuredPost.title" class="featured-image">
+          </RouterLink>
 
-                  <div class="post-meta">
-                    <span>{{ featuredPost.published_at }}</span>
-                    <span></span>
-                    <span>{{ featuredPost.reading_minutes }} phút đọc</span>
-                  </div>
+          <div class="featured-body">
+            <p class="post-category">{{ featuredPost.category?.name || 'Tin tức' }}</p>
+            <RouterLink :to="`/tin-tuc/${featuredPost.slug}`" class="featured-title">
+              {{ featuredPost.title }}
+            </RouterLink>
+            <p class="featured-excerpt">{{ featuredPost.excerpt }}</p>
 
-                  <RouterLink
-                      :to="`/tin-tuc/${featuredPost.slug}`"
-                      class="btn btn-primary btn-read"
-                  >
-                    Đọc ngay
-                  </RouterLink>
-                </div>
+            <div class="post-meta">
+              <span>{{ formatDate(featuredPost.published_at) }}</span>
+              <span>{{ featuredPost.reading_minutes }} phút đọc</span>
+              <span>{{ Number(featuredPost.views_count || 0).toLocaleString('vi-VN') }} lượt xem</span>
+            </div>
+
+            <RouterLink :to="`/tin-tuc/${featuredPost.slug}`" class="read-more">
+              Đọc ngay
+            </RouterLink>
+          </div>
+        </section>
+
+        <div class="content-grid">
+          <section class="article-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Bài viết mới</h2>
+                <p v-if="selectedCategory !== 'all'">
+                  Đang lọc theo chủ đề {{ activeCategories.find((category) => category.slug === selectedCategory)?.name }}
+                </p>
+                <p v-else>
+                  Hiển thị {{ pageStart }}-{{ pageEnd }} trong tổng số {{ gridPosts.length }} bài viết
+                </p>
               </div>
             </div>
-          </article>
 
-          <!-- Article grid -->
-          <div class="row g-4 mt-1">
-            <div
-                v-for="post in posts"
-                :key="post.id"
-                class="col-md-6 col-xl-3"
-            >
-              <article class="news-card h-100">
-                <RouterLink :to="`/tin-tuc/${post.slug}`" class="news-image-link">
-                  <img
-                      :src="post.image_url"
-                      :alt="post.title"
-                      class="news-image"
-                  />
+            <div class="article-grid">
+              <article v-for="post in paginatedItems" :key="post.id" class="article-card">
+                <RouterLink :to="`/tin-tuc/${post.slug}`" class="article-image-link">
+                  <img :src="post.featured_image_url" :alt="post.title" class="article-image">
                 </RouterLink>
 
-                <div class="news-body">
-                  <p class="post-category">
-                    {{ post.category }}
-                  </p>
-
-                  <RouterLink :to="`/tin-tuc/${post.slug}`" class="news-title">
+                <div class="article-body">
+                  <p class="post-category">{{ post.category?.name || 'Tin tức' }}</p>
+                  <RouterLink :to="`/tin-tuc/${post.slug}`" class="article-title">
                     {{ post.title }}
                   </RouterLink>
-
-                  <p class="news-desc">
-                    {{ post.excerpt }}
-                  </p>
-
-                  <div class="post-meta">
-                    <span>{{ post.published_at }}</span>
-                    <span></span>
+                  <p class="article-excerpt">{{ post.excerpt }}</p>
+                  <div class="post-meta compact">
+                    <span>{{ formatDate(post.published_at) }}</span>
                     <span>{{ post.reading_minutes }} phút đọc</span>
                   </div>
                 </div>
               </article>
             </div>
-          </div>
 
-          <!-- Load more -->
-          <div class="text-center mt-4">
-            <button type="button" class="btn btn-outline-primary btn-load-more">
-              Xem thêm bài viết
-              <span class="ms-1">⌄</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Sidebar -->
-        <aside class="col-lg-3">
-          <!-- Popular posts -->
-          <section class="sidebar-box">
-            <h3>Bài viết nổi bật</h3>
-
-            <div
-                v-for="item in popularPosts"
-                :key="item.id"
-                class="popular-item"
-            >
-              <RouterLink :to="`/tin-tuc/${item.slug}`" class="popular-image">
-                <img :src="item.image_url" :alt="item.title"/>
-              </RouterLink>
-
-              <div class="popular-content">
-                <RouterLink :to="`/tin-tuc/${item.slug}`">
-                  {{ item.title }}
-                </RouterLink>
-
-                <span>{{ item.published_at }}</span>
-              </div>
+            <div v-if="totalPages > 1" class="pagination-wrap">
+              <ListPaginationControls
+                  v-model:currentPage="currentPage"
+                  v-model:pageSize="pageSize"
+                  :total-pages="totalPages"
+                  :total-items="gridPosts.length"
+                  :page-start="pageStart"
+                  :page-end="pageEnd"
+                  item-label="bài viết"
+              />
             </div>
           </section>
 
-          <!-- Topics -->
-          <section class="sidebar-box mt-3">
-            <h3>Chủ đề quan tâm</h3>
-
-            <ul class="topic-list">
-              <li v-for="topic in topics" :key="topic.id">
-                <RouterLink :to="`/tin-tuc/chu-de/${topic.slug}`">
-                  {{ topic.name }}
+          <aside class="sidebar">
+            <section class="sidebar-box">
+              <h3>Bài viết nổi bật</h3>
+              <div v-for="item in popularPosts" :key="item.id" class="popular-item">
+                <RouterLink :to="`/tin-tuc/${item.slug}`" class="popular-image">
+                  <img :src="item.featured_image_url" :alt="item.title">
                 </RouterLink>
 
-                <span>{{ topic.total }}</span>
-              </li>
-            </ul>
+                <div class="popular-content">
+                  <RouterLink :to="`/tin-tuc/${item.slug}`">
+                    {{ item.title }}
+                  </RouterLink>
+                  <span>{{ formatDate(item.published_at) }}</span>
+                </div>
+              </div>
+            </section>
 
-            <RouterLink to="/tin-tuc/chu-de" class="view-all-topic">
-              Xem tất cả chủ đề
-              <span>›</span>
-            </RouterLink>
-          </section>
-        </aside>
-      </div>
+            <section class="sidebar-box">
+              <h3>Chủ đề</h3>
+              <ul class="topic-list">
+                <li v-for="category in activeCategories" :key="category.id">
+                  <RouterLink :to="`/tin-tuc/chu-de/${category.slug}`">
+                    {{ category.name }}
+                  </RouterLink>
+                  <span>{{ Number(category.posts_count || 0) }}</span>
+                </li>
+              </ul>
+              <RouterLink to="/tin-tuc/chu-de" class="view-all-topic">
+                Xem tất cả chủ đề
+                <span>›</span>
+              </RouterLink>
+            </section>
+          </aside>
+        </div>
+      </template>
     </div>
   </main>
 </template>
 
 <style scoped>
 .news-page {
-  padding: 28px 0 36px;
-  background: #fff;
-  color: #111827;
+  padding: 28px 0 40px;
+  background:
+      radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 28%),
+      linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #ffffff 100%);
 }
 
-.news-breadcrumb {
-  margin-bottom: 8px;
+.news-shell {
+  width: min(1280px, calc(100% - 32px));
+  margin: 0 auto;
 }
 
-.breadcrumb {
-  font-size: 14px;
-  font-weight: 500;
+.hero-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(240px, 0.8fr);
+  gap: 20px;
+  padding: 28px;
+  border: 1px solid #e5eaf3;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.06);
 }
 
-.breadcrumb a {
-  color: #64748b;
-  text-decoration: none;
+.eyebrow {
+  margin: 0 0 10px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-.breadcrumb a:hover {
-  color: #0d6efd;
+.hero-copy h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(28px, 3vw, 42px);
+  line-height: 1.08;
+  font-weight: 900;
 }
 
-.breadcrumb-item.active {
-  color: #0d6efd;
-}
-
-.page-heading {
-  margin-bottom: 22px;
-}
-
-.page-heading h1 {
-  margin-bottom: 8px;
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-}
-
-.page-heading p {
-  margin-bottom: 0;
+.subtitle {
+  max-width: 780px;
+  margin: 14px 0 0;
   color: #475569;
   font-size: 15px;
-  font-weight: 500;
+  line-height: 1.7;
 }
 
-/* Featured */
+.search-row {
+  margin-top: 18px;
+}
+
+.search-input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid #dbe4f0;
+  border-radius: 14px;
+  background: #fff;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.category-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.chip {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #d7e2f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.chip.active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.hero-metrics {
+  display: grid;
+  gap: 12px;
+}
+
+.metric-card {
+  padding: 18px;
+  border: 1px solid #e5eaf3;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.metric-card strong {
+  display: block;
+  color: #0f172a;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.metric-card span {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.state-card {
+  min-height: 220px;
+  margin-top: 20px;
+  border: 1px dashed #d6deeb;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #334155;
+  display: grid;
+  place-items: center;
+  gap: 10px;
+}
+
+.state-card.error {
+  color: #b91c1c;
+}
+
 .featured-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  margin-top: 22px;
+  border: 1px solid #e5eaf3;
+  border-radius: 24px;
   overflow: hidden;
   background: #fff;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.05);
 }
 
-.featured-image-wrap {
-  position: relative;
-  height: 255px;
-  overflow: hidden;
-  background: #f1f5f9;
+.featured-image-link {
+  display: block;
+  min-height: 100%;
 }
 
 .featured-image {
   width: 100%;
   height: 100%;
+  min-height: 300px;
   object-fit: cover;
 }
 
-.featured-badge {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  padding: 7px 18px;
-  background: #0d6efd;
-  color: #fff;
-  border-radius: 5px;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.featured-content {
-  position: relative;
-  min-height: 255px;
-  padding: 34px 34px 28px;
+.featured-body {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .post-category {
-  margin-bottom: 9px;
-  color: #0d6efd;
+  margin: 0 0 8px;
+  color: #2563eb;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 900;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
-.featured-content h2 {
-  max-width: 620px;
-  margin-bottom: 14px;
-  color: #111827;
-  font-size: 25px;
-  line-height: 1.32;
-  font-weight: 800;
+.featured-title,
+.article-title,
+.popular-content a {
+  color: #0f172a;
+  text-decoration: none;
 }
 
-.featured-desc {
-  max-width: 640px;
-  margin-bottom: 24px;
+.featured-title {
+  display: block;
+  font-size: clamp(22px, 2.2vw, 34px);
+  line-height: 1.15;
+  font-weight: 900;
+}
+
+.featured-excerpt,
+.article-excerpt {
+  margin: 14px 0 0;
   color: #475569;
-  font-size: 15px;
   line-height: 1.7;
-  font-weight: 500;
 }
 
 .post-meta {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 16px;
   color: #64748b;
   font-size: 13px;
-  font-weight: 600;
-}
-
-.post-meta span:nth-child(2) {
-  width: 1px;
-  height: 14px;
-  background: #cbd5e1;
-}
-
-.btn-read {
-  position: absolute;
-  right: 34px;
-  bottom: 28px;
-  min-width: 115px;
-  height: 35px;
-  border-radius: 4px;
-  font-size: 14px;
   font-weight: 700;
 }
 
-/* News card */
-.news-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  overflow: hidden;
+.post-meta.compact {
+  margin-top: 12px;
+}
+
+.read-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  margin-top: 18px;
+  padding: 0 18px;
+  border-radius: 12px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) 320px;
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.article-panel,
+.sidebar-box {
+  border: 1px solid #e5eaf3;
+  border-radius: 22px;
   background: #fff;
-  transition: 0.2s ease;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
 }
 
-.news-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+.article-panel {
+  padding: 22px;
 }
 
-.news-image-link {
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.panel-head h2,
+.sidebar-box h3 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.panel-head p {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.article-card {
+  overflow: hidden;
+  border: 1px solid #edf2f7;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.article-image-link {
   display: block;
-  background: #f1f5f9;
 }
 
-.news-image {
+.article-image {
   width: 100%;
-  height: 150px;
+  height: 170px;
   object-fit: cover;
 }
 
-.news-body {
-  padding: 14px 14px 15px;
+.article-body {
+  padding: 14px;
 }
 
-.news-title {
-  display: -webkit-box;
-  min-height: 46px;
-  margin-bottom: 8px;
-  overflow: hidden;
-  color: #111827;
-  text-decoration: none;
-  font-size: 15px;
+.article-title {
+  display: block;
+  margin-top: 4px;
+  font-size: 16px;
   line-height: 1.45;
-  font-weight: 800;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-weight: 900;
 }
 
-.news-title:hover {
-  color: #0d6efd;
+.sidebar {
+  display: grid;
+  gap: 18px;
 }
 
-.news-desc {
-  display: -webkit-box;
-  min-height: 57px;
-  margin-bottom: 14px;
-  overflow: hidden;
-  color: #475569;
-  font-size: 13px;
-  line-height: 1.55;
-  font-weight: 500;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-}
-
-/* Sidebar */
 .sidebar-box {
   padding: 18px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #fff;
 }
 
-.sidebar-box h3 {
-  margin-bottom: 18px;
-  color: #111827;
-  font-size: 18px;
-  font-weight: 800;
+.sidebar-box + .sidebar-box {
+  margin-top: 18px;
 }
 
 .popular-item {
   display: flex;
-  gap: 13px;
+  gap: 12px;
 }
 
 .popular-item + .popular-item {
@@ -516,11 +587,11 @@ const topics = [
 }
 
 .popular-image {
-  flex: 0 0 78px;
-  width: 78px;
-  height: 58px;
+  flex: 0 0 86px;
+  width: 86px;
+  height: 64px;
   overflow: hidden;
-  border-radius: 5px;
+  border-radius: 14px;
   background: #f1f5f9;
 }
 
@@ -537,30 +608,24 @@ const topics = [
 .popular-content a {
   display: -webkit-box;
   overflow: hidden;
-  color: #111827;
-  text-decoration: none;
-  font-size: 13px;
-  line-height: 1.35;
+  font-size: 14px;
+  line-height: 1.4;
   font-weight: 800;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
-.popular-content a:hover {
-  color: #0d6efd;
-}
-
 .popular-content span {
   display: block;
-  margin-top: 5px;
+  margin-top: 6px;
   color: #64748b;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .topic-list {
   padding: 0;
-  margin: 0;
+  margin: 14px 0 0;
   list-style: none;
 }
 
@@ -568,87 +633,73 @@ const topics = [
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 7px 0;
+  gap: 10px;
+  padding: 8px 0;
 }
 
 .topic-list a {
   color: #334155;
   text-decoration: none;
   font-size: 14px;
-  font-weight: 600;
-}
-
-.topic-list a:hover {
-  color: #0d6efd;
+  font-weight: 700;
 }
 
 .topic-list span {
-  min-width: 36px;
+  min-width: 34px;
   padding: 3px 8px;
-  border: 1px solid #e5e7eb;
   border-radius: 999px;
   background: #f8fafc;
   color: #475569;
   text-align: center;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .view-all-topic {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 14px;
-  color: #0d6efd;
+  gap: 6px;
+  margin-top: 12px;
+  color: #2563eb;
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
-.btn-load-more {
-  min-width: 175px;
-  height: 38px;
-  border-radius: 5px;
-  font-size: 14px;
-  font-weight: 700;
+.pagination-wrap {
+  margin-top: 18px;
 }
 
-/* Responsive */
-@media (max-width: 991.98px) {
-  .featured-content {
-    min-height: auto;
+@media (max-width: 1100px) {
+  .hero-card,
+  .featured-card,
+  .content-grid {
+    grid-template-columns: 1fr;
   }
 
-  .btn-read {
-    position: static;
-    margin-top: 18px;
+  .hero-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 767.98px) {
-  .news-page {
-    padding-top: 20px;
+  .news-shell {
+    width: min(100% - 20px, 100%);
   }
 
-  .page-heading h1 {
-    font-size: 24px;
+  .hero-card,
+  .featured-body,
+  .article-panel,
+  .sidebar-box {
+    padding: 18px;
   }
 
-  .featured-image-wrap {
-    height: 210px;
+  .hero-metrics,
+  .article-grid {
+    grid-template-columns: 1fr;
   }
 
-  .featured-content {
-    padding: 22px;
-  }
-
-  .featured-content h2 {
-    font-size: 20px;
-  }
-
-  .news-image {
-    height: 180px;
+  .featured-image {
+    min-height: 220px;
   }
 }
 </style>

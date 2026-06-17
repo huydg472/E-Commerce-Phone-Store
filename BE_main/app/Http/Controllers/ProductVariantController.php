@@ -108,17 +108,6 @@ class ProductVariantController extends Controller
         }
     }
 
-    public function showBySku(string $sku): JsonResponse
-    {
-        $variant = ProductVariant::where('sku', $sku)->firstOrFail();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Lay chi tiet bien the theo SKU thanh cong.',
-            'data' => $variant,
-        ]);
-    }
-
     public function toggleStatus(ProductVariant $productVariant): JsonResponse
     {
         $productVariant->update([

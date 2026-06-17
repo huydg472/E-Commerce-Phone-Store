@@ -118,6 +118,18 @@ export default [
                 component: () => import('@/pages/admin/coupons/CouponPage.vue'),
                 meta: {permission: PERMISSIONS.COUPONS.VIEW},
             },
+            {
+                path: 'news/posts',
+                name: 'admin.news.posts',
+                component: () => import('@/pages/admin/news/NewsPostPage.vue'),
+                meta: {permission: PERMISSIONS.NEWS_POSTS.VIEW},
+            },
+            {
+                path: 'news/categories',
+                name: 'admin.news.categories',
+                component: () => import('@/pages/admin/news/NewsCategoryPage.vue'),
+                meta: {permission: PERMISSIONS.NEWS_CATEGORIES.VIEW},
+            },
 
             {
                 path: 'users',

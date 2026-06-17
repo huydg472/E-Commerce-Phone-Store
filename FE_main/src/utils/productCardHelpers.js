@@ -412,7 +412,7 @@ const createRomProductCard = (product, rom, variants, placeholderImage = '', all
     const price = getVariantPrice(bestVariant) || getProductFallbackPrice(product)
     const oldPrice = getVariantOldPrice(bestVariant) || getProductFallbackOldPrice(product)
     const stockQuantity = getVariantAvailableQuantity(bestVariant) || Number(product?.quantity ?? 0)
-    const isFeatured = variants.some((variant) => Boolean(variant?.is_featured))
+    const isFeatured = Boolean(bestVariant?.is_featured)
 
     return {
         id: `${product?.id}-${normalizeText(rom) || bestVariant?.id || 'default'}`,

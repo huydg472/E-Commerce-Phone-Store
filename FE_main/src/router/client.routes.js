@@ -13,6 +13,16 @@ export default [
                 name: 'news',
                 component: () => import('@/pages/client/NewsPage.vue'),
             },
+            {
+                path: 'tin-tuc/chu-de/:slug?',
+                name: 'news.topics',
+                component: () => import('@/pages/client/NewsTopicPage.vue'),
+            },
+            {
+                path: 'tin-tuc/:slug',
+                name: 'news.show',
+                component: () => import('@/pages/client/NewsDetailPage.vue'),
+            },
 
             {
                 path: 'lien-he',

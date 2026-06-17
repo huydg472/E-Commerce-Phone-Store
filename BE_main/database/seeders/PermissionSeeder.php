@@ -22,6 +22,8 @@ class PermissionSeeder extends Seeder
             'product_variants' => 'Biến thể sản phẩm',
             'product_variant_images' => 'Ảnh biến thể sản phẩm',
             'product_specifications' => 'Thông số sản phẩm',
+            'news_categories' => 'Danh mục tin tức',
+            'news_posts' => 'Bài viết tin tức',
             'carts' => 'Giỏ hàng',
             'cart_items' => 'Sản phẩm trong giỏ hàng',
             'shipping_addresses' => 'Địa chỉ giao hàng',
@@ -96,6 +98,16 @@ class PermissionSeeder extends Seeder
                     'product_specifications.update',
                     'product_specifications.delete',
 
+                    // Quản lý tin tức
+                    'news_categories.view',
+                    'news_categories.create',
+                    'news_categories.update',
+                    'news_categories.delete',
+                    'news_posts.view',
+                    'news_posts.create',
+                    'news_posts.update',
+                    'news_posts.delete',
+
                     // Xử lý đơn hàng
                     'orders.view',
                     'orders.update',
@@ -135,6 +147,8 @@ class PermissionSeeder extends Seeder
                     'product_variants.view',
                     'product_variant_images.view',
                     'product_specifications.view',
+                    'news_categories.view',
+                    'news_posts.view',
                     'carts.view',
                     'carts.create',
                     'carts.update',

@@ -10,6 +10,8 @@ use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\NewsCategoryController;
+use App\Http\Controllers\NewsPostController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\PaymentController;
@@ -61,6 +63,11 @@ Route::middleware(['auth:sanctum', 'role:admin,staff', 'permission:categories.up
 Route::middleware(['auth:sanctum', 'role:admin,staff', 'permission:categories.update'])->put('/categories/{category}', [CategoryController::class, 'update']);
 Route::middleware(['auth:sanctum', 'role:admin,staff', 'permission:categories.delete'])->delete('/categories/{category}', [CategoryController::class, 'destroy']);
 
+Route::get('/news/categories', [NewsCategoryController::class, 'publicIndex']);
+Route::get('/news/categories/{slug}', [NewsCategoryController::class, 'publicShowBySlug']);
+Route::get('/news/posts', [NewsPostController::class, 'publicIndex']);
+Route::get('/news/posts/{slug}', [NewsPostController::class, 'publicShowBySlug']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'index']);
     Route::post('/orders', [OrderController::class, 'store']);
@@ -105,7 +112,6 @@ Route::middleware(['auth:sanctum', 'role:admin,staff', 'permission:product_speci
 
 Route::middleware(['auth:sanctum', 'role:admin,staff', 'permission:product_variants.view'])->get('/product-variants', [ProductVariantController::class, 'index']);
 Route::middleware(['auth:sanctum', 'role:admin,staff', 'permission:product_variants.create'])->post('/product-variants', [ProductVariantController::class, 'store']);
-Route::middleware(['auth:sanctum', 'role:admin,staff', 'permission:product_variants.view'])->get('/product-variants/by-sku/{sku}', [ProductVariantController::class, 'showBySku']);
 Route::middleware(['auth:sanctum', 'role:admin,staff', 'permission:product_variants.view'])->get('/product-variants/{productVariant}', [ProductVariantController::class, 'show']);
 Route::middleware(['auth:sanctum', 'role:admin,staff', 'permission:product_variants.update'])->patch('/product-variants/{productVariant}/toggle-status', [ProductVariantController::class, 'toggleStatus']);
 Route::middleware(['auth:sanctum', 'role:admin,staff', 'permission:product_variants.update'])->put('/product-variants/{productVariant}', [ProductVariantController::class, 'update']);
@@ -156,6 +162,20 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
+    Route::middleware('permission:news_categories.view')->get('/admin/news/categories', [NewsCategoryController::class, 'adminIndex']);
+    Route::middleware('permission:news_categories.create')->post('/admin/news/categories', [NewsCategoryController::class, 'store']);
+    Route::middleware('permission:news_categories.view')->get('/admin/news/categories/{newsCategory}', [NewsCategoryController::class, 'show']);
+    Route::middleware('permission:news_categories.update')->put('/admin/news/categories/{newsCategory}', [NewsCategoryController::class, 'update']);
+    Route::middleware('permission:news_categories.update')->patch('/admin/news/categories/{newsCategory}/toggle-status', [NewsCategoryController::class, 'toggleStatus']);
+    Route::middleware('permission:news_categories.delete')->delete('/admin/news/categories/{newsCategory}', [NewsCategoryController::class, 'destroy']);
+
+    Route::middleware('permission:news_posts.view')->get('/admin/news/posts', [NewsPostController::class, 'adminIndex']);
+    Route::middleware('permission:news_posts.create')->post('/admin/news/posts', [NewsPostController::class, 'store']);
+    Route::middleware('permission:news_posts.view')->get('/admin/news/posts/{newsPost}', [NewsPostController::class, 'show']);
+    Route::middleware('permission:news_posts.update')->put('/admin/news/posts/{newsPost}', [NewsPostController::class, 'update']);
+    Route::middleware('permission:news_posts.update')->patch('/admin/news/posts/{newsPost}/toggle-status', [NewsPostController::class, 'toggleStatus']);
+    Route::middleware('permission:news_posts.delete')->delete('/admin/news/posts/{newsPost}', [NewsPostController::class, 'destroy']);
+
     Route::get('/reports/revenue', [ReportController::class, 'revenue']);
     Route::get('/reports/products', [ReportController::class, 'products']);
     Route::get('/reports/orders', [ReportController::class, 'orders']);

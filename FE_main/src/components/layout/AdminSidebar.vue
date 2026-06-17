@@ -121,6 +121,13 @@ const menuGroups = computed(() => [
         match: '/admin/stock-logs',
         permission: PERMISSIONS.STOCK_LOGS.VIEW
       },
+      {
+        label: 'Tin tức',
+        icon: 'bi bi-newspaper',
+        to: '/admin/news/posts',
+        match: '/admin/news',
+        permission: PERMISSIONS.NEWS_POSTS.VIEW
+      },
       {label: 'Cài đặt', icon: 'bi bi-gear', to: '/admin/settings', match: '/admin/settings', permission: null},
     ],
   },

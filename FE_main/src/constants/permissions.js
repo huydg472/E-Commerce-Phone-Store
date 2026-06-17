@@ -74,6 +74,18 @@ export const PERMISSIONS = {
         UPDATE: 'product_specifications.update',
         DELETE: 'product_specifications.delete',
     },
+    NEWS_CATEGORIES: {
+        VIEW: 'news_categories.view',
+        CREATE: 'news_categories.create',
+        UPDATE: 'news_categories.update',
+        DELETE: 'news_categories.delete',
+    },
+    NEWS_POSTS: {
+        VIEW: 'news_posts.view',
+        CREATE: 'news_posts.create',
+        UPDATE: 'news_posts.update',
+        DELETE: 'news_posts.delete',
+    },
     STOCK_LOGS: {
         VIEW: 'stock_logs.view',
         CREATE: 'stock_logs.create',

@@ -20,11 +20,4 @@ class BrandFactory extends Factory
             'status' => 'active',
         ];
     }
-
-    public function accessory(): static
-    {
-        return $this->state(fn() => [
-            'type' => 'accessory',
-        ]);
-    }
 }

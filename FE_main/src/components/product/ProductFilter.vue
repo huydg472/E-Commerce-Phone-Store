@@ -164,7 +164,7 @@ watch(
         emit('update:selected-brands', [brandId])
       }
     },
-    {immediate: true, deep: true}
+    {immediate: true}
 )
 
 onMounted(() => {

@@ -138,8 +138,7 @@ const handleFavoriteToggle = async () => {
 
 onMounted(() => {
   if (authStore.isLoggedIn) {
-    void favoriteStore.ensureLoaded().catch(() => {
-    })
+    void favoriteStore.ensureLoaded().catch(() => undefined)
   }
 })
 </script>

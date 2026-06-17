@@ -156,9 +156,9 @@ onMounted(() => {
             Đang tải sản phẩm...
           </div>
 
-          <div v-for="product in featuredProducts" :key="product.id" class="product-card-shell">
+          <div v-for="(product, index) in featuredProducts" :key="product.id" class="product-card-shell">
             <ProductCard
-                :image="getShowcaseImage(product.image, featuredProducts.indexOf(product))"
+                :image="getShowcaseImage(product.image, index)"
                 :name="product.name"
                 :colors="product.colors"
                 :price="product.price"
