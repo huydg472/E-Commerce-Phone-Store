@@ -303,7 +303,8 @@ onMounted(loadData)
                 <button type="button" class="action-btn action-edit" @click="openEditModal(category)">
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button type="button" class="action-btn action-delete" :disabled="deletingId === category.id" @click="handleDelete(category)">
+                <button type="button" class="action-btn action-delete" :disabled="deletingId === category.id"
+                        @click="handleDelete(category)">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
@@ -326,7 +327,8 @@ onMounted(loadData)
       </section>
     </template>
 
-    <BaseModal :show="showModal" :title="editingId ? 'Sửa danh mục tin tức' : 'Thêm danh mục tin tức'" @close="closeModal">
+    <BaseModal :show="showModal" :title="editingId ? 'Sửa danh mục tin tức' : 'Thêm danh mục tin tức'"
+               @close="closeModal">
       <form class="modal-form" @submit.prevent="submitForm">
         <div class="field-grid">
           <label class="field">

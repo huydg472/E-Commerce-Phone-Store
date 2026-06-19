@@ -165,6 +165,7 @@ export function useOrderHistoryPage() {
                 paymentStatus: getPaymentStatus(order),
                 paymentId: order.payment?.id || null,
                 total: toNumber(order.total_amount),
+                totalFormatted: formatCurrency(order.total_amount),
                 address: order.shipping_address_text || '',
                 orderItems: items,
                 product: {

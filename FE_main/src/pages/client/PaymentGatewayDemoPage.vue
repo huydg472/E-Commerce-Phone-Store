@@ -1,4 +1,29 @@
 <script setup>
+import {usePaymentGatewayDemo} from '@/composables/usePaymentGatewayDemo.js'
+
+const {
+  gateways,
+  selectedGateway,
+  paymentState,
+  countdown,
+  transactionCode,
+  orderId,
+  amount,
+  syncMessage,
+  syncError,
+  gatewayMeta,
+  orderLabel,
+  formattedAmount,
+  progressPercent,
+  statusLabel,
+  paymentSteps,
+  qrMatrix,
+  selectGateway,
+  resetFlow,
+  cancelPayment,
+  router,
+} = usePaymentGatewayDemo()
+/*
 import {computed, onBeforeUnmount, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {orderService} from '@/services/orderService'
@@ -260,6 +285,7 @@ onBeforeUnmount(() => {
   clearCountdownTimer()
   clearSuccessTimer()
 })
+*/
 </script>
 
 <template>

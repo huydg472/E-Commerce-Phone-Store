@@ -1,6 +1,7 @@
 <script setup>
 import ServicePolicyBar from '@/components/common/ServicePolicyBar.vue'
 import ProductCard from '@/components/product/ProductCard.vue'
+import HomeFeaturedProducts from '@/components/home/HomeFeaturedProducts.vue'
 import {computed, onMounted, ref, watch} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useProductStore} from '@/stores/productStore.js'
@@ -20,7 +21,6 @@ const placeholder = {
 }
 
 const selectedBrand = ref('')
-const featuredScrollRef = ref(null)
 const brandPriority = ['Apple', 'Samsung', 'OPPO', 'Xiaomi', 'Vivo', 'Realme']
 
 const productList = computed(() => Array.isArray(products.value) ? products.value : [])
@@ -91,19 +91,6 @@ const brandProducts = computed(() => {
       .slice(0, 8)
 })
 
-const scrollFeaturedProducts = (direction) => {
-  const element = featuredScrollRef.value
-
-  if (!element) {
-    return
-  }
-
-  const cardWidth = element.querySelector('.product-card-shell')?.offsetWidth || 260
-  element.scrollBy({
-    left: direction * (cardWidth + 16) * 2,
-    behavior: 'smooth',
-  })
-}
 
 watch(
     phoneBrands,
@@ -136,47 +123,11 @@ onMounted(() => {
 
     <ServicePolicyBar/>
 
-    <section class="container-fluid px-4 featured-section">
-      <div class="section-heading">
-        <h2>Sản phẩm nổi bật</h2>
-
-        <RouterLink to="/san-pham">
-          Xem tất cả
-          <i class="bi bi-chevron-right"></i>
-        </RouterLink>
-      </div>
-
-      <div class="product-slider-wrap">
-        <button class="product-nav product-nav-left" type="button" @click="scrollFeaturedProducts(-1)">
-          <i class="bi bi-chevron-left"></i>
-        </button>
-
-        <div ref="featuredScrollRef" class="product-grid featured-product-track">
-          <div v-if="productLoading" class="loading-state">
-            Đang tải sản phẩm...
-          </div>
-
-          <div v-for="(product, index) in featuredProducts" :key="product.id" class="product-card-shell">
-            <ProductCard
-                :image="getShowcaseImage(product.image, index)"
-                :name="product.name"
-                :colors="product.colors"
-                :price="product.price"
-                :old-price="product.oldPrice || ''"
-                :to="product.to"
-                :product-id="product.productId"
-                :variant-id="product.variantId"
-                :cart-quantity="1"
-                :stock-quantity="product.stockQuantity"
-            />
-          </div>
-        </div>
-
-        <button class="product-nav product-nav-right" type="button" @click="scrollFeaturedProducts(1)">
-          <i class="bi bi-chevron-right"></i>
-        </button>
-      </div>
-    </section>
+    <HomeFeaturedProducts
+        :products="featuredProducts"
+        :loading="productLoading"
+        :fallback-images="[placeholder.product, placeholder.accessories, placeholder.hero]"
+    />
 
     <section class="container-fluid px-4 promo-section">
       <div class="promo-grid">

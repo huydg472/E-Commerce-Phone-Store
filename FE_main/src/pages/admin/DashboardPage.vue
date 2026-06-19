@@ -3,6 +3,11 @@ import {computed, onMounted} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useRouter} from 'vue-router'
 import {useDashboardStore} from '@/stores/dashboardStore'
+import StatisticCard from '@/components/dashboard/StatisticCard.vue'
+import RevenueChart from '@/components/dashboard/RevenueChart.vue'
+import TopProducts from '@/components/dashboard/TopProducts.vue'
+import RecentOrders from '@/components/dashboard/RecentOrders.vue'
+import DashboardActivityFeed from '@/components/dashboard/DashboardActivityFeed.vue'
 
 const router = useRouter()
 const dashboardStore = useDashboardStore()
@@ -236,6 +241,45 @@ const stats = computed(() => [
   },
 ])
 
+const dashboardStats = computed(() => stats.value.map((item) => ({
+  title: item.title,
+  value: item.value,
+  percent: '0%',
+  icon: item.icon.replace('bi ', ''),
+  variant: item.tone === 'green' ? 'success' : item.tone === 'purple' ? 'purple' : item.tone === 'warning' ? 'warning' : 'primary',
+})))
+
+const dashboardRevenueSeries = computed(() => revenueSeries.value.map((item) => ({
+  day: item.label,
+  label: item.label,
+  percent: item.height,
+})))
+
+const dashboardTopProducts = computed(() => topProducts.value.map((product, index) => ({
+  id: product.name + product.variant + index,
+  rank: index + 1,
+  thumbClass: index === 0 ? 'phone-graphite' : index === 1 ? 'phone-titanium' : index === 2 ? 'phone-purple' : 'phone-green',
+  name: product.name,
+  sold: formatNumber(product.sold),
+})))
+
+const dashboardRecentOrders = computed(() => recentOrders.value.map((order, index) => ({
+  code: order.id,
+  customer: order.customer,
+  product: order.paymentMethod || 'Sản phẩm',
+  total: order.total,
+  status:
+      order.statusKey === 'shipping'
+          ? 'shipping'
+          : order.statusKey === 'completed'
+              ? 'completed'
+              : order.statusKey === 'cancelled'
+                  ? 'cancelled'
+                  : 'pending',
+  date: order.time,
+  thumbClass: index === 0 ? 'phone-graphite' : index === 1 ? 'phone-titanium' : index === 2 ? 'phone-purple' : 'phone-green',
+})))
+
 const refreshDashboard = () => {
   dashboardStore.fetchDashboard()
 }
@@ -282,157 +326,31 @@ onMounted(() => {
       </div>
 
       <div class="hero-stats">
-        <article
-            v-for="item in stats"
+        <StatisticCard
+            v-for="item in dashboardStats"
             :key="item.title"
-            class="stat-card"
-            :class="{ 'stat-card--revenue': item.title === 'Tổng doanh thu' }"
-        >
-          <div class="stat-icon" :class="`tone-${item.tone}`">
-            <i :class="item.icon"></i>
-          </div>
-
-          <div class="stat-content">
-            <strong>{{ item.value }}</strong>
-            <span>{{ item.title }}</span>
-            <small>{{ item.desc }}</small>
-          </div>
-        </article>
+            :title="item.title"
+            :value="item.value"
+            :percent="item.percent"
+            :icon="item.icon"
+            :variant="item.variant"
+        />
       </div>
     </section>
 
     <section class="dashboard-grid">
-      <div class="dashboard-card sales-card">
-        <div class="card-head">
-          <div>
-            <h4>Doanh thu bán hàng</h4>
-            <p>Thống kê 6 tháng gần nhất từ đơn hàng thật trong hệ thống</p>
-          </div>
-
-          <button type="button" class="card-action" @click="router.push({ name: 'admin.reports.revenue' })">
-            Xem báo cáo
-          </button>
-        </div>
-
-        <div class="chart-box">
-          <div v-for="item in revenueSeries" :key="item.key" class="bar-item">
-            <span :style="{ height: item.height + '%' }"></span>
-            <small>{{ item.label }}</small>
-            <strong>{{ item.amount }}</strong>
-          </div>
-        </div>
-      </div>
-
-      <div class="dashboard-card activity-card">
-        <div class="card-head">
-          <div>
-            <h4>Hoạt động gần đây</h4>
-            <p>Dữ liệu được lấy từ bản ghi mới nhất trong hệ thống</p>
-          </div>
-        </div>
-
-        <div v-if="activities.length" class="activity-list">
-          <article v-for="item in activities" :key="item.title + item.time" class="activity-item">
-            <div class="activity-icon" :class="`tone-${item.tone}`">
-              <i :class="item.icon"></i>
-            </div>
-
-            <div class="activity-content">
-              <strong>{{ item.title }}</strong>
-              <span>{{ item.detail }}</span>
-              <small>{{ item.time }}</small>
-            </div>
-          </article>
-        </div>
-
-        <div v-else class="empty-state">
-          Chưa có dữ liệu hoạt động.
-        </div>
-      </div>
+      <RevenueChart :items="dashboardRevenueSeries"/>
+      <DashboardActivityFeed :activities="activities"/>
     </section>
 
     <section class="dashboard-grid bottom-grid">
-      <div class="dashboard-card">
-        <div class="card-head">
-          <div>
-            <h4>Sản phẩm bán chạy</h4>
-            <p>Tổng hợp từ số lượng bán ra và giá trị đơn hàng</p>
-          </div>
-        </div>
-
-        <div v-if="topProducts.length" class="product-list">
-          <article v-for="product in topProducts" :key="product.name + product.variant" class="product-item">
-            <div class="product-main">
-              <div>
-                <strong>{{ product.name }}</strong>
-                <span>{{ product.variant }}</span>
-              </div>
-
-              <p>{{ formatCurrency(product.revenue) }}</p>
-            </div>
-
-            <div class="product-meta">
-              <span>Đã bán {{ formatNumber(product.sold) }}</span>
-            </div>
-
-          </article>
-        </div>
-
-        <div v-else class="empty-state">
-          Chưa có đơn hàng để thống kê sản phẩm bán chạy.
-        </div>
-      </div>
-
-      <div class="dashboard-card">
-        <div class="card-head">
-          <div>
-            <h4>Đơn hàng gần đây</h4>
-            <p>Danh sách đơn mới nhất kèm trạng thái thanh toán</p>
-          </div>
-
-          <button type="button" class="card-action" @click="goToOrders">
-            Tất cả
-          </button>
-        </div>
-
-        <div v-if="recentOrders.length" class="order-list">
-          <article v-for="order in recentOrders" :key="order.id" class="order-item">
-            <div class="order-main">
-              <strong>{{ order.id }}</strong>
-              <span>{{ order.customer }}</span>
-              <small>{{ order.time }}</small>
-            </div>
-
-            <div class="order-money">
-              {{ order.total }}
-            </div>
-
-            <div class="order-meta">
-              <span class="status-badge"
-                    :class="`status-${order.paymentStatusKey === 'paid' ? 'success' : 'warning'}`">
-                {{ order.paymentStatus }}
-              </span>
-
-              <span class="method-badge">
-                {{ order.paymentMethod }}
-              </span>
-
-              <span class="status-chip" :class="`order-${order.statusKey}`">
-                {{ order.status }}
-              </span>
-            </div>
-          </article>
-        </div>
-
-        <div v-else class="empty-state">
-          Chưa có đơn hàng nào.
-        </div>
-      </div>
+      <TopProducts :products="dashboardTopProducts"/>
+      <RecentOrders :orders="dashboardRecentOrders"/>
     </section>
   </div>
 </template>
 
-<style scoped>
+<style>
 .dashboard-page {
   display: flex;
   flex-direction: column;

@@ -96,7 +96,9 @@ onMounted(loadData)
           <p class="eyebrow">Danh mục bài viết</p>
           <h1>{{ selectedCategory?.name || 'Tất cả chủ đề tin tức' }}</h1>
           <p class="subtitle">
-            {{ selectedCategory?.description || 'Khám phá toàn bộ chuyên mục, chọn một chủ đề cụ thể hoặc xem các bài viết mới nhất.' }}
+            {{
+              selectedCategory?.description || 'Khám phá toàn bộ chuyên mục, chọn một chủ đề cụ thể hoặc xem các bài viết mới nhất.'
+            }}
           </p>
         </div>
 

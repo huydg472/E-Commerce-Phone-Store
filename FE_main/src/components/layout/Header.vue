@@ -5,16 +5,20 @@ import {storeToRefs} from 'pinia'
 import {useAuthStore} from '@/stores/authStore.js'
 import {useCartStore} from '@/stores/cartStore'
 import {useFavoriteStore} from '@/stores/favoriteStore'
+import {usePublicSiteSettings} from '@/composables/usePublicSiteSettings'
+import HeaderSearchBar from '@/components/layout/HeaderSearchBar.vue'
 
-const router = useRouter();
-const authStore = useAuthStore();
+const router = useRouter()
+const authStore = useAuthStore()
 const cartStore = useCartStore()
 const favoriteStore = useFavoriteStore()
+const {siteName, logoUrl, slogan} = usePublicSiteSettings()
 
 const {items: cartItems, item: cartData} = storeToRefs(cartStore)
 const {variantIds: favoriteVariantIds} = storeToRefs(favoriteStore)
 
 const isLoggedIn = computed(() => authStore.isLoggedIn)
+
 
 const cartQuantity = computed(() => {
   const items = cartData.value?.items ?? cartItems.value ?? []
@@ -71,18 +75,17 @@ watch(isLoggedIn, () => {
       <div class="header-top">
         <RouterLink to="/" class="logo-wrap">
           <div class="logo-icon">
-            <i class="bi bi-bag"></i>
+            <img v-if="logoUrl" :src="logoUrl" :alt="siteName" class="logo-image"/>
+            <i v-else class="bi bi-bag"></i>
           </div>
 
           <span class="logo-text">
-            Zin<strong>Mobile</strong>
+            {{ siteName }}
+            <small>{{ slogan }}</small>
           </span>
         </RouterLink>
 
-        <div class="search-box">
-          <input type="text" placeholder="Bạn cần tìm gì?"/>
-          <button type="button">Tìm kiếm</button>
-        </div>
+        <HeaderSearchBar/>
 
         <div class="header-actions">
           <RouterLink v-if="!isLoggedIn" to="/auth/login" class="header-action">
@@ -200,12 +203,31 @@ watch(isLoggedIn, () => {
   justify-content: center;
   font-size: 23px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .logo-text {
-  font-size: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 20px;
   line-height: 1;
   letter-spacing: 1px;
+  max-width: 220px;
+  white-space: normal;
+}
+
+.logo-text small {
+  color: var(--muted-color);
+  font-size: 12px;
+  line-height: 1.3;
+  letter-spacing: 0;
 }
 
 .logo-text strong {
@@ -213,19 +235,21 @@ watch(isLoggedIn, () => {
 }
 
 .search-box {
-  width: 100%;
-  height: 42px;
+  position: relative;
+  width: min(100%, 720px);
+  height: 38px;
   display: grid;
-  grid-template-columns: 1fr 150px;
+  grid-template-columns: 1fr 128px;
+  justify-self: center;
 }
 
 .search-box input {
   border: 1px solid var(--border-color);
   border-right: none;
   border-radius: 8px 0 0 8px;
-  padding: 0 20px;
+  padding: 0 16px;
   outline: none;
-  font-size: 14px;
+  font-size: 13px;
   background: var(--card-bg);
   color: var(--text-color);
 }
@@ -240,11 +264,78 @@ watch(isLoggedIn, () => {
   color: #ffffff;
   border-radius: 0 8px 8px 0;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .search-box button:hover {
   background: var(--primary-hover);
+}
+
+.search-suggestions {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 128px;
+  max-height: 360px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  z-index: 20;
+}
+
+.search-suggestion {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  color: var(--text-color);
+  text-decoration: none;
+  border-bottom: 1px solid #eef2f7;
+}
+
+.search-suggestion:last-child {
+  border-bottom: none;
+}
+
+.search-suggestion:hover {
+  background: #f8fbff;
+}
+
+.suggestion-image {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.suggestion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.suggestion-info strong {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #0f172a;
+}
+
+.suggestion-info span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.suggestion-info em {
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+  color: #0d6efd;
 }
 
 .header-actions {
@@ -437,6 +528,7 @@ watch(isLoggedIn, () => {
     grid-template-columns: 1fr;
     height: auto;
     gap: 8px;
+    width: 100%;
   }
 
   .search-box input,
@@ -445,11 +537,19 @@ watch(isLoggedIn, () => {
     border-radius: 8px;
     border: 1px solid var(--border-color);
   }
+
+  .search-suggestions {
+    right: 0;
+  }
+
+  .search-suggestion {
+    grid-template-columns: 48px 1fr;
+  }
 }
 
 @media (max-width: 576px) {
   .logo-text {
-    font-size: 22px;
+    font-size: 18px;
   }
 
   .header-actions {
@@ -461,3 +561,5 @@ watch(isLoggedIn, () => {
   }
 }
 </style>
+
+

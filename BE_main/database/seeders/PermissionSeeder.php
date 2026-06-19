@@ -32,6 +32,7 @@ class PermissionSeeder extends Seeder
             'payments' => 'Thanh toán',
             'coupons' => 'Mã giảm giá',
             'stock_logs' => 'Nhật ký kho',
+            'settings' => 'Cấu hình hệ thống',
         ];
 
         $actions = [
@@ -78,11 +79,8 @@ class PermissionSeeder extends Seeder
         if ($staffRole) {
             $staffPermissions = Permission::query()
                 ->whereIn('name', [
-                    // Xem dữ liệu nền để chọn khi quản lý sản phẩm
                     'brands.view',
                     'categories.view',
-
-                    // Quản lý sản phẩm, biến thể, ảnh, thông số
                     'products.view',
                     'products.create',
                     'products.update',
@@ -97,8 +95,6 @@ class PermissionSeeder extends Seeder
                     'product_specifications.create',
                     'product_specifications.update',
                     'product_specifications.delete',
-
-                    // Quản lý tin tức
                     'news_categories.view',
                     'news_categories.create',
                     'news_categories.update',
@@ -107,25 +103,19 @@ class PermissionSeeder extends Seeder
                     'news_posts.create',
                     'news_posts.update',
                     'news_posts.delete',
-
-                    // Xử lý đơn hàng
                     'orders.view',
                     'orders.update',
                     'order_items.view',
                     'shipping_addresses.view',
-
-                    // Quản lý mã giảm giá
                     'coupons.view',
                     'coupons.create',
                     'coupons.update',
-
-                    // Theo dõi/cập nhật thanh toán
                     'payments.view',
                     'payments.update',
-
-                    // Quản lý tồn kho
                     'stock_logs.view',
                     'stock_logs.create',
+                    'settings.view',
+                    'settings.update',
                 ])
                 ->get();
 

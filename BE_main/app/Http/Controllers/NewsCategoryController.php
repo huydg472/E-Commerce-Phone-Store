@@ -15,7 +15,7 @@ class NewsCategoryController extends Controller
     {
         $categories = NewsCategory::query()
             ->where('status', 'active')
-            ->withCount(['newsPosts as posts_count' => fn ($query) => $query->where('status', 'published')])
+            ->withCount(['newsPosts as posts_count' => fn($query) => $query->where('status', 'published')])
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
@@ -31,7 +31,7 @@ class NewsCategoryController extends Controller
         $category = NewsCategory::query()
             ->where('slug', $slug)
             ->where('status', 'active')
-            ->withCount(['newsPosts as posts_count' => fn ($query) => $query->where('status', 'published')])
+            ->withCount(['newsPosts as posts_count' => fn($query) => $query->where('status', 'published')])
             ->firstOrFail();
 
         return response()->json([
@@ -62,7 +62,7 @@ class NewsCategoryController extends Controller
 
         $data = $request->validated();
         $data['slug'] = Str::slug($data['slug'] ?: $data['name']);
-        $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
+        $data['sort_order'] = (int)($data['sort_order'] ?? 0);
 
         $category = NewsCategory::create($data);
 
@@ -91,7 +91,7 @@ class NewsCategoryController extends Controller
 
         $data = $request->validated();
         $data['slug'] = Str::slug($data['slug'] ?: $data['name']);
-        $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
+        $data['sort_order'] = (int)($data['sort_order'] ?? 0);
 
         $newsCategory->update($data);
 

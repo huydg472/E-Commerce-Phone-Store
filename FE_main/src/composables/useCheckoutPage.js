@@ -1,9 +1,11 @@
 import {computed, onMounted, reactive, ref, watch} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
+import {storeToRefs} from 'pinia'
 import {useAuthStore} from '@/stores/authStore'
 import {useCartStore} from '@/stores/cartStore'
 import {useCouponStore} from '@/stores/couponStore'
 import {useOrderStore} from '@/stores/orderStore'
+import {useSettingsStore} from '@/stores/settingsStore'
 import {paymentService} from '@/services/paymentService'
 import {shippingAddressService} from '@/services/shippingAddressService'
 import {formatCurrency} from '@/utils/formatCurrency'
@@ -15,6 +17,8 @@ export function useCheckoutPage() {
     const cartStore = useCartStore()
     const couponStore = useCouponStore()
     const orderStore = useOrderStore()
+    const settingsStore = useSettingsStore()
+    const {settings} = storeToRefs(settingsStore)
 
     const pageLoading = ref(true)
     const isSubmitting = ref(false)
@@ -100,22 +104,27 @@ export function useCheckoutPage() {
         note: '',
     })
 
-    const shippingMethods = [
-        {
-            id: 'standard',
-            title: 'Giao hàng tiêu chuẩn',
-            fee: 0,
-            feeLabel: 'Miễn phí',
-            icon: 'bi-truck',
-        },
-        {
-            id: 'express',
-            title: 'Giao hàng nhanh',
-            fee: 40000,
-            feeLabel: '+40.000đ',
-            icon: 'bi-truck-flatbed',
-        },
-    ]
+    const shippingMethods = computed(() => {
+        const standardFee = Number(settings.value?.shipping_fee_standard ?? 0)
+        const expressFee = Number(settings.value?.shipping_fee_express ?? 40000)
+
+        return [
+            {
+                id: 'standard',
+                title: 'Giao hàng tiêu chuẩn',
+                fee: standardFee,
+                feeLabel: standardFee > 0 ? `${formatCurrency(standardFee)}` : 'Miễn phí',
+                icon: 'bi-truck',
+            },
+            {
+                id: 'express',
+                title: 'Giao hàng nhanh',
+                fee: expressFee,
+                feeLabel: `+${formatCurrency(expressFee)}`,
+                icon: 'bi-truck-flatbed',
+            },
+        ]
+    })
 
     const rawCartItems = computed(() => {
         const source = cartStore.item?.items ?? cartStore.items ?? []
@@ -271,7 +280,7 @@ export function useCheckoutPage() {
     })
 
     const shippingFeeValue = computed(() => {
-        const method = shippingMethods.find((item) => item.id === shippingMethod.value)
+        const method = shippingMethods.value.find((item) => item.id === shippingMethod.value)
         return method?.fee ?? 0
     })
 
@@ -338,7 +347,7 @@ export function useCheckoutPage() {
     })
 
     const selectedShippingMethod = computed(() => {
-        return shippingMethods.find((item) => item.id === shippingMethod.value) ?? shippingMethods[0]
+        return shippingMethods.value.find((item) => item.id === shippingMethod.value) ?? shippingMethods.value[0]
     })
 
     const closeAddressModal = () => {
@@ -487,6 +496,7 @@ export function useCheckoutPage() {
                 }).catch(() => {
                     addresses.value = []
                 }),
+                settingsStore.fetchPublic(),
             ])
 
             if (!authStore.isLoggedIn) {

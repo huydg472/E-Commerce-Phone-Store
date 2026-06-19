@@ -21,8 +21,8 @@ class NewsPostController extends Controller
             ->orderByDesc('id');
 
         if ($request->filled('category')) {
-            $categorySlug = (string) $request->string('category');
-            $query->whereHas('category', fn ($categoryQuery) => $categoryQuery->where('slug', $categorySlug));
+            $categorySlug = (string)$request->string('category');
+            $query->whereHas('category', fn($categoryQuery) => $categoryQuery->where('slug', $categorySlug));
         }
 
         if ($request->filled('featured')) {
@@ -30,7 +30,7 @@ class NewsPostController extends Controller
         }
 
         if ($request->filled('search')) {
-            $search = trim((string) $request->string('search'));
+            $search = trim((string)$request->string('search'));
             $query->where(function ($inner) use ($search) {
                 $inner->where('title', 'like', '%' . $search . '%')
                     ->orWhere('excerpt', 'like', '%' . $search . '%');
@@ -56,7 +56,7 @@ class NewsPostController extends Controller
         $relatedPosts = NewsPost::query()
             ->where('id', '!=', $post->id)
             ->where('status', 'published')
-            ->when($post->news_category_id, fn ($query) => $query->where('news_category_id', $post->news_category_id))
+            ->when($post->news_category_id, fn($query) => $query->where('news_category_id', $post->news_category_id))
             ->with('category')
             ->orderByDesc('is_featured')
             ->orderByDesc('published_at')
@@ -98,7 +98,7 @@ class NewsPostController extends Controller
         $data = $request->validated();
         $data['slug'] = Str::slug($data['slug'] ?: $data['title']);
         $data['is_featured'] = $request->boolean('is_featured', false);
-        $data['views_count'] = (int) ($data['views_count'] ?? 0);
+        $data['views_count'] = (int)($data['views_count'] ?? 0);
         $data['news_category_id'] = $data['news_category_id'] ?: null;
         $data['published_at'] = $data['status'] === 'published'
             ? ($data['published_at'] ?? now())
@@ -130,7 +130,7 @@ class NewsPostController extends Controller
         $data = $request->validated();
         $data['slug'] = Str::slug($data['slug'] ?: $data['title']);
         $data['is_featured'] = $request->boolean('is_featured', $newsPost->is_featured);
-        $data['views_count'] = array_key_exists('views_count', $data) ? (int) $data['views_count'] : $newsPost->views_count;
+        $data['views_count'] = array_key_exists('views_count', $data) ? (int)$data['views_count'] : $newsPost->views_count;
         $data['news_category_id'] = $data['news_category_id'] ?: null;
         $data['published_at'] = $data['status'] === 'published'
             ? ($data['published_at'] ?? $newsPost->published_at ?? now())

@@ -1,5 +1,8 @@
 <script setup>
 import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
+import OrderHistoryFilterBar from '@/components/order-history/OrderHistoryFilterBar.vue'
+import OrderHistoryOrderCard from '@/components/order-history/OrderHistoryOrderCard.vue'
+import OrderHistoryDetailModal from '@/components/order-history/OrderHistoryDetailModal.vue'
 import {useOrderHistoryPage} from '@/composables/useOrderHistoryPage'
 
 const {
@@ -31,15 +34,11 @@ const {
   pageEnd,
   orderSummary,
   orderTabs,
-  loadOrders,
   handleViewDetail,
   closeDetailModal,
   handleRetryVnpayPayment,
   handleOrderPrimaryAction,
   handleReorder,
-  getItemImage,
-  formatCurrency,
-  formatDate,
 } = useOrderHistoryPage()
 </script>
 
@@ -52,52 +51,19 @@ const {
       </div>
     </div>
 
-    <div class="top-row">
-      <div class="filter-card">
-        <div class="filter-row">
-          <div class="input-box">
-            <input
-                v-model.trim="searchKeyword"
-                type="text"
-                placeholder="Tìm theo mã đơn hàng, sản phẩm hoặc địa chỉ"
-            />
-            <i class="bi bi-search"></i>
-          </div>
+    <OrderHistoryFilterBar
+        v-model:searchKeyword="searchKeyword"
+        v-model:selectedStatus="selectedStatus"
+        :order-tabs="orderTabs"
+    />
 
-          <select v-model="selectedStatus" class="status-select">
-            <option value="all">Tất cả trạng thái</option>
-            <option v-for="tab in orderTabs.slice(1)" :key="tab.key" :value="tab.key">
-              {{ tab.label }}
-            </option>
-          </select>
+    <div class="summary-card">
+      <div v-for="item in orderSummary" :key="item.label" class="summary-item">
+        <div class="summary-icon">
+          <i :class="item.icon"></i>
         </div>
-
-        <div class="tabs">
-          <button
-              v-for="tab in orderTabs"
-              :key="tab.key"
-              type="button"
-              class="tab-btn"
-              :class="{ active: selectedStatus === tab.key }"
-              @click="selectedStatus = tab.key"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="summary-card">
-        <div
-            v-for="item in orderSummary"
-            :key="item.label"
-            class="summary-item"
-        >
-          <div class="summary-icon">
-            <i :class="item.icon"></i>
-          </div>
-          <span>{{ item.label }}</span>
-          <strong>{{ item.value }}</strong>
-        </div>
+        <span>{{ item.label }}</span>
+        <strong>{{ item.value }}</strong>
       </div>
     </div>
 
@@ -111,95 +77,16 @@ const {
     </p>
 
     <div v-else class="orders-list">
-      <article
+      <OrderHistoryOrderCard
           v-for="order in paginatedOrders"
           :key="order.id"
-          class="order-card"
-      >
-        <div class="order-card-header">
-          <div class="order-code">
-            <span>Mã đơn hàng:</span>
-            <strong>{{ order.code }}</strong>
-          </div>
-
-          <div class="order-date">
-            <span>Ngày đặt:</span>
-            <strong>{{ order.orderDate }}</strong>
-          </div>
-
-          <span class="status-badge" :class="statusMap[order.status]?.className || 'pending'">
-            {{ statusMap[order.status]?.label || order.status }}
-          </span>
-        </div>
-
-        <div class="order-card-body">
-          <div class="product-info">
-            <div class="product-preview">
-              <img
-                  v-for="(preview, index) in order.product.previewProducts"
-                  :key="`${order.id}-${index}`"
-                  :src="preview.image"
-                  :alt="preview.name"
-                  :class="{ stacked: order.product.previewProducts.length > 1 && index > 0 }"
-              />
-            </div>
-
-            <div class="product-text">
-              <h3>{{ order.product.name }}</h3>
-              <p v-if="order.product.color">Phiên bản: {{ order.product.color }}</p>
-              <p>
-                Số lượng: {{ order.product.quantity }}
-                <span v-if="order.product.extraCount">+ {{ order.product.extraCount }} sản phẩm khác</span>
-              </p>
-            </div>
-          </div>
-
-          <div class="order-total">
-            <span>Tổng tiền</span>
-            <strong>{{ formatCurrency(order.total) }}</strong>
-          </div>
-
-          <div class="order-actions">
-            <button type="button" class="action-btn outline-btn" @click="handleViewDetail(order)">
-              Xem chi tiết
-            </button>
-
-            <button
-                v-if="order.status === 'pending' && order.paymentStatus !== 'paid' && pendingPaymentMethods.has(order.paymentMethod)"
-                type="button"
-                class="action-btn primary-btn"
-                @click="handleOrderPrimaryAction(order)"
-            >
-              Thanh toán
-            </button>
-
-            <button
-                v-else-if="order.status === 'pending' && order.paymentStatus !== 'paid' && order.paymentMethod === 'cod'"
-                type="button"
-                class="action-btn danger-btn"
-                @click="handleOrderPrimaryAction(order)"
-            >
-              Hủy đơn
-            </button>
-
-            <button v-if="order.status !== 'pending'" type="button" class="text-action blue"
-                    @click="handleReorder(order)">
-              <i class="bi bi-arrow-clockwise"></i>
-              Mua lại
-            </button>
-          </div>
-        </div>
-
-        <div class="order-address">
-          <div class="order-address__head">
-            <span>Địa chỉ nhận hàng</span>
-          </div>
-          <p>
-            <i class="bi bi-geo-alt"></i>
-            {{ order.address || 'Chưa có địa chỉ' }}
-          </p>
-        </div>
-      </article>
+          :order="order"
+          :status-map="statusMap"
+          :pending-payment-methods="pendingPaymentMethods"
+          @view-detail="handleViewDetail"
+          @primary-action="handleOrderPrimaryAction"
+          @reorder="handleReorder"
+      />
 
       <div v-if="filteredOrders.length === 0" class="empty-card">
         <i class="bi bi-bag-x"></i>
@@ -221,157 +108,26 @@ const {
         @update:pageSize="pageSize = $event"
     />
 
-    <Teleport to="body">
-      <div v-if="detailModalOpen" class="order-detail-overlay" @click.self="closeDetailModal">
-        <section class="order-detail-popup" role="dialog" aria-modal="true" aria-label="Chi tiết đơn hàng">
-          <button type="button" class="popup-close" @click="closeDetailModal">
-            <i class="bi bi-x-lg"></i>
-          </button>
-
-          <div v-if="detailLoading" class="popup-loading">
-            <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-            <p>Đang tải chi tiết đơn hàng...</p>
-          </div>
-
-          <p v-else-if="detailError" class="popup-error">
-            {{ detailError }}
-          </p>
-
-          <template v-else-if="selectedOrder">
-            <div class="popup-header">
-              <div>
-                <nav class="popup-breadcrumb">
-                  <span>Đơn hàng của tôi</span>
-                  <span>/</span>
-                  <strong>Chi tiết đơn hàng</strong>
-                </nav>
-
-                <h2>Chi tiết đơn hàng</h2>
-                <p>Mã đơn hàng: <strong>{{ selectedOrder.order_code || `#${selectedOrder.id}` }}</strong></p>
-              </div>
-
-              <div class="popup-header-actions">
-                <span class="status-badge" :class="statusMap[selectedOrder.order_status]?.className || 'pending'">
-                  {{ statusMap[selectedOrder.order_status]?.label || selectedOrder.order_status }}
-                </span>
-
-                <button
-                    v-if="canRetryVnpayPayment"
-                    type="button"
-                    class="action-btn primary-btn retry-vnpay-btn"
-                    :disabled="retryLoading"
-                    @click="handleRetryVnpayPayment"
-                >
-                  <span v-if="retryLoading" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-                  <i v-else class="bi bi-credit-card"></i>
-                  Thanh toán VNPay
-                </button>
-              </div>
-            </div>
-
-            <div class="popup-layout">
-              <section class="detail-card">
-                <h3>Thông tin đơn hàng</h3>
-                <div class="popup-info-grid">
-                  <div>
-                    <span>Ngày đặt</span>
-                    <strong>{{ formatDate(selectedOrder.ordered_at || selectedOrder.created_at) }}</strong>
-                  </div>
-                  <div>
-                    <span>Thanh toán</span>
-                    <strong class="payment-status" :class="selectedOrder.payment_status === 'paid' ? 'paid' : 'unpaid'">
-                      {{ selectedOrder.payment_status === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán' }}
-                    </strong>
-                  </div>
-                  <div>
-                    <span>Người nhận</span>
-                    <strong>{{ selectedOrder.receiver_name }}</strong>
-                  </div>
-                  <div>
-                    <span>Số điện thoại</span>
-                    <strong>{{ selectedOrder.receiver_phone }}</strong>
-                  </div>
-                </div>
-
-                <div class="address-box">
-                  <div class="address-box__head">
-                    <span>Địa chỉ giao hàng</span>
-                  </div>
-                  <p>{{ selectedOrder.shipping_address_text || 'Chưa có địa chỉ' }}</p>
-                </div>
-
-                <div v-if="selectedOrder.note" class="note-box">
-                  <span>Ghi chú</span>
-                  <p>{{ selectedOrder.note }}</p>
-                </div>
-
-                <div v-if="selectedOrderPayment" class="payment-box">
-                  <span>Thanh toán</span>
-                  <p>
-                    Phương thức:
-                    <strong>{{ selectedPaymentMethod.toUpperCase() || 'N/A' }}</strong>
-                  </p>
-                  <p>
-                    Trạng thái:
-                    <strong :class="selectedPaymentStatus === 'paid' ? 'paid-text' : 'unpaid-text'">
-                      {{ selectedPaymentStatus === 'paid' ? 'Đã thanh toán' : 'Chưa thanh toán' }}
-                    </strong>
-                  </p>
-                </div>
-              </section>
-
-              <section class="detail-card">
-                <h3>Sản phẩm</h3>
-                <div v-if="selectedOrderItems.length" class="popup-item-list">
-                  <article v-for="item in selectedOrderItems" :key="item.id" class="popup-item-row">
-                    <img
-                        :src="getItemImage(item)"
-                        :alt="item.product_name"
-                    />
-                    <div class="popup-item-info">
-                      <h4>{{ item.product_name }}</h4>
-                      <p>{{ item.variant_name }}</p>
-                    </div>
-                    <div class="popup-item-meta">
-                      <span>{{ item.quantity }} x {{ formatCurrency(item.unit_price) }}</span>
-                      <strong>{{ formatCurrency(item.total_price) }}</strong>
-                    </div>
-                  </article>
-                </div>
-              </section>
-
-              <aside class="detail-card summary-card popup-summary">
-                <h3>Tóm tắt</h3>
-                <div class="summary-line">
-                  <span>Tạm tính</span>
-                  <strong>{{ formatCurrency(selectedOrder.subtotal || 0) }}</strong>
-                </div>
-                <div class="summary-line">
-                  <span>Phí vận chuyển</span>
-                  <strong>{{ formatCurrency(selectedOrder.shipping_fee || 0) }}</strong>
-                </div>
-                <div class="summary-line">
-                  <span>Giảm giá</span>
-                  <strong class="discount">{{ formatCurrency(selectedOrder.discount_amount || 0) }}</strong>
-                </div>
-                <div class="summary-total">
-                  <span>Tổng cộng</span>
-                  <strong>{{ formatCurrency(selectedOrder.total_amount || 0) }}</strong>
-                </div>
-
-                <p v-if="retryError" class="retry-error">
-                  {{ retryError }}
-                </p>
-              </aside>
-            </div>
-          </template>
-        </section>
-      </div>
-    </Teleport>
+    <OrderHistoryDetailModal
+        :open="detailModalOpen"
+        :detail-loading="detailLoading"
+        :detail-error="detailError"
+        :selected-order="selectedOrder"
+        :selected-order-items="selectedOrderItems"
+        :selected-order-payment="selectedOrderPayment"
+        :selected-payment-method="selectedPaymentMethod"
+        :selected-payment-status="selectedPaymentStatus"
+        :can-retry-vnpay-payment="canRetryVnpayPayment"
+        :retry-loading="retryLoading"
+        :retry-error="retryError"
+        :status-map="statusMap"
+        @close="closeDetailModal"
+        @retry-vnpay="handleRetryVnpayPayment"
+    />
   </section>
 </template>
 
-<style scoped>
+<style>
 .order-history-page {
   color: #111827;
   font-size: 14px;

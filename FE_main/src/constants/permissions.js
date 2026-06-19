@@ -92,4 +92,8 @@ export const PERMISSIONS = {
         UPDATE: 'stock_logs.update',
         DELETE: 'stock_logs.delete',
     },
+    SETTINGS: {
+        VIEW: 'settings.view',
+        UPDATE: 'settings.update',
+    },
 }

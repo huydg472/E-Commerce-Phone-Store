@@ -187,7 +187,9 @@ onMounted(loadData)
               <div>
                 <h2>Bài viết mới</h2>
                 <p v-if="selectedCategory !== 'all'">
-                  Đang lọc theo chủ đề {{ activeCategories.find((category) => category.slug === selectedCategory)?.name }}
+                  Đang lọc theo chủ đề {{
+                    activeCategories.find((category) => category.slug === selectedCategory)?.name
+                  }}
                 </p>
                 <p v-else>
                   Hiển thị {{ pageStart }}-{{ pageEnd }} trong tổng số {{ gridPosts.length }} bài viết
@@ -270,9 +272,8 @@ onMounted(loadData)
 <style scoped>
 .news-page {
   padding: 28px 0 40px;
-  background:
-      radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 28%),
-      linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #ffffff 100%);
+  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 28%),
+  linear-gradient(180deg, #f8fbff 0%, #ffffff 35%, #ffffff 100%);
 }
 
 .news-shell {

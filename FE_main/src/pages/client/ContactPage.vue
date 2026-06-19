@@ -1,144 +1,63 @@
 <script setup>
-import {reactive} from 'vue'
+import {computed, reactive} from 'vue'
+import {usePublicSiteSettings} from '@/composables/usePublicSiteSettings'
 
 const form = reactive({
   name: '',
   email: '',
   phone: '',
   subject: '',
-  message: ''
+  message: '',
 })
 
 const subjects = [
-  {
-    label: 'Tư vấn sản phẩm',
-    value: 'product_advice'
-  },
-  {
-    label: 'Hỗ trợ đơn hàng',
-    value: 'order_support'
-  },
-  {
-    label: 'Bảo hành sản phẩm',
-    value: 'warranty'
-  },
-  {
-    label: 'Góp ý dịch vụ',
-    value: 'feedback'
-  }
+  {label: 'Tư vấn sản phẩm', value: 'product_advice'},
+  {label: 'Hỗ trợ đơn hàng', value: 'order_support'},
+  {label: 'Bảo hành sản phẩm', value: 'warranty'},
+  {label: 'Góp ý dịch vụ', value: 'feedback'},
 ]
 
-const storeInfo = {
-  name: 'Zin Mobile Store',
-  phone: '085 999 55 5',
-  phoneHref: 'tel:085999555',
-  email: 'htro@zinmobile.vn',
-  address: '295A Trần Nguyên Hãn, An Biên, Hải Phòng',
-  workingTime: '8:30 - 22:30'
-}
+const {brandName, supportPhone, supportEmail, address, socials} = usePublicSiteSettings()
+const workingTime = computed(() => '8:30 - 22:30')
 
-const mapEmbedUrl =
-    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3728.7680544721184!2d106.66485057380578!3d20.84107068076175!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x314a7a7980268201%3A0x760246fdcaf9619f!2zMjk1QSBQLiBUcuG6p24gTmd1ecOqbiBIw6NuLCBBbiBCacOqbiwgSOG6o2kgUGjDsm5nLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1779873102452!5m2!1svi!2s'
-
-const directionUrl =
-    'https://www.google.com/maps/dir/?api=1&destination=295A%20Tr%E1%BA%A7n%20Nguy%C3%AAn%20H%C3%A3n%2C%20An%20Bi%C3%AAn%2C%20H%E1%BA%A3i%20Ph%C3%B2ng%2C%20Vi%E1%BB%87t%20Nam'
-
-const phoneIcon = `
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-  <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 3.08 5.18 2 2 0 0 1 5.06 3h3a2 2 0 0 1 2 1.72c.12.9.33 1.77.63 2.6a2 2 0 0 1-.45 2.11L9 10.68a16 16 0 0 0 4.32 4.32l1.25-1.25a2 2 0 0 1 2.11-.45c.83.3 1.7.51 2.6.63A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`
-
-const mailIcon = `
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="m22 6-10 7L2 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`
-
-const locationIcon = `
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-  <path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-</svg>
-`
-
-const clockIcon = `
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-  <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`
-
-const shareIcon = `
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-  <circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="2"/>
-  <circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-  <circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="2"/>
-  <path d="M8.59 13.51 15.42 17.49M15.41 6.51 8.59 10.49" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-</svg>
-`
-
-const contactInfo = [
+const contactItems = computed(() => [
   {
-    id: 1,
     title: 'Hotline hỗ trợ',
-    main: storeInfo.phone,
-    sub: '(8:30 - 22:30)',
-    href: storeInfo.phoneHref,
-    icon: phoneIcon
+    value: supportPhone.value,
+    hint: workingTime.value,
+    href: `tel:${String(supportPhone.value).replace(/\s+/g, '')}`,
+    icon: 'bi-telephone',
   },
   {
-    id: 2,
     title: 'Email',
-    main: storeInfo.email,
-    sub: 'Phản hồi trong 24h',
-    href: `mailto:${storeInfo.email}`,
-    icon: mailIcon
+    value: supportEmail.value,
+    hint: 'Phản hồi trong 24h',
+    href: `mailto:${supportEmail.value}`,
+    icon: 'bi-envelope',
   },
   {
-    id: 3,
     title: 'Địa chỉ cửa hàng',
-    main: storeInfo.address,
-    sub: '',
-    icon: locationIcon,
-    linkText: 'Xem bản đồ'
+    value: address.value,
+    hint: 'Xem trên bản đồ',
+    href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.value)}`,
+    icon: 'bi-geo-alt',
   },
   {
-    id: 4,
     title: 'Giờ làm việc',
-    main: storeInfo.workingTime,
-    sub: '(Tất cả các ngày trong tuần)',
-    icon: clockIcon
-  }
-]
+    value: workingTime.value,
+    hint: 'Tất cả các ngày trong tuần',
+    href: '',
+    icon: 'bi-clock',
+  },
+])
 
-const socials = [
-  {
-    name: 'facebook',
-    label: 'f',
-    href: '#',
-    className: 'facebook'
-  },
-  {
-    name: 'zalo',
-    label: 'Zalo',
-    href: '#',
-    className: 'zalo'
-  },
-  {
-    name: 'youtube',
-    label: '▶',
-    href: '#',
-    className: 'youtube'
-  },
-  {
-    name: 'tiktok',
-    label: '♪',
-    href: '#',
-    className: 'tiktok'
-  }
-]
+const mapEmbedUrl = computed(() => {
+  return `https://www.google.com/maps?q=${encodeURIComponent(address.value)}&output=embed`
+})
+
+const directionUrl = computed(() => {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address.value)}`
+})
 
 const handleSubmit = () => {
   console.log('Contact form:', {...form})
@@ -147,619 +66,370 @@ const handleSubmit = () => {
 
 <template>
   <main class="contact-page">
-    <div class="container">
-      <!-- Breadcrumb -->
-      <nav class="contact-breadcrumb" aria-label="breadcrumb">
-        <ol class="breadcrumb mb-2">
-          <li class="breadcrumb-item">
-            <RouterLink to="/">Trang chủ</RouterLink>
-          </li>
-          <li class="breadcrumb-item active" aria-current="page">
-            Liên hệ
-          </li>
-        </ol>
-      </nav>
-
-      <!-- Heading -->
-      <section class="page-heading">
-        <h1>Liên hệ</h1>
-        <p>
-          Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn. Hãy liên hệ với Zin Mobile qua các kênh dưới đây.
-        </p>
-      </section>
-
-      <!-- Contact content -->
-      <section class="row g-4 align-items-stretch">
-        <!-- Contact form -->
-        <div class="col-lg-7">
-          <div class="contact-card h-100">
-            <h2>Gửi yêu cầu liên hệ</h2>
-
-            <form @submit.prevent="handleSubmit">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label for="name" class="form-label">
-                    Họ và tên <span>*</span>
-                  </label>
-                  <input
-                      id="name"
-                      v-model="form.name"
-                      type="text"
-                      class="form-control"
-                      placeholder="Nhập họ và tên của bạn"
-                  />
-                </div>
-
-                <div class="col-md-6">
-                  <label for="email" class="form-label">
-                    Email <span>*</span>
-                  </label>
-                  <input
-                      id="email"
-                      v-model="form.email"
-                      type="email"
-                      class="form-control"
-                      placeholder="Nhập email của bạn"
-                  />
-                </div>
-
-                <div class="col-md-6">
-                  <label for="phone" class="form-label">
-                    Số điện thoại <span>*</span>
-                  </label>
-                  <input
-                      id="phone"
-                      v-model="form.phone"
-                      type="tel"
-                      class="form-control"
-                      placeholder="Nhập số điện thoại"
-                  />
-                </div>
-
-                <div class="col-md-6">
-                  <label for="subject" class="form-label">
-                    Chủ đề <span>*</span>
-                  </label>
-                  <select
-                      id="subject"
-                      v-model="form.subject"
-                      class="form-select"
-                  >
-                    <option value="" disabled>Chọn chủ đề</option>
-                    <option
-                        v-for="subject in subjects"
-                        :key="subject.value"
-                        :value="subject.value"
-                    >
-                      {{ subject.label }}
-                    </option>
-                  </select>
-                </div>
-
-                <div class="col-12">
-                  <label for="message" class="form-label">
-                    Nội dung <span>*</span>
-                  </label>
-                  <textarea
-                      id="message"
-                      v-model="form.message"
-                      class="form-control contact-textarea"
-                      placeholder="Nhập nội dung bạn cần hỗ trợ hoặc góp ý..."
-                  ></textarea>
-                </div>
-
-                <div class="col-12">
-                  <button type="submit" class="btn btn-primary btn-submit">
-                    <span class="send-icon">➤</span>
-                    Gửi yêu cầu
-                  </button>
-
-                  <p class="form-note">
-                    Thông tin của bạn được bảo mật và chỉ sử dụng để hỗ trợ.
-                  </p>
-                </div>
-              </div>
-            </form>
-          </div>
+    <div class="contact-container">
+      <section class="contact-hero">
+        <div>
+          <p class="eyebrow">Liên hệ</p>
+          <h1>{{ brandName }}</h1>
+          <p class="subtitle">
+            Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn qua hotline, email hoặc trực tiếp tại cửa hàng.
+          </p>
         </div>
 
-        <!-- Contact information -->
-        <div class="col-lg-5">
-          <div class="contact-card h-100">
-            <h2>Thông tin liên hệ</h2>
+        <a class="direction-btn" :href="directionUrl" target="_blank" rel="noreferrer">
+          <i class="bi bi-compass"></i>
+          Chỉ đường
+        </a>
+      </section>
 
-            <div class="info-list">
-              <div
-                  v-for="item in contactInfo"
-                  :key="item.id"
-                  class="info-item"
-              >
-                <div class="info-icon">
-                  <span v-html="item.icon"></span>
-                </div>
+      <section class="contact-grid">
+        <article class="contact-card contact-form-card">
+          <h2>Gửi yêu cầu liên hệ</h2>
 
-                <div class="info-content">
-                  <h3>{{ item.title }}</h3>
-
-                  <a
-                      v-if="item.href"
-                      :href="item.href"
-                      class="info-main"
-                  >
-                    {{ item.main }}
-                  </a>
-
-                  <p v-else class="info-main mb-0">
-                    {{ item.main }}
-                  </p>
-
-                  <p v-if="item.sub" class="info-sub mb-0">
-                    {{ item.sub }}
-                  </p>
-
-                  <a
-                      v-if="item.linkText"
-                      :href="directionUrl"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="info-link"
-                  >
-                    {{ item.linkText }}
-                    <span>→</span>
-                  </a>
-                </div>
+          <form class="contact-form" @submit.prevent="handleSubmit">
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Họ và tên</label>
+                <input v-model="form.name" type="text" class="form-control" placeholder="Nhập họ tên"/>
               </div>
-
-              <div class="info-item social-item">
-                <div class="info-icon">
-                  <span v-html="shareIcon"></span>
-                </div>
-
-                <div class="info-content">
-                  <h3>Kết nối với chúng tôi</h3>
-
-                  <div class="social-list">
-                    <a
-                        v-for="social in socials"
-                        :key="social.name"
-                        :href="social.href"
-                        :class="['social-link', social.className]"
-                    >
-                      {{ social.label }}
-                    </a>
-                  </div>
-                </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input v-model="form.email" type="email" class="form-control" placeholder="Nhập email"/>
+              </div>
+              <div class="form-group">
+                <label>Số điện thoại</label>
+                <input v-model="form.phone" type="tel" class="form-control" placeholder="Nhập số điện thoại"/>
+              </div>
+              <div class="form-group">
+                <label>Chủ đề</label>
+                <select v-model="form.subject" class="form-select">
+                  <option value="">Chọn chủ đề</option>
+                  <option v-for="subject in subjects" :key="subject.value" :value="subject.value">
+                    {{ subject.label }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group form-group--full">
+                <label>Nội dung</label>
+                <textarea v-model="form.message" class="form-control" rows="6"
+                          placeholder="Nội dung cần hỗ trợ"></textarea>
               </div>
             </div>
-          </div>
-        </div>
+
+            <button type="submit" class="primary-btn">Gửi yêu cầu</button>
+          </form>
+        </article>
+
+        <aside class="contact-side">
+          <article class="contact-card">
+            <h2>Thông tin liên hệ</h2>
+            <div class="info-list">
+              <a v-for="item in contactItems" :key="item.title" class="info-item" :href="item.href || undefined">
+                <span class="info-icon">
+                  <i :class="`bi ${item.icon}`"></i>
+                </span>
+                <span class="info-body">
+                  <strong>{{ item.title }}</strong>
+                  <em>{{ item.value }}</em>
+                  <small>{{ item.hint }}</small>
+                </span>
+              </a>
+            </div>
+          </article>
+
+          <article class="contact-card">
+            <h2>Kênh xã hội</h2>
+            <div class="social-list">
+              <a v-for="social in socials" :key="social.label" :href="social.url" target="_blank" rel="noreferrer">
+                {{ social.label }}
+              </a>
+              <p v-if="!socials.length">Chưa cấu hình kênh xã hội trong cài đặt.</p>
+            </div>
+          </article>
+        </aside>
       </section>
 
-      <!-- Google Maps -->
       <section class="map-section">
-        <iframe
-            class="map-frame"
-            :src="mapEmbedUrl"
-            allowfullscreen
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            title="Bản đồ Zin Mobile Store"
-        ></iframe>
-
-        <div class="store-card">
-          <h3>{{ storeInfo.name }}</h3>
-          <p>{{ storeInfo.address }}</p>
-
-          <a
-              :href="directionUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-          >
-            Chỉ đường
-            <span>→</span>
-          </a>
-        </div>
-      </section>
-
-      <!-- Support CTA -->
-      <section class="support-box">
-        <div class="support-left">
-          <div class="support-icon">?</div>
-
-          <div>
-            <h2>Bạn cần hỗ trợ nhanh?</h2>
-            <p>Xem các câu hỏi thường gặp hoặc gửi thông tin cần thiết nhanh chóng.</p>
+        <article class="contact-card">
+          <div class="map-head">
+            <div>
+              <p class="eyebrow">Địa chỉ</p>
+              <h2>{{ address }}</h2>
+            </div>
+            <a :href="directionUrl" target="_blank" rel="noreferrer">Mở Google Maps</a>
           </div>
-        </div>
 
-        <RouterLink to="/ho-tro/faq" class="btn btn-outline-primary btn-faq">
-          Xem câu hỏi thường gặp
-          <span>→</span>
-        </RouterLink>
+          <iframe
+              :src="mapEmbedUrl"
+              title="Bản đồ cửa hàng"
+              width="100%"
+              height="420"
+              style="border:0;"
+              allowfullscreen
+              loading="lazy"
+          ></iframe>
+        </article>
       </section>
     </div>
   </main>
 </template>
+
 <style scoped>
 .contact-page {
-  padding: 26px 0 34px;
-  background: #fff;
-  color: #111827;
+  padding: 18px 0 40px;
 }
 
-.contact-breadcrumb {
-  margin-bottom: 6px;
+.contact-container {
+  width: min(100% - 36px, 1320px);
+  margin: 0 auto;
 }
 
-.breadcrumb {
-  font-size: 14px;
-  font-weight: 500;
+.contact-hero,
+.contact-card {
+  border-radius: 22px;
+  border: 1px solid #e5edf8;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
 }
 
-.breadcrumb a {
+.contact-hero {
+  padding: 24px;
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 28%),
+  linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.contact-hero h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.subtitle {
+  margin: 10px 0 0;
   color: #64748b;
+  line-height: 1.7;
+  max-width: 760px;
+}
+
+.direction-btn {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
   text-decoration: none;
-}
-
-.breadcrumb a:hover {
-  color: #0d6efd;
-}
-
-.breadcrumb-item.active {
-  color: #0d6efd;
-}
-
-.page-heading {
-  margin-bottom: 18px;
-}
-
-.page-heading h1 {
-  margin-bottom: 6px;
-  font-size: 28px;
   font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
 }
 
-.page-heading p {
-  margin-bottom: 0;
-  color: #475569;
-  font-size: 15px;
-  font-weight: 500;
+.contact-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: 16px;
 }
 
 .contact-card {
-  padding: 22px 24px 24px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  background: #fff;
+  padding: 20px;
 }
 
 .contact-card h2 {
-  margin-bottom: 20px;
-  color: #111827;
-  font-size: 19px;
-  font-weight: 800;
+  margin: 0 0 14px;
+  color: #0f172a;
+  font-size: 22px;
+  font-weight: 900;
 }
 
-.form-label {
-  margin-bottom: 7px;
-  color: #111827;
-  font-size: 14px;
-  font-weight: 700;
+.contact-form .form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
 }
 
-.form-label span {
-  color: #dc2626;
-}
-
-.form-control,
-.form-select {
-  height: 38px;
-  border-color: #dbe1ea;
-  border-radius: 5px;
-  color: #111827;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.form-control::placeholder {
-  color: #94a3b8;
-}
-
-.form-control:focus,
-.form-select:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
-}
-
-.contact-textarea {
-  min-height: 105px;
-  resize: none;
-}
-
-.btn-submit {
-  width: 100%;
-  height: 43px;
-  margin-top: 2px;
-  border-radius: 5px;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.send-icon {
-  display: inline-block;
-  margin-right: 8px;
-  transform: rotate(-25deg);
-}
-
-.form-note {
-  margin: 12px 0 0;
-  color: #64748b;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.info-list {
+.form-group {
   display: flex;
   flex-direction: column;
 }
 
-.info-item {
-  display: flex;
-  gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid #edf0f5;
+.form-group--full {
+  grid-column: 1 / -1;
 }
 
-.info-item:first-child {
-  padding-top: 0;
-}
-
-.info-item:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
-.info-icon {
-  display: flex;
-  flex: 0 0 50px;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 44px;
-  border: 1px solid #0d6efd;
-  border-radius: 5px;
-  color: #0d6efd;
-  background: #f8fbff;
-}
-
-.info-content {
-  min-width: 0;
-  flex: 1;
-}
-
-.info-content h3 {
-  margin-bottom: 3px;
-  color: #111827;
+.form-group label {
+  margin-bottom: 6px;
+  color: #0f172a;
   font-size: 14px;
-  font-weight: 800;
-}
-
-.info-main {
-  color: #0d6efd;
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.info-main:hover {
-  color: #0a58ca;
-}
-
-.info-sub {
-  color: #475569;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.info-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 4px;
-  color: #0d6efd;
-  text-decoration: none;
-  font-size: 13px;
   font-weight: 700;
 }
 
-.info-link:hover {
-  text-decoration: underline;
+.form-control,
+.form-select {
+  min-height: 42px;
+  border-radius: 10px;
+  border: 1px solid #dbe3ef;
+}
+
+textarea.form-control {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.primary-btn {
+  margin-top: 16px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.contact-side {
+  display: grid;
+  gap: 16px;
+}
+
+.info-list {
+  display: grid;
+  gap: 12px;
+}
+
+.info-item {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  border-radius: 16px;
+  background: #f8fbff;
+  color: #0f172a;
+  text-decoration: none;
+  border: 1px solid #e5edf8;
+}
+
+.info-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #1d4ed8;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+}
+
+.info-body strong,
+.info-body em,
+.info-body small {
+  display: block;
+}
+
+.info-body strong {
+  font-size: 14px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.info-body em {
+  color: #0f172a;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.info-body small {
+  color: #64748b;
+  margin-top: 4px;
 }
 
 .social-list {
   display: flex;
-  align-items: center;
-  gap: 9px;
-  margin-top: 7px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.social-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 30px;
-  height: 30px;
-  padding: 0 7px;
+.social-list a {
+  padding: 8px 12px;
   border-radius: 999px;
-  color: #fff;
+  background: #eff6ff;
+  color: #1d4ed8;
   text-decoration: none;
-  font-size: 11px;
   font-weight: 800;
 }
 
-.facebook {
-  background: #0d6efd;
+.social-list p {
+  margin: 0;
+  color: #64748b;
 }
 
-.zalo {
-  background: #0ea5e9;
-}
-
-.youtube {
-  background: #dc2626;
-}
-
-.tiktok {
-  background: #111827;
-}
-
-/* Google Map */
 .map-section {
-  position: relative;
-  height: 260px;
-  margin-top: 22px;
-  overflow: hidden;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  background: #eef2f7;
+  margin-top: 16px;
 }
 
-.map-frame {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: 0;
-}
-
-.store-card {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  z-index: 2;
-  width: 290px;
-  padding: 14px 16px;
-  border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
-}
-
-.store-card h3 {
-  margin-bottom: 6px;
-  color: #111827;
-  font-size: 15px;
-  font-weight: 800;
-}
-
-.store-card p {
-  margin-bottom: 8px;
-  color: #334155;
-  font-size: 13px;
-  line-height: 1.45;
-  font-weight: 600;
-}
-
-.store-card a {
-  color: #0d6efd;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.store-card a:hover {
-  text-decoration: underline;
-}
-
-/* Support box */
-.support-box {
+.map-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  margin-top: 22px;
-  padding: 18px 28px;
-  border-radius: 8px;
-  background: #f3f7ff;
+  gap: 16px;
+  margin-bottom: 12px;
 }
 
-.support-left {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-.support-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 42px;
-  width: 42px;
-  height: 42px;
-  border: 2px solid #0d6efd;
-  border-radius: 50%;
-  color: #0d6efd;
+.map-head h2 {
+  margin: 0;
   font-size: 22px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.map-head a {
+  color: #2563eb;
   font-weight: 800;
+  text-decoration: none;
 }
 
-.support-box h2 {
-  margin-bottom: 4px;
-  color: #111827;
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.support-box p {
-  margin-bottom: 0;
-  color: #475569;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.btn-faq {
-  min-width: 230px;
-  height: 40px;
-  border-radius: 5px;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-/* Responsive */
-@media (max-width: 990px) {
-  .contact-card {
-    padding: 20px;
-  }
-
-  .support-box {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .btn-faq {
-    width: 100%;
+@media (max-width: 992px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
-  .contact-page {
-    padding-top: 20px;
+  .contact-container {
+    width: min(100% - 24px, 1320px);
   }
 
-  .page-heading h1 {
-    font-size: 24px;
+  .contact-hero {
+    flex-direction: column;
   }
 
-  .map-section {
-    height: 300px;
+  .contact-hero h1 {
+    font-size: 28px;
   }
 
-  .store-card {
-    top: 14px;
-    left: 14px;
-    width: calc(100% - 28px);
+  .contact-form .form-grid {
+    grid-template-columns: 1fr;
   }
 
-  .support-left {
+  .map-head {
+    flex-direction: column;
     align-items: flex-start;
   }
 }

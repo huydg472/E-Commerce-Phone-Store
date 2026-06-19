@@ -2,6 +2,7 @@
 import {computed} from 'vue'
 import {useRoute, useRouter} from 'vue-router'
 import {useAuthStore} from '@/stores/authStore.js'
+import {usePublicSiteSettings} from '@/composables/usePublicSiteSettings'
 import {PERMISSIONS} from '@/constants/permissions'
 
 const props = defineProps({
@@ -16,6 +17,7 @@ const emit = defineEmits(['close'])
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
+const {brandName, logoUrl} = usePublicSiteSettings()
 
 const menuGroups = computed(() => [
   {
@@ -128,7 +130,13 @@ const menuGroups = computed(() => [
         match: '/admin/news',
         permission: PERMISSIONS.NEWS_POSTS.VIEW
       },
-      {label: 'Cài đặt', icon: 'bi bi-gear', to: '/admin/settings', match: '/admin/settings', permission: null},
+      {
+        label: 'Cài đặt',
+        icon: 'bi bi-gear',
+        to: '/admin/settings',
+        match: '/admin/settings',
+        permission: PERMISSIONS.SETTINGS.VIEW
+      },
     ],
   },
 ])
@@ -154,11 +162,12 @@ const handleLogout = async () => {
     <div class="sidebar-top">
       <RouterLink to="/admin/dashboard" class="brand" @click="handleClose">
         <span class="brand-logo">
-          <i class="bi bi-phone"></i>
+          <img v-if="logoUrl" :src="logoUrl" :alt="brandName" class="brand-image"/>
+          <i v-else class="bi bi-phone"></i>
         </span>
 
         <span class="brand-text">
-          <strong>ZinMobile</strong>
+          <strong>{{ brandName }}</strong>
           <small>Admin Panel</small>
         </span>
       </RouterLink>
@@ -245,6 +254,14 @@ const handleLogout = async () => {
   font-size: 22px;
   flex-shrink: 0;
   box-shadow: 0 10px 22px rgba(37, 99, 235, 0.2);
+  overflow: hidden;
+}
+
+.brand-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .brand-text {

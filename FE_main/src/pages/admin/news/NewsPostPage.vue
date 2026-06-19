@@ -253,7 +253,8 @@ onMounted(loadData)
             <i class="bi bi-plus-lg"></i>
             Thêm bài viết
           </button>
-          <button type="button" class="secondary-action" @click="search = ''; statusFilter = 'all'; categoryFilter = 'all'">
+          <button type="button" class="secondary-action"
+                  @click="search = ''; statusFilter = 'all'; categoryFilter = 'all'">
             <i class="bi bi-arrow-counterclockwise"></i>
             Xóa bộ lọc
           </button>
@@ -360,7 +361,8 @@ onMounted(loadData)
                 <button type="button" class="action-btn action-edit" @click="openEditModal(post)">
                   <i class="bi bi-pencil"></i>
                 </button>
-                <button type="button" class="action-btn action-delete" :disabled="deletingId === post.id" @click="handleDelete(post)">
+                <button type="button" class="action-btn action-delete" :disabled="deletingId === post.id"
+                        @click="handleDelete(post)">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
@@ -383,7 +385,8 @@ onMounted(loadData)
       </section>
     </template>
 
-    <BaseModal :show="showModal" :title="editingId ? 'Sửa bài viết tin tức' : 'Thêm bài viết tin tức'" @close="closeModal">
+    <BaseModal :show="showModal" :title="editingId ? 'Sửa bài viết tin tức' : 'Thêm bài viết tin tức'"
+               @close="closeModal">
       <form class="modal-form" @submit.prevent="submitForm">
         <label class="field">
           <span>Danh mục</span>
@@ -416,7 +419,8 @@ onMounted(loadData)
 
         <label class="field">
           <span>Ảnh đại diện URL</span>
-          <input v-model.trim="form.featured_image_url" type="text" :class="{ invalid: fieldErrors.featured_image_url }">
+          <input v-model.trim="form.featured_image_url" type="text"
+                 :class="{ invalid: fieldErrors.featured_image_url }">
           <small v-if="fieldErrors.featured_image_url" class="field-error">{{ fieldErrors.featured_image_url }}</small>
         </label>
 
@@ -431,7 +435,8 @@ onMounted(loadData)
           </label>
           <label class="field">
             <span>Thời gian đọc</span>
-            <input v-model.number="form.reading_minutes" type="number" min="1" :class="{ invalid: fieldErrors.reading_minutes }">
+            <input v-model.number="form.reading_minutes" type="number" min="1"
+                   :class="{ invalid: fieldErrors.reading_minutes }">
             <small v-if="fieldErrors.reading_minutes" class="field-error">{{ fieldErrors.reading_minutes }}</small>
           </label>
         </div>

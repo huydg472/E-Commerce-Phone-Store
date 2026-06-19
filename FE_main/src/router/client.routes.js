@@ -30,6 +30,48 @@ export default [
                 alias: '/ho-tro/faq',
                 component: () => import('@/pages/client/ContactPage.vue')
             },
+            {
+                path: 'gioi-thieu',
+                name: 'about',
+                component: () => import('@/pages/client/StaticInfoPage.vue'),
+                props: {pageKey: 'about'},
+            },
+            {
+                path: 'bao-hanh',
+                name: 'warranty',
+                component: () => import('@/pages/client/StaticInfoPage.vue'),
+                props: {pageKey: 'warranty'},
+            },
+            {
+                path: 'doi-tra',
+                name: 'returns',
+                component: () => import('@/pages/client/StaticInfoPage.vue'),
+                props: {pageKey: 'returns'},
+            },
+            {
+                path: 'bao-mat',
+                name: 'privacy',
+                component: () => import('@/pages/client/StaticInfoPage.vue'),
+                props: {pageKey: 'privacy'},
+            },
+            {
+                path: 'huong-dan-mua-hang',
+                name: 'buy-guide',
+                component: () => import('@/pages/client/StaticInfoPage.vue'),
+                props: {pageKey: 'buyGuide'},
+            },
+            {
+                path: 'huong-dan-thanh-toan',
+                name: 'payment-guide',
+                component: () => import('@/pages/client/StaticInfoPage.vue'),
+                props: {pageKey: 'paymentGuide'},
+            },
+            {
+                path: 'cau-hoi-thuong-gap',
+                name: 'faq',
+                component: () => import('@/pages/client/StaticInfoPage.vue'),
+                props: {pageKey: 'faq'},
+            },
 
             {
                 path: 'products',

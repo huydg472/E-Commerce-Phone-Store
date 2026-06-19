@@ -2,6 +2,7 @@
 import ProductCard from '@/components/product/ProductCard.vue'
 import ProductFilter from '@/components/product/ProductFilter.vue'
 import BasePagination from '@/components/common/BasePagination.vue'
+import ProductListToolbar from '@/components/product/ProductListToolbar.vue'
 import {computed, onMounted, ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
 import {storeToRefs} from 'pinia'
@@ -20,7 +21,13 @@ const selectedPageSize = ref(12)
 const currentPage = ref(1)
 const initialBrandSlug = computed(() => String(route.query.brand ?? ''))
 const initialCategorySlug = computed(() => String(route.query.category ?? ''))
+const initialSearchKeyword = computed(() => String(route.query.q ?? ''))
 const selectedCategorySlug = ref('')
+const searchKeyword = ref('')
+
+const getSearchKeywords = () => {
+  return normalizeText(searchKeyword.value)
+}
 
 const handleSelectedBrands = (brandIds) => {
   selectedBrands.value = brandIds
@@ -66,6 +73,8 @@ const matchesPriceRange = (price) => {
 }
 
 const filteredProducts = computed(() => {
+  const query = getSearchKeywords()
+
   return productCards.value.filter((productCard) => {
     const brandOk =
         !selectedBrands.value.length ||
@@ -82,7 +91,15 @@ const filteredProducts = computed(() => {
           return normalizeText(storage) === normalizeText(productCard.rom)
         })
 
-    return brandOk && categoryOk && romOk && matchesPriceRange(productCard.price)
+    const searchOk =
+        !query ||
+        normalizeText(productCard.name).includes(query) ||
+        normalizeText(productCard.brandName).includes(query) ||
+        normalizeText(productCard.categoryName).includes(query) ||
+        normalizeText(productCard.rom).includes(query) ||
+        normalizeText(productCard.variant?.sku ?? '').includes(query)
+
+    return brandOk && categoryOk && romOk && searchOk && matchesPriceRange(productCard.price)
   })
 })
 
@@ -132,6 +149,17 @@ watch(
     {immediate: true}
 )
 
+watch(
+    initialSearchKeyword,
+    (nextSearchKeyword) => {
+      searchKeyword.value = nextSearchKeyword
+      resetPage()
+    },
+    {immediate: true}
+)
+
+watch(searchKeyword, resetPage)
+
 watch(totalPages, (nextTotalPages) => {
   if (currentPage.value > nextTotalPages) {
     currentPage.value = nextTotalPages
@@ -152,34 +180,17 @@ onMounted(() => {
         <span>Sản phẩm</span>
       </div>
 
-      <div class="page-heading">
-        <div>
-          <h1>Tất cả sản phẩm</h1>
-          <p>Hiển thị {{ visibleProducts.length }} / {{ filteredProducts.length }} sản phẩm</p>
-        </div>
-
-        <div class="heading-action">
-          <select v-model="selectedSort" class="form-select">
-            <option
-                v-for="option in sortOptions"
-                :key="option.value"
-                :value="option.value"
-            >
-              {{ option.label }}
-            </option>
-          </select>
-
-          <select v-model.number="selectedPageSize" class="form-select show-select">
-            <option
-                v-for="pageSize in pageSizeOptions"
-                :key="pageSize"
-                :value="pageSize"
-            >
-              Hiển thị: {{ pageSize }}
-            </option>
-          </select>
-        </div>
-      </div>
+      <ProductListToolbar
+          :visible-count="visibleProducts.length"
+          :total-count="filteredProducts.length"
+          :search-keyword="searchKeyword"
+          :selected-sort="selectedSort"
+          :selected-page-size="selectedPageSize"
+          :sort-options="sortOptions"
+          :page-size-options="pageSizeOptions"
+          @update:selectedSort="selectedSort = $event"
+          @update:selectedPageSize="selectedPageSize = $event"
+      />
 
       <div class="product-layout">
         <ProductFilter
@@ -274,6 +285,12 @@ onMounted(() => {
   color: #64748b;
   font-size: 15px;
   font-weight: 500;
+}
+
+.search-summary {
+  margin-top: 6px !important;
+  color: #0d6efd !important;
+  font-weight: 700 !important;
 }
 
 .heading-action {

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Coupon;
 use App\Models\Order;
+use App\Models\SiteSetting;
 use Illuminate\Validation\ValidationException;
 
 class OrderPricingService
@@ -23,9 +24,11 @@ class OrderPricingService
 
     public function resolveShippingFee(string $shippingMethod): float
     {
+        $settings = SiteSetting::current();
+
         return match (strtolower(trim($shippingMethod))) {
-            'standard' => 0,
-            'express' => 40000,
+            'standard' => (float)($settings->shipping_fee_standard ?? 0),
+            'express' => (float)($settings->shipping_fee_express ?? 40000),
             default => throw ValidationException::withMessages([
                 'shipping_method' => ['Phương thức giao hàng không hợp lệ.'],
             ]),

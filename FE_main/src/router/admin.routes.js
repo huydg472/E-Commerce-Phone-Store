@@ -194,6 +194,7 @@ export default [
                 path: 'settings',
                 name: 'admin.settings',
                 component: () => import('@/pages/admin/settings/SettingPage.vue'),
+                meta: {permission: PERMISSIONS.SETTINGS.VIEW},
             },
         ],
     },

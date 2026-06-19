@@ -1,6 +1,10 @@
 ﻿<script setup>
 import PaymentMethod from '@/components/payment/PaymentMethod.vue'
 import OrderSummary from '@/components/order/OrderSummary.vue'
+import CheckoutSelectedAddressCard from '@/components/checkout/CheckoutSelectedAddressCard.vue'
+import CheckoutShippingMethods from '@/components/checkout/CheckoutShippingMethods.vue'
+import CheckoutAddressPickerModal from '@/components/checkout/CheckoutAddressPickerModal.vue'
+import CheckoutAddressFormModal from '@/components/checkout/CheckoutAddressFormModal.vue'
 import {useCheckoutPage} from '@/composables/useCheckoutPage'
 
 const {
@@ -67,27 +71,12 @@ const {
               <h2>Địa chỉ giao hàng</h2>
             </div>
 
-            <div v-if="selectedShippingAddress" class="selected-address-card">
-              <div class="selected-address-card__main">
-                <div class="selected-address-card__icon">
-                  <i class="bi bi-geo-alt-fill"></i>
-                </div>
-                <div class="selected-address-card__content">
-                  <div class="selected-address-card__header">
-                    <strong>{{ selectedShippingAddress.receiver_name }}</strong>
-                  </div>
-                  <p>{{ selectedAddressLine || 'Chưa có địa chỉ chi tiết' }}</p>
-                  <small>
-                    <i class="bi bi-telephone"></i>
-                    {{ selectedShippingAddress.receiver_phone || 'Chưa có số điện thoại' }}
-                  </small>
-                </div>
-              </div>
-              <button type="button" class="link-btn" @click="openAddressPicker">
-                Chọn địa chỉ khác
-              </button>
-            </div>
-
+            <CheckoutSelectedAddressCard
+                v-if="selectedShippingAddress"
+                :selected-shipping-address="selectedShippingAddress"
+                :selected-address-line="selectedAddressLine"
+                @open-address-picker="openAddressPicker"
+            />
           </div>
 
           <div class="checkout-card">
@@ -96,31 +85,11 @@ const {
               <h2>Phương thức giao hàng</h2>
             </div>
 
-            <div class="shipping-methods">
-              <label
-                  v-for="method in shippingMethods"
-                  :key="method.id"
-                  class="shipping-card"
-                  :class="{ active: shippingMethod === method.id }"
-              >
-                <input
-                    v-model="shippingMethod"
-                    class="form-check-input"
-                    type="radio"
-                    name="shipping_method"
-                    :value="method.id"
-                />
-
-                <div class="shipping-icon">
-                  <i :class="`bi ${method.icon}`"></i>
-                </div>
-
-                <div class="shipping-content">
-                  <h3>{{ method.title }}</h3>
-                  <p>{{ method.feeLabel }}</p>
-                </div>
-              </label>
-            </div>
+            <CheckoutShippingMethods
+                :shipping-methods="shippingMethods"
+                :shipping-method="shippingMethod"
+                @update:shippingMethod="shippingMethod = $event"
+            />
           </div>
 
           <PaymentMethod v-model="selectedPaymentMethod"/>
@@ -146,160 +115,31 @@ const {
       </p>
     </div>
 
-    <teleport to="body">
-      <div v-if="addressPickerOpen" class="address-modal-overlay" @click.self="closeAddressPicker">
-        <div class="address-modal">
-          <div class="address-modal__header">
-            <div>
-              <h3>{{ selectedAddressPickerTitle }}</h3>
-              <p v-if="hasSavedAddresses">
-                Chọn một địa chỉ khác đang có trong Sổ địa chỉ để dùng cho đơn này.
-              </p>
-              <p v-else>
-                Bạn chưa có địa chỉ nào trong Sổ địa chỉ.
-              </p>
-            </div>
-            <button type="button" class="address-modal__close" @click="closeAddressPicker">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
+    <CheckoutAddressPickerModal
+        :open="addressPickerOpen"
+        :title="selectedAddressPickerTitle"
+        :has-saved-addresses="hasSavedAddresses"
+        :addresses="addresses"
+        :selected-shipping-address-id="selectedShippingAddressId"
+        @close="closeAddressPicker"
+        @choose="chooseSavedAddress"
+        @add-new="openNewAddressModalFromPicker"
+    />
 
-          <div v-if="hasSavedAddresses" class="saved-address-list">
-            <button
-                v-for="address in addresses"
-                :key="address.id"
-                type="button"
-                class="saved-address-item"
-                :class="{ active: String(address.id) === String(selectedShippingAddressId) }"
-                @click="chooseSavedAddress(address)"
-            >
-              <div class="saved-address-item__icon">
-                <i class="bi bi-geo-alt-fill"></i>
-              </div>
-              <div class="saved-address-item__content">
-                <div class="saved-address-item__header">
-                  <strong>{{ address.receiver_name }}</strong>
-                  <span v-if="address.is_default" class="saved-address-item__badge">Mặc định</span>
-                </div>
-                <p>
-                  {{
-                    [
-                      address.address_detail,
-                      address.ward,
-                      address.district,
-                      address.province,
-                    ].filter(Boolean).join(', ')
-                  }}
-                </p>
-                <small>
-                  <i class="bi bi-telephone"></i>
-                  {{ address.receiver_phone || 'Chưa có số điện thoại' }}
-                </small>
-              </div>
-            </button>
-          </div>
-
-          <div v-else class="address-modal__empty">
-            <i class="bi bi-geo-alt"></i>
-            <p>Chưa có địa chỉ nào trong Sổ địa chỉ.</p>
-            <button type="button" class="btn btn-primary" @click="openNewAddressModalFromPicker">
-              Thêm địa chỉ mới
-            </button>
-          </div>
-
-          <div v-if="hasSavedAddresses" class="address-modal__footer">
-            <button type="button" class="btn btn-outline-secondary" @click="openNewAddressModalFromPicker">
-              Thêm địa chỉ mới
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="addressModalOpen" class="address-modal-overlay" @click.self="closeAddressModal">
-        <div class="address-modal">
-          <div class="address-modal__header">
-            <div>
-              <h3>{{ hasSavedAddresses ? 'Thêm địa chỉ mới' : 'Thêm địa chỉ giao hàng' }}</h3>
-              <p>
-                {{
-                  hasSavedAddresses
-                      ? 'Lưu địa chỉ mới vào Sổ địa chỉ, sau đó chọn ngay cho đơn hàng.'
-                      : 'Bạn chưa có địa chỉ nào. Hãy nhập địa chỉ để lưu và dùng cho đơn hàng này.'
-                }}
-              </p>
-            </div>
-            <button type="button" class="address-modal__close" @click="closeAddressModal">
-              <i class="bi bi-x-lg"></i>
-            </button>
-          </div>
-
-          <div v-if="addressModalSuccess" class="address-modal__success">
-            <i class="bi bi-check-circle-fill"></i>
-            <span>{{ addressModalSuccess }}</span>
-          </div>
-
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Họ và tên <span>*</span></label>
-              <input v-model.trim="addressForm.receiver_name" type="text" class="form-control"
-                     placeholder="Nhập họ và tên">
-            </div>
-
-            <div class="form-group">
-              <label>Số điện thoại <span>*</span></label>
-              <input v-model.trim="addressForm.receiver_phone" type="text" class="form-control"
-                     placeholder="Nhập số điện thoại">
-            </div>
-
-            <div class="form-group">
-              <label>Tỉnh/Thành phố <span>*</span></label>
-              <input v-model.trim="addressForm.province" type="text" class="form-control"
-                     placeholder="Nhập tỉnh/thành phố">
-            </div>
-
-            <div class="form-group">
-              <label>Quận/Huyện <span>*</span></label>
-              <input v-model.trim="addressForm.district" type="text" class="form-control" placeholder="Nhập quận/huyện">
-            </div>
-
-            <div class="form-group">
-              <label>Phường/Xã <span>*</span></label>
-              <input v-model.trim="addressForm.ward" type="text" class="form-control" placeholder="Nhập phường/xã">
-            </div>
-
-            <div class="form-group">
-              <label>Địa chỉ cụ thể <span>*</span></label>
-              <input v-model.trim="addressForm.address_detail" type="text" class="form-control"
-                     placeholder="Số nhà, tên đường, tòa nhà, căn hộ...">
-            </div>
-          </div>
-
-          <div class="form-group form-group-full note-group">
-            <label>Ghi chú</label>
-            <textarea
-                v-model.trim="addressForm.note"
-                class="form-control"
-                rows="3"
-                placeholder="Ví dụ: Giao hàng giờ hành chính, gọi trước khi giao..."
-            ></textarea>
-          </div>
-
-          <div class="address-modal__footer">
-            <button type="button" class="btn btn-outline-secondary" @click="closeAddressModal">
-              Hủy
-            </button>
-            <button type="button" class="btn btn-primary" :disabled="addressModalSaving"
-                    @click="saveNewAddressFromModal">
-              {{ addressModalSaving ? 'Đang lưu...' : 'Lưu địa chỉ' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </teleport>
+    <CheckoutAddressFormModal
+        :open="addressModalOpen"
+        :title="hasSavedAddresses ? 'Thêm địa chỉ mới' : 'Thêm địa chỉ giao hàng'"
+        :has-saved-addresses="hasSavedAddresses"
+        :address-form="addressForm"
+        :saving="addressModalSaving"
+        :success-message="addressModalSuccess"
+        @close="closeAddressModal"
+        @save="saveNewAddressFromModal"
+    />
   </section>
 </template>
 
-<style scoped>
+<style>
 .checkout-page {
   padding: 18px 0 40px;
   background: #ffffff;

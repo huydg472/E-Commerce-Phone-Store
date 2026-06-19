@@ -1,4 +1,40 @@
 <script setup>
+import ListPaginationControls from '@/components/common/ListPaginationControls.vue'
+import ProductVariantForm from '@/components/product/ProductVariantForm.vue'
+import {useProductVariantPage} from '@/composables/useProductVariantPage.js'
+
+const {
+  product,
+  productLoading,
+  loadingError,
+  formError,
+  showModal,
+  saving,
+  deletingId,
+  editingVariantId,
+  fieldErrors,
+  productId,
+  isActiveTab,
+  variantRows,
+  currentPage,
+  pageSize,
+  totalPages,
+  paginatedVariants,
+  pageStart,
+  pageEnd,
+  summary,
+  form,
+  openCreateModal,
+  openEditModal,
+  closeModal,
+  handleSubmit,
+  handleDelete,
+  handleToggleStatus,
+  handleToggleFeatured,
+  formatMoney,
+  formatDate,
+} = useProductVariantPage()
+/*
 import {computed, onMounted, reactive, ref, watch} from 'vue'
 import {useRoute} from 'vue-router'
 import {storeToRefs} from 'pinia'
@@ -282,6 +318,7 @@ const formatMoney = (value) => {
 }
 
 onMounted(loadData)
+*/
 </script>
 
 <template>
