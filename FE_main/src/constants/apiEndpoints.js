@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
     PRODUCT_VARIANTS: '/product-variants',
     PRODUCT_SPECIFICATIONS: '/product-specifications',
     PRODUCT_IMAGES: '/product-images',
+    CONTACT_MESSAGES: '/contact-messages',
     CARTS: '/cart',
     CART_ITEMS: '/cart/items',
     ORDERS: '/orders',

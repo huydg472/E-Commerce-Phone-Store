@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 import {storeToRefs} from 'pinia'
 import {useRouter} from 'vue-router'
 import {useDashboardStore} from '@/stores/dashboardStore'
@@ -67,98 +67,32 @@ const formatOrderStatus = (value) => orderStatusMap[value] || value || 'Không r
 
 const formatPaymentStatus = (value) => paymentStatusMap[value] || value || 'Không rõ'
 
-const monthBuckets = (orders) => {
-  const buckets = []
-  const now = new Date()
+const selectedDashboardPeriod = ref('month')
 
-  for (let index = 5; index >= 0; index -= 1) {
-    const date = new Date(now.getFullYear(), now.getMonth() - index, 1)
 
-    buckets.push({
-      key: `${date.getFullYear()}-${date.getMonth()}`,
-      label: `T${date.getMonth() + 1}`,
-      total: 0,
-    })
+const dashboardRevenueTitle = computed(() => {
+  if (selectedDashboardPeriod.value === '30d') {
+    return 'Doanh thu 30 ngày gần đây'
   }
 
-  orders.forEach((order) => {
-    const sourceDate = order.ordered_at || order.completed_at || order.created_at
+  if (selectedDashboardPeriod.value === '7d') {
+    return 'Doanh thu 7 ngày gần đây'
+  }
 
-    if (!sourceDate) {
-      return
-    }
-
-    const date = new Date(sourceDate)
-    const bucket = buckets.find((item) => item.key === `${date.getFullYear()}-${date.getMonth()}`)
-
-    if (bucket) {
-      bucket.total += Number(order.total_amount || 0)
-    }
-  })
-
-  const maxTotal = Math.max(...buckets.map((item) => item.total), 1)
-
-  return buckets.map((item) => ({
-    ...item,
-    height: Math.max(16, Math.round((item.total / maxTotal) * 100)),
-    amount: formatCurrency(item.total),
-  }))
-}
-
-const topProducts = computed(() => {
-  const productMap = new Map()
-
-  dashboardStore.orders.forEach((order) => {
-    const orderItems = Array.isArray(order?.orderItems)
-        ? order.orderItems
-        : Array.isArray(order?.order_items)
-            ? order.order_items
-            : []
-
-    orderItems.forEach((item) => {
-      const variant = item.productVariant || item.product_variant || {}
-      const product = variant.product || variant.product || {}
-      const key = variant.id || item.product_variant_id || `${item.product_name}-${item.variant_name}`
-      const current = productMap.get(key) || {
-        name: product.name || item.product_name || 'Sản phẩm',
-        variant: item.variant_name || variant.name || 'Biến thể',
-        sold: 0,
-        revenue: 0,
-      }
-
-      current.sold += Number(item.quantity || 0)
-      current.revenue += Number(item.total_price || 0)
-      productMap.set(key, current)
-    })
-  })
-
-  const items = [...productMap.values()]
-      .sort((left, right) => right.revenue - left.revenue)
-      .slice(0, 4)
-
-  const maxRevenue = Math.max(...items.map((item) => item.revenue), 1)
-
-  return items.map((item) => ({
-    ...item,
-    percent: Math.max(18, Math.round((item.revenue / maxRevenue) * 100)),
-  }))
+  return 'Doanh thu tháng này'
 })
 
-const recentOrders = computed(() => {
-  return dashboardStore.orders.slice(0, 5).map((order) => ({
-    id: order.order_code || `#${order.id}`,
-    customer: order.receiver_name || order.user?.name || 'Khách hàng',
-    total: formatCurrency(order.total_amount),
-    statusKey: order.order_status || 'pending',
-    status: formatOrderStatus(order.order_status),
-    paymentStatusKey: order.payment_status || order.payment?.payment_status || 'pending',
-    paymentStatus: formatPaymentStatus(order.payment_status || order.payment?.payment_status),
-    paymentMethod: formatMethod(order.payment?.payment_method || order.payment_method),
-    time: formatDateTime(order.ordered_at || order.created_at),
-  }))
-})
+const dashboardTopProductsTitle = computed(() => {
+  if (selectedDashboardPeriod.value === '30d') {
+    return 'Sản phẩm bán chạy 30 ngày gần đây'
+  }
 
-const revenueSeries = computed(() => monthBuckets(dashboardStore.orders))
+  if (selectedDashboardPeriod.value === '7d') {
+    return 'Sản phẩm bán chạy 7 ngày gần đây'
+  }
+
+  return 'Sản phẩm bán chạy tháng này'
+})
 
 const activities = computed(() => {
   const items = []
@@ -249,39 +183,52 @@ const dashboardStats = computed(() => stats.value.map((item) => ({
   variant: item.tone === 'green' ? 'success' : item.tone === 'purple' ? 'purple' : item.tone === 'warning' ? 'warning' : 'primary',
 })))
 
-const dashboardRevenueSeries = computed(() => revenueSeries.value.map((item) => ({
-  day: item.label,
-  label: item.label,
-  percent: item.height,
-})))
+const dashboardRevenueSeries = computed(() => {
+  return Array.isArray(dashboardStore.analytics.revenueSeries)
+    ? dashboardStore.analytics.revenueSeries.map((item) => ({
+      day: item.day || item.label || '',
+      label: item.label || item.day || '',
+      percent: Number(item.percent || 0),
+    }))
+    : []
+})
 
-const dashboardTopProducts = computed(() => topProducts.value.map((product, index) => ({
-  id: product.name + product.variant + index,
-  rank: index + 1,
-  thumbClass: index === 0 ? 'phone-graphite' : index === 1 ? 'phone-titanium' : index === 2 ? 'phone-purple' : 'phone-green',
-  name: product.name,
-  sold: formatNumber(product.sold),
-})))
+const dashboardTopProducts = computed(() => {
+  const items = Array.isArray(dashboardStore.analytics.topProducts) ? dashboardStore.analytics.topProducts : []
 
-const dashboardRecentOrders = computed(() => recentOrders.value.map((order, index) => ({
-  code: order.id,
-  customer: order.customer,
-  product: order.paymentMethod || 'Sản phẩm',
-  total: order.total,
-  status:
-      order.statusKey === 'shipping'
-          ? 'shipping'
-          : order.statusKey === 'completed'
-              ? 'completed'
-              : order.statusKey === 'cancelled'
-                  ? 'cancelled'
-                  : 'pending',
-  date: order.time,
-  thumbClass: index === 0 ? 'phone-graphite' : index === 1 ? 'phone-titanium' : index === 2 ? 'phone-purple' : 'phone-green',
-})))
+  return items.map((product, index) => ({
+    id: `${product.id ?? product.name ?? 'product'}-${index}`,
+    rank: index + 1,
+    thumbClass: index === 0 ? 'phone-graphite' : index === 1 ? 'phone-titanium' : index === 2 ? 'phone-purple' : 'phone-green',
+    name: product.name,
+    sold: formatNumber(product.sold),
+  }))
+})
+
+const dashboardRecentOrders = computed(() => {
+  const items = Array.isArray(dashboardStore.analytics.recentOrders) ? dashboardStore.analytics.recentOrders : []
+
+  return items.map((order, index) => ({
+    code: order.code || `#${order.id}`,
+    customer: order.customer,
+    product: order.product,
+    total: formatCurrency(order.total),
+    status:
+        order.status === 'shipping'
+            ? 'shipping'
+            : order.status === 'completed'
+                ? 'completed'
+                : order.status === 'cancelled'
+                    ? 'cancelled'
+                    : 'pending',
+    date: formatDateTime(order.date),
+    thumbClass: index === 0 ? 'phone-graphite' : index === 1 ? 'phone-titanium' : index === 2 ? 'phone-purple' : 'phone-green',
+  }))
+})
 
 const refreshDashboard = () => {
   dashboardStore.fetchDashboard()
+  dashboardStore.fetchAnalytics(selectedDashboardPeriod.value)
 }
 
 const goToOrders = () => {
@@ -290,9 +237,13 @@ const goToOrders = () => {
 
 onMounted(() => {
   dashboardStore.fetchDashboard()
+  dashboardStore.fetchAnalytics(selectedDashboardPeriod.value)
+})
+
+watch(selectedDashboardPeriod, (period) => {
+  dashboardStore.fetchAnalytics(period).catch(() => {})
 })
 </script>
-
 <template>
   <div class="dashboard-page">
     <section class="hero-card">
@@ -339,12 +290,20 @@ onMounted(() => {
     </section>
 
     <section class="dashboard-grid">
-      <RevenueChart :items="dashboardRevenueSeries"/>
+      <RevenueChart
+          v-model:period="selectedDashboardPeriod"
+          :title="dashboardRevenueTitle"
+          :items="dashboardRevenueSeries"
+      />
       <DashboardActivityFeed :activities="activities"/>
     </section>
 
     <section class="dashboard-grid bottom-grid">
-      <TopProducts :products="dashboardTopProducts"/>
+      <TopProducts
+          v-model:period="selectedDashboardPeriod"
+          :title="dashboardTopProductsTitle"
+          :products="dashboardTopProducts"
+      />
       <RecentOrders :orders="dashboardRecentOrders"/>
     </section>
   </div>

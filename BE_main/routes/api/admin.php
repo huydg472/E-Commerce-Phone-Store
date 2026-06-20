@@ -81,4 +81,5 @@ Route::middleware(['auth:sanctum', 'role:admin,staff'])->group(function () {
     Route::get('/reports/revenue', [ReportController::class, 'revenue']);
     Route::get('/reports/products', [ReportController::class, 'products']);
     Route::get('/reports/orders', [ReportController::class, 'orders']);
+    Route::get('/reports/dashboard', [ReportController::class, 'dashboard']);
 });

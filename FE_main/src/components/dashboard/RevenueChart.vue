@@ -1,21 +1,38 @@
 <script setup>
-defineProps({
+import {computed} from 'vue'
+
+const props = defineProps({
   items: {
     type: Array,
     required: true,
   },
+  title: {
+    type: String,
+    default: 'Doanh thu 7 ngày gần đây',
+  },
+  period: {
+    type: String,
+    default: 'month',
+  },
+})
+
+const emit = defineEmits(['update:period'])
+
+const selectedPeriod = computed({
+  get: () => props.period,
+  set: (value) => emit('update:period', value),
 })
 </script>
 
 <template>
   <section class="dashboard-panel revenue-panel">
     <div class="panel-header">
-      <h2>Doanh thu 7 ngày gần đây</h2>
+      <h2>{{ title }}</h2>
 
-      <select class="form-select form-select-sm period-select" aria-label="Lọc thời gian">
-        <option>7 ngày gần đây</option>
-        <option>30 ngày gần đây</option>
-        <option>Tháng này</option>
+      <select v-model="selectedPeriod" class="form-select form-select-sm period-select" aria-label="Lọc thời gian">
+        <option value="7d">7 ngày gần đây</option>
+        <option value="30d">30 ngày gần đây</option>
+        <option value="month">Tháng này</option>
       </select>
     </div>
 

@@ -11,14 +11,14 @@ export function usePaymentGatewayDemo() {
             key: 'vnpay',
             name: 'VNPay',
             accent: 'blue',
-            description: 'Thanh toÃ¡n qua QR VNPay, giao dá»‹ch thÃ nh cÃ´ng thÃ¬ Ä‘Æ¡n váº«n chá» cá»­a hÃ ng xÃ¡c nháº­n.',
+            description: 'Thanh toán qua QR VNPay, giao dịch thành công thì đơn vẫn chờ cửa hàng xác nhận.',
             badge: 'VNPay QR',
         },
         momo: {
             key: 'momo',
             name: 'MoMo',
             accent: 'pink',
-            description: 'Thanh toÃ¡n báº±ng vÃ­ MoMo, giao dá»‹ch chá»‰ ghi nháº­n Ä‘Ã£ tráº£ tiá»n vÃ  chá» shop duyá»‡t.',
+            description: 'Thanh toán bằng ví MoMo, giao dịch chỉ ghi nhận đã trả tiền và chờ shop duyệt.',
             badge: 'MoMo QR',
         },
     }
@@ -44,36 +44,36 @@ export function usePaymentGatewayDemo() {
     const statusLabel = computed(() => {
         switch (paymentState.value) {
             case 'pending':
-                return `Äang chá» quÃ©t mÃ£ ${countdown.value}s`
+                return `Đang chờ quét mã ${countdown.value}s`
             case 'syncing':
-                return 'Äang xÃ¡c nháº­n thanh toÃ¡n'
+                return 'Đang xác nhận thanh toán'
             case 'paid':
-                return 'ÄÃ£ thanh toÃ¡n, chá» xÃ¡c nháº­n'
+                return 'Đã thanh toán, chờ xác nhận'
             case 'cancelled':
-                return 'Giao dá»‹ch Ä‘Ã£ há»§y'
+                return 'Giao dịch đã hủy'
             case 'error':
-                return 'XÃ¡c nháº­n tháº¥t báº¡i'
+                return 'Xác nhận thất bại'
             default:
-                return 'ChÆ°a báº¯t Ä‘áº§u'
+                return 'Chưa bắt đầu'
         }
     })
 
     const paymentSteps = computed(() => [
         {
-            title: 'QuÃ©t mÃ£ QR',
-            description: 'DÃ¹ng á»©ng dá»¥ng ngÃ¢n hÃ ng hoáº·c vÃ­ Ä‘iá»‡n tá»­ Ä‘á»ƒ quÃ©t mÃ£ trÃªn mÃ n hÃ¬nh.',
+            title: 'Quét mã QR',
+            description: 'Dùng ứng dụng ngân hàng hoặc ví điện tử để quét mã trên màn hình.',
             active: paymentState.value === 'pending',
             done: ['syncing', 'paid'].includes(paymentState.value),
         },
         {
-            title: 'Há»‡ thá»‘ng Ä‘á»‘i soÃ¡t',
-            description: 'Giao dá»‹ch Ä‘Æ°á»£c ghi nháº­n vÃ  Ä‘áº©y vÃ o luá»“ng chá» cá»­a hÃ ng xÃ¡c nháº­n.',
+            title: 'Hệ thống đối soát',
+            description: 'Giao dịch được ghi nhận và đẩy vào luồng chờ cửa hàng xác nhận.',
             active: paymentState.value === 'syncing',
             done: paymentState.value === 'paid',
         },
         {
-            title: 'Chá» shop xÃ¡c nháº­n',
-            description: 'Thanh toÃ¡n Ä‘Ã£ Ä‘Æ°á»£c ghi nháº­n, Ä‘Æ¡n váº«n chá» cá»­a hÃ ng xÃ¡c nháº­n trÆ°á»›c khi chuyá»ƒn sang xá»­ lÃ½.',
+            title: 'Chờ shop xác nhận',
+            description: 'Thanh toán đã được ghi nhận, đơn vẫn chờ cửa hàng xác nhận trước khi chuyển sang xử lý.',
             active: paymentState.value === 'paid',
             done: paymentState.value === 'paid',
         },
@@ -192,14 +192,14 @@ export function usePaymentGatewayDemo() {
                 transactionCode.value = syncedOrder.payment.transaction_code
             }
 
-            syncMessage.value = 'ÄÃ£ ghi nháº­n thanh toÃ¡n, Ä‘Æ¡n váº«n chá» cá»­a hÃ ng xÃ¡c nháº­n.'
+            syncMessage.value = 'Đã ghi nhận thanh toán, đơn vẫn chờ cửa hàng xác nhận.'
             paymentState.value = 'paid'
             clearSuccessTimer()
             successTimer = window.setTimeout(() => {
                 router.push({name: 'order.success', query: {order_id: orderId.value}})
             }, 1500)
         } catch (error) {
-            syncError.value = error?.response?.data?.message || 'KhÃ´ng thá»ƒ cáº­p nháº­t tráº¡ng thÃ¡i thanh toÃ¡n.'
+            syncError.value = error?.response?.data?.message || 'Không thể cập nhật trạng thái thanh toán.'
             paymentState.value = 'error'
         }
     }
@@ -239,7 +239,7 @@ export function usePaymentGatewayDemo() {
         paymentState.value = 'cancelled'
         countdown.value = 0
         syncMessage.value = ''
-        syncError.value = 'Giao dá»‹ch Ä‘Ã£ bá»‹ há»§y trÆ°á»›c khi hoÃ n táº¥t.'
+        syncError.value = 'Giao dịch đã bị hủy trước khi hoàn tất.'
     }
 
     const resetFlow = () => {

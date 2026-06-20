@@ -1,6 +1,11 @@
 <script setup>
 import {computed, reactive} from 'vue'
+import {storeToRefs} from 'pinia'
 import {usePublicSiteSettings} from '@/composables/usePublicSiteSettings'
+import {useContactStore} from '@/stores/contactStore'
+
+const contactStore = useContactStore()
+const {loading, successMessage, errorMessage, fieldErrors} = storeToRefs(contactStore)
 
 const form = reactive({
   name: '',
@@ -17,8 +22,9 @@ const subjects = [
   {label: 'Góp ý dịch vụ', value: 'feedback'},
 ]
 
-const {brandName, supportPhone, supportEmail, address, socials} = usePublicSiteSettings()
+const {brandName, supportPhone, supportEmail, contactEmail, address, socials} = usePublicSiteSettings()
 const workingTime = computed(() => '8:30 - 22:30')
+const contactInbox = computed(() => contactEmail.value || supportEmail.value)
 
 const contactItems = computed(() => [
   {
@@ -29,11 +35,18 @@ const contactItems = computed(() => [
     icon: 'bi-telephone',
   },
   {
-    title: 'Email',
-    value: supportEmail.value,
-    hint: 'Phản hồi trong 24h',
-    href: `mailto:${supportEmail.value}`,
+    title: 'Email liên hệ',
+    value: contactInbox.value,
+    hint: 'Gửi trực tiếp đến bộ phận chăm sóc khách hàng',
+    href: `mailto:${contactInbox.value}`,
     icon: 'bi-envelope',
+  },
+  {
+    title: 'Email hỗ trợ',
+    value: supportEmail.value,
+    hint: 'Kỹ thuật và hỗ trợ sau bán hàng',
+    href: `mailto:${supportEmail.value}`,
+    icon: 'bi-headset',
   },
   {
     title: 'Địa chỉ cửa hàng',
@@ -41,13 +54,6 @@ const contactItems = computed(() => [
     hint: 'Xem trên bản đồ',
     href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address.value)}`,
     icon: 'bi-geo-alt',
-  },
-  {
-    title: 'Giờ làm việc',
-    value: workingTime.value,
-    hint: 'Tất cả các ngày trong tuần',
-    href: '',
-    icon: 'bi-clock',
   },
 ])
 
@@ -59,8 +65,29 @@ const directionUrl = computed(() => {
   return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address.value)}`
 })
 
-const handleSubmit = () => {
-  console.log('Contact form:', {...form})
+const fieldError = (field) => {
+  return fieldErrors.value?.[field]?.[0] || ''
+}
+
+const clearFeedbackOnInput = () => {
+  if (successMessage.value || errorMessage.value || Object.keys(fieldErrors.value || {}).length) {
+    contactStore.clearFeedback()
+  }
+}
+
+const handleSubmit = async () => {
+  const payload = {...form}
+
+  try {
+    await contactStore.submit(payload)
+
+    form.subject = ''
+    form.message = ''
+  } catch (error) {
+    if (error?.response?.status !== 422) {
+      return
+    }
+  }
 }
 </script>
 
@@ -73,6 +100,7 @@ const handleSubmit = () => {
           <h1>{{ brandName }}</h1>
           <p class="subtitle">
             Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn qua hotline, email hoặc trực tiếp tại cửa hàng.
+            Mọi yêu cầu từ form này sẽ được chuyển tới <strong>{{ contactInbox }}</strong>.
           </p>
         </div>
 
@@ -84,39 +112,96 @@ const handleSubmit = () => {
 
       <section class="contact-grid">
         <article class="contact-card contact-form-card">
-          <h2>Gửi yêu cầu liên hệ</h2>
+          <div class="card-head">
+            <div>
+              <h2>Gửi yêu cầu liên hệ</h2>
+              <p>Điền thông tin và mô tả ngắn gọn vấn đề, chúng tôi sẽ phản hồi sớm nhất có thể.</p>
+            </div>
+          </div>
 
-          <form class="contact-form" @submit.prevent="handleSubmit">
+          <div v-if="successMessage" class="form-banner success-banner">
+            <i class="bi bi-check-circle"></i>
+            <span>{{ successMessage }}</span>
+          </div>
+
+          <div v-else-if="errorMessage" class="form-banner error-banner">
+            <i class="bi bi-exclamation-triangle"></i>
+            <span>{{ errorMessage }}</span>
+          </div>
+
+          <form class="contact-form" @submit.prevent="handleSubmit" @input="clearFeedbackOnInput" @change="clearFeedbackOnInput" novalidate>
             <div class="form-grid">
               <div class="form-group">
                 <label>Họ và tên</label>
-                <input v-model="form.name" type="text" class="form-control" placeholder="Nhập họ tên"/>
+                <input
+                    v-model.trim="form.name"
+                    type="text"
+                    class="form-control"
+                    :class="{invalid: fieldError('name')}"
+                    placeholder="Nhập họ tên"
+                    autocomplete="name"
+                />
+                <small v-if="fieldError('name')" class="field-error">{{ fieldError('name') }}</small>
               </div>
+
               <div class="form-group">
                 <label>Email</label>
-                <input v-model="form.email" type="email" class="form-control" placeholder="Nhập email"/>
+                <input
+                    v-model.trim="form.email"
+                    type="email"
+                    class="form-control"
+                    :class="{invalid: fieldError('email')}"
+                    placeholder="Nhập email"
+                    autocomplete="email"
+                />
+                <small v-if="fieldError('email')" class="field-error">{{ fieldError('email') }}</small>
               </div>
+
               <div class="form-group">
                 <label>Số điện thoại</label>
-                <input v-model="form.phone" type="tel" class="form-control" placeholder="Nhập số điện thoại"/>
+                <input
+                    v-model.trim="form.phone"
+                    type="tel"
+                    class="form-control"
+                    :class="{invalid: fieldError('phone')}"
+                    placeholder="Nhập số điện thoại"
+                    autocomplete="tel"
+                />
+                <small v-if="fieldError('phone')" class="field-error">{{ fieldError('phone') }}</small>
               </div>
+
               <div class="form-group">
                 <label>Chủ đề</label>
-                <select v-model="form.subject" class="form-select">
+                <select
+                    v-model="form.subject"
+                    class="form-select"
+                    :class="{invalid: fieldError('subject')}"
+                >
                   <option value="">Chọn chủ đề</option>
                   <option v-for="subject in subjects" :key="subject.value" :value="subject.value">
                     {{ subject.label }}
                   </option>
                 </select>
+                <small v-if="fieldError('subject')" class="field-error">{{ fieldError('subject') }}</small>
               </div>
+
               <div class="form-group form-group--full">
                 <label>Nội dung</label>
-                <textarea v-model="form.message" class="form-control" rows="6"
-                          placeholder="Nội dung cần hỗ trợ"></textarea>
+                <textarea
+                    v-model.trim="form.message"
+                    class="form-control"
+                    :class="{invalid: fieldError('message')}"
+                    rows="6"
+                    placeholder="Mô tả yêu cầu hoặc câu hỏi của bạn"
+                ></textarea>
+                <small v-if="fieldError('message')" class="field-error">{{ fieldError('message') }}</small>
               </div>
             </div>
 
-            <button type="submit" class="primary-btn">Gửi yêu cầu</button>
+            <button type="submit" class="primary-btn" :disabled="loading">
+              <span v-if="loading" class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+              {{ loading ? 'Đang gửi...' : 'Gửi yêu cầu' }}
+            </button>
           </form>
         </article>
 
@@ -222,7 +307,11 @@ const handleSubmit = () => {
   margin: 10px 0 0;
   color: #64748b;
   line-height: 1.7;
-  max-width: 760px;
+  max-width: 820px;
+}
+
+.subtitle strong {
+  color: #0f172a;
 }
 
 .direction-btn {
@@ -250,11 +339,52 @@ const handleSubmit = () => {
   padding: 20px;
 }
 
-.contact-card h2 {
-  margin: 0 0 14px;
+.card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.card-head h2 {
+  margin: 0 0 6px;
   color: #0f172a;
   font-size: 22px;
   font-weight: 900;
+}
+
+.card-head p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.form-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.form-banner i {
+  font-size: 18px;
+  margin-top: 1px;
+}
+
+.success-banner {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.error-banner {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .contact-form .form-grid {
@@ -286,9 +416,28 @@ const handleSubmit = () => {
   border: 1px solid #dbe3ef;
 }
 
+.form-control:focus,
+.form-select:focus {
+  box-shadow: none;
+  border-color: #2563eb;
+}
+
+.form-control.invalid,
+.form-select.invalid {
+  border-color: #f43f5e;
+  box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.08);
+}
+
 textarea.form-control {
   min-height: 120px;
   resize: vertical;
+}
+
+.field-error {
+  margin-top: 6px;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .primary-btn {
@@ -300,6 +449,10 @@ textarea.form-control {
   background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #ffffff;
   font-weight: 800;
+}
+
+.primary-btn:disabled {
+  opacity: 0.75;
 }
 
 .contact-side {

@@ -3,6 +3,7 @@ import {brandService} from '@/services/brandService'
 import {categoryService} from '@/services/categoryService'
 import {orderService} from '@/services/orderService'
 import {paymentService} from '@/services/paymentService'
+import {reportService} from '@/services/reportService'
 import {productService} from '@/services/productService'
 import {productVariantService} from '@/services/productVariantService'
 import {userService} from '@/services/userService'
@@ -58,6 +59,13 @@ export const useDashboardStore = defineStore('dashboard', {
         cancelledOrders: 0,
         paidPayments: 0,
         pendingPayments: 0,
+        analytics: {
+            period: 'month',
+            periodLabel: 'Tháng này',
+            revenueSeries: [],
+            topProducts: [],
+            recentOrders: [],
+        },
     }),
 
     actions: {
@@ -119,6 +127,28 @@ export const useDashboardStore = defineStore('dashboard', {
                 this.error = error instanceof Error ? error.message : 'Khong the tai du lieu dashboard'
             } finally {
                 this.loading = false
+            }
+        },
+
+        async fetchAnalytics(period = 'month') {
+            this.error = null
+
+            try {
+                const response = await reportService.dashboard({period})
+                const payload = response?.data?.data ?? response?.data ?? {}
+
+                this.analytics = {
+                    period: payload.period ?? period,
+                    periodLabel: payload.period_label ?? 'Tháng này',
+                    revenueSeries: Array.isArray(payload.revenue_series) ? payload.revenue_series : [],
+                    topProducts: Array.isArray(payload.top_products) ? payload.top_products : [],
+                    recentOrders: Array.isArray(payload.recent_orders) ? payload.recent_orders : [],
+                }
+
+                return this.analytics
+            } catch (error) {
+                this.error = error instanceof Error ? error.message : 'Khong the tai du lieu bieu do dashboard'
+                throw error
             }
         },
 
