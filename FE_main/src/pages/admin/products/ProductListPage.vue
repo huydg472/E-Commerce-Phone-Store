@@ -263,12 +263,7 @@ onMounted(async () => {
       <button type="button" class="secondary-action" @click="refreshProducts">Thử lại</button>
     </section>
 
-    <section v-else-if="isLoading" class="state-card">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p>Đang tải danh sách sản phẩm...</p>
-    </section>
-
-    <section v-else class="table-card">
+    <section class="table-card">
       <div class="table-header">
         <div>
           <h2>Kho sản phẩm</h2>

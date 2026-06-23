@@ -76,11 +76,6 @@ onMounted(loadProduct)
       <span>{{ loadingError }}</span>
     </section>
 
-    <section v-else-if="loading && !product" class="state-card">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p>Đang tải chi tiết sản phẩm...</p>
-    </section>
-
     <div v-else class="detail-layout">
       <section class="hero-panel">
         <div class="hero-image">

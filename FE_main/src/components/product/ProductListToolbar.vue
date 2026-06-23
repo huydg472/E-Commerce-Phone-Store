@@ -28,6 +28,10 @@ defineProps({
     type: Array,
     required: true,
   },
+  entityLabel: {
+    type: String,
+    default: 'sản phẩm',
+  },
 })
 
 defineEmits(['update:selectedSort', 'update:selectedPageSize'])
@@ -36,8 +40,8 @@ defineEmits(['update:selectedSort', 'update:selectedPageSize'])
 <template>
   <div class="page-heading">
     <div>
-      <h1>Tất cả sản phẩm</h1>
-      <p>Hiển thị {{ visibleCount }} / {{ totalCount }} sản phẩm</p>
+      <h1>Tất cả {{ entityLabel }}</h1>
+      <p>Hiển thị {{ visibleCount }} / {{ totalCount }} {{ entityLabel }}</p>
       <p v-if="searchKeyword" class="search-summary">
         Kết quả cho: "{{ searchKeyword }}"
       </p>

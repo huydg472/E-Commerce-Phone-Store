@@ -56,14 +56,7 @@ const {
 
       <h1 class="page-title">Thanh toán</h1>
 
-      <div v-if="pageLoading" class="checkout-loading">
-        <div class="checkout-loading-card">
-          <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-          <p>Đang tải dữ liệu thanh toán...</p>
-        </div>
-      </div>
-
-      <div v-else class="checkout-layout">
+      <div class="checkout-layout">
         <div class="checkout-left">
           <div class="checkout-card">
             <div class="section-title">

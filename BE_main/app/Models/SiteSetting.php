@@ -38,12 +38,38 @@ class SiteSetting extends Model
         'maintenance_mode' => 'boolean',
     ];
 
+    public function restoreMissingDefaults(bool $persist = false): self
+    {
+        $defaults = self::defaults();
+        $missing = [];
+
+        foreach ($defaults as $key => $defaultValue) {
+            $currentValue = $this->getAttribute($key);
+
+            if ($currentValue === null || (is_string($currentValue) && trim($currentValue) === '')) {
+                $missing[$key] = $defaultValue;
+            }
+        }
+
+        if (!empty($missing)) {
+            $this->forceFill($missing);
+
+            if ($persist) {
+                $this->save();
+            }
+        }
+
+        return $this;
+    }
+
     public static function current(): self
     {
-        return self::query()->firstOrCreate(
+        $settings = self::query()->firstOrCreate(
             ['id' => 1],
             self::defaults()
         );
+
+        return $settings->restoreMissingDefaults(true)->fresh() ?? $settings;
     }
 
     public static function defaults(): array

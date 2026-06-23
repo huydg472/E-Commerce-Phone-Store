@@ -270,11 +270,6 @@ onMounted(loadData)
       <button type="button" class="secondary-action" @click="loadData">Thử lại</button>
     </section>
 
-    <section v-else-if="categoryLoading && !displayCategories.length" class="state-card">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p>Đang tải danh mục...</p>
-    </section>
-
     <CategoryTable
         v-else
         :categories="paginatedCategories"

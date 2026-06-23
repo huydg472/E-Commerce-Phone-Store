@@ -2,22 +2,25 @@ export default [
     {
         path: '/auth',
         component: () => import('@/layouts/AuthLayout.vue'),
-        meta: {requiresGuest: true},
+        meta: {requiresGuest: true, allowDuringMaintenance: true},
         children: [
             {
                 path: 'login',
                 name: 'login',
                 component: () => import('@/pages/auth/LoginPage.vue'),
+                meta: {allowDuringMaintenance: true},
             },
             {
                 path: 'register',
                 name: 'register',
                 component: () => import('@/pages/auth/RegisterPage.vue'),
+                meta: {allowDuringMaintenance: true},
             },
             {
                 path: 'forgot-password',
                 name: 'forgot-password',
                 component: () => import('@/pages/auth/ForgotPasswordPage.vue'),
+                meta: {allowDuringMaintenance: true},
             },
         ],
     },
@@ -26,6 +29,7 @@ export default [
         path: '/auth/reset-password',
         name: 'reset-password',
         component: () => import('@/pages/auth/ResetPasswordPage.vue'),
+        meta: {allowDuringMaintenance: true},
 
         // Không có token hoặc email thì không cho vào trang đổi mật khẩu
         beforeEnter: (to) => {
@@ -41,6 +45,7 @@ export default [
         path: '/auth/reset-password-success',
         name: 'reset-password-success',
         component: () => import('@/pages/auth/ResetPasswordSuccessPage.vue'),
+        meta: {allowDuringMaintenance: true},
 
         // Không reset thành công thì không cho tự gọi trang success
         beforeEnter: () => {

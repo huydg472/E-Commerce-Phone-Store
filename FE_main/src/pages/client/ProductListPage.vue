@@ -4,13 +4,14 @@ import ProductFilter from '@/components/product/ProductFilter.vue'
 import BasePagination from '@/components/common/BasePagination.vue'
 import ProductListToolbar from '@/components/product/ProductListToolbar.vue'
 import {computed, onMounted, ref, watch} from 'vue'
-import {useRoute} from 'vue-router'
+import {useRoute, useRouter} from 'vue-router'
 import {storeToRefs} from 'pinia'
 import {useProductStore} from '@/stores/productStore.js'
 import {buildProductCards, normalizeText} from '@/utils/productCardHelpers.js'
 
 const productStore = useProductStore()
 const route = useRoute()
+const router = useRouter()
 const {items: products} = storeToRefs(productStore)
 
 const selectedBrands = ref([])
@@ -22,8 +23,50 @@ const currentPage = ref(1)
 const initialBrandSlug = computed(() => String(route.query.brand ?? ''))
 const initialCategorySlug = computed(() => String(route.query.category ?? ''))
 const initialSearchKeyword = computed(() => String(route.query.q ?? ''))
+const isAllFeaturedScope = computed(() => String(route.query.featuredScope ?? '') === 'all')
 const selectedCategorySlug = ref('')
 const searchKeyword = ref('')
+const isFeaturedMode = computed(() => isAllFeaturedScope.value || selectedSort.value === 'featured')
+const pageEntityLabel = computed(() => {
+  if (isFeaturedMode.value) {
+    return 'sản phẩm nổi bật'
+  }
+
+  return 'sản phẩm'
+})
+
+const accessorySignals = [
+  'phu kien',
+  'phu-kien',
+  'accessory',
+  'op lung',
+  'bao da',
+  'kinh cuong luc',
+  'tai nghe',
+  'sac nhanh',
+  'pin du phong',
+  'cap sac',
+  'charger',
+  'charge',
+  'power bank',
+  'powerbank',
+  'wireless charger',
+  'magsafe',
+  'cable',
+  'usb-c cable',
+  'screen protector',
+  'privacy',
+  'anti-glare',
+  'camera lens',
+  'earbud',
+  'earphone',
+  'headphone',
+  'holder',
+  'mount',
+  'dock',
+  'hub',
+  'car charger',
+]
 
 const getSearchKeywords = () => {
   return normalizeText(searchKeyword.value)
@@ -31,21 +74,62 @@ const getSearchKeywords = () => {
 
 const handleSelectedBrands = (brandIds) => {
   selectedBrands.value = brandIds
+  if (isAllFeaturedScope.value) {
+    leaveFeaturedScope()
+  }
 }
 
 const handleSelectedPriceRange = (priceRange) => {
   selectedPriceRange.value = priceRange
+  if (isAllFeaturedScope.value) {
+    leaveFeaturedScope()
+  }
 }
 
 const handleSelectedStorages = (storages) => {
   selectedStorages.value = storages
+  if (isAllFeaturedScope.value) {
+    leaveFeaturedScope()
+  }
 }
 
 const productList = computed(() => Array.isArray(products.value) ? products.value : [])
 const productCards = computed(() => buildProductCards(productList.value))
+const phoneProductCards = computed(() => {
+  return productCards.value.filter((productCard) => {
+    const values = [
+      productCard.name,
+      productCard.categoryName,
+      productCard.categorySlug,
+      productCard.brandName,
+    ]
+
+    return !accessorySignals.some((keyword) => {
+      const normalizedKeyword = normalizeText(keyword)
+      return values.some((value) => normalizeText(value).includes(normalizedKeyword))
+      })
+  })
+})
+
+const displayProductCards = computed(() => {
+  return isAllFeaturedScope.value ? productCards.value : phoneProductCards.value
+})
+
+const leaveFeaturedScope = () => {
+  if (!isAllFeaturedScope.value) {
+    return
+  }
+
+  const nextQuery = {...route.query}
+  delete nextQuery.featured
+  delete nextQuery.featuredScope
+
+  router.replace({name: 'products.index', query: nextQuery}).catch(() => {})
+}
 
 const sortOptions = [
   {label: 'Sắp xếp: Mới nhất', value: 'newest'},
+  {label: 'Nổi bật', value: 'featured'},
   {label: 'Giá tăng dần', value: 'price-asc'},
   {label: 'Giá giảm dần', value: 'price-desc'},
   {label: 'Tên A-Z', value: 'name-asc'},
@@ -75,7 +159,11 @@ const matchesPriceRange = (price) => {
 const filteredProducts = computed(() => {
   const query = getSearchKeywords()
 
-  return productCards.value.filter((productCard) => {
+  return displayProductCards.value.filter((productCard) => {
+    const featuredOk =
+        !isFeaturedMode.value ||
+        Boolean(productCard.isFeatured)
+
     const brandOk =
         !selectedBrands.value.length ||
         selectedBrands.value.includes(productCard.brandId)
@@ -99,7 +187,7 @@ const filteredProducts = computed(() => {
         normalizeText(productCard.rom).includes(query) ||
         normalizeText(productCard.variant?.sku ?? '').includes(query)
 
-    return brandOk && categoryOk && romOk && searchOk && matchesPriceRange(productCard.price)
+    return featuredOk && brandOk && categoryOk && romOk && searchOk && matchesPriceRange(productCard.price)
   })
 })
 
@@ -107,6 +195,14 @@ const sortedProducts = computed(() => {
   const sortedList = [...filteredProducts.value]
 
   switch (selectedSort.value) {
+    case 'featured':
+      return sortedList.sort((a, b) => {
+        if (a.isFeatured !== b.isFeatured) {
+          return a.isFeatured ? -1 : 1
+        }
+
+        return b.id - a.id
+      })
     case 'price-asc':
       return sortedList.sort((a, b) => a.price - b.price)
     case 'price-desc':
@@ -139,6 +235,15 @@ watch(
 )
 
 watch(
+    selectedSort,
+    (nextSort) => {
+      if (isAllFeaturedScope.value && nextSort !== 'featured') {
+        leaveFeaturedScope()
+      }
+    },
+)
+
+watch(
     initialCategorySlug,
     (nextCategorySlug) => {
       if (nextCategorySlug) {
@@ -167,7 +272,9 @@ watch(totalPages, (nextTotalPages) => {
 })
 
 onMounted(() => {
-  productStore.fetchAll({status: 'active', per_page: 500})
+  if (!productList.value.length) {
+    productStore.fetchAll({status: 'active', per_page: 500})
+  }
 })
 </script>
 
@@ -177,7 +284,7 @@ onMounted(() => {
       <div class="breadcrumb-area">
         <RouterLink to="/">Trang chủ</RouterLink>
         <i class="bi bi-chevron-right"></i>
-        <span>Sản phẩm</span>
+        <span>{{ isFeaturedMode ? 'Sản phẩm nổi bật' : 'Sản phẩm' }}</span>
       </div>
 
       <ProductListToolbar
@@ -188,6 +295,7 @@ onMounted(() => {
           :selected-page-size="selectedPageSize"
           :sort-options="sortOptions"
           :page-size-options="pageSizeOptions"
+          :entity-label="pageEntityLabel"
           @update:selectedSort="selectedSort = $event"
           @update:selectedPageSize="selectedPageSize = $event"
       />
@@ -202,7 +310,11 @@ onMounted(() => {
         />
 
         <div class="product-main">
-          <div v-if="!visibleProducts.length" class="empty-state">
+          <div v-if="!visibleProducts.length && !productList.length && productStore.loading" class="empty-state">
+            Đang tải sản phẩm...
+          </div>
+
+          <div v-else-if="!visibleProducts.length" class="empty-state">
             Không tìm thấy sản phẩm phù hợp.
           </div>
 

@@ -78,6 +78,7 @@ export const useDashboardStore = defineStore('dashboard', {
                     totalProductsResponse,
                     activeProductsResponse,
                     featuredProductsResponse,
+                    productsReportResponse,
                     latestProductsResponse,
                     ordersResponse,
                     usersResponse,
@@ -88,6 +89,7 @@ export const useDashboardStore = defineStore('dashboard', {
                     productService.getAll({per_page: 1}),
                     productService.getAll({per_page: 1, status: 'active'}),
                     productVariantService.getAll({per_page: 1, is_featured: 1}),
+                    reportService.products(),
                     productService.getAll({per_page: 4, sort: 'id_asc'}),
                     orderService.getAll(),
                     userService.getAll({per_page: 1}),
@@ -99,16 +101,18 @@ export const useDashboardStore = defineStore('dashboard', {
                 const totalProductsPage = unwrapPaginated(totalProductsResponse)
                 const activeProductsPage = unwrapPaginated(activeProductsResponse)
                 const featuredProductsPage = unwrapPaginated(featuredProductsResponse)
+                const productsReportPayload = productsReportResponse?.data?.data ?? productsReportResponse?.data ?? {}
                 const latestProductsPage = unwrapPaginated(latestProductsResponse)
                 const orders = unwrapList(ordersResponse)
                 const usersPage = unwrapPaginated(usersResponse)
                 const brands = unwrapList(brandsResponse)
                 const categories = unwrapList(categoriesResponse)
                 const payments = unwrapList(paymentsResponse)
+                const summary = productsReportPayload?.summary ?? {}
 
-                this.totalProducts = totalProductsPage.total
-                this.activeProducts = activeProductsPage.total
-                this.featuredProducts = featuredProductsPage.total
+                this.totalProducts = Number(summary.total_products ?? totalProductsPage.total) || 0
+                this.activeProducts = Number(summary.active_products ?? activeProductsPage.total) || 0
+                this.featuredProducts = Number(summary.featured_variants ?? featuredProductsPage.total) || 0
                 this.latestProducts = latestProductsPage.items
                 this.orders = orders
                 this.totalUsers = usersPage.total

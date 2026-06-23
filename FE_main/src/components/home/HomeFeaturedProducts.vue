@@ -7,10 +7,6 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  loading: {
-    type: Boolean,
-    default: false,
-  },
   fallbackImages: {
     type: Array,
     default: () => [],
@@ -120,7 +116,7 @@ onBeforeUnmount(stopAutoScroll)
     <div class="section-heading">
       <h2>Sản phẩm nổi bật</h2>
 
-      <RouterLink to="/san-pham">
+      <RouterLink :to="{ name: 'products.index', query: { featured: '1', featuredScope: 'all' } }">
         Xem tất cả
         <i class="bi bi-chevron-right"></i>
       </RouterLink>
@@ -138,10 +134,6 @@ onBeforeUnmount(stopAutoScroll)
           @mouseleave="autoScrollPaused = false"
           @scroll="syncFeaturedLoop"
       >
-        <div v-if="loading" class="loading-state">
-          Đang tải sản phẩm...
-        </div>
-
         <div v-for="(product, index) in featuredProductsLoop" :key="`${product.id}-${index}`"
              class="product-card-shell">
           <ProductCard
@@ -226,14 +218,6 @@ onBeforeUnmount(stopAutoScroll)
   flex: 0 0 calc((100% - 64px) / 5);
   min-width: 220px;
   scroll-snap-align: start;
-}
-
-.loading-state {
-  grid-column: 1 / -1;
-  padding: 16px 0;
-  color: var(--muted-color);
-  font-size: 14px;
-  font-weight: 600;
 }
 
 .product-nav {

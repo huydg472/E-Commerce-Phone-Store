@@ -113,12 +113,7 @@ onMounted(loadPage)
       </button>
     </div>
 
-    <div v-if="pageLoading" class="state-card">
-      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-      <p>Đang tải chi tiết thanh toán...</p>
-    </div>
-
-    <p v-else-if="errorMessage" class="error-banner">{{ errorMessage }}</p>
+    <p v-if="errorMessage" class="error-banner">{{ errorMessage }}</p>
 
     <template v-else-if="payment">
       <div class="hero-card">

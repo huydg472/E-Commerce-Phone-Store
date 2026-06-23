@@ -68,6 +68,18 @@ const hydrateForm = (data) => {
   form.maintenance_mode = Boolean(source.maintenance_mode)
 }
 
+const buildPayload = () => ({
+  ...form,
+  shipping_fee_standard: Number(form.shipping_fee_standard || 0),
+  shipping_fee_express: Number(form.shipping_fee_express || 0),
+  maintenance_mode: Boolean(form.maintenance_mode),
+})
+
+const persistSettings = async () => {
+  await settingsStore.update(buildPayload())
+  hydrateForm(settingsItem.value)
+}
+
 const loadSettings = async () => {
   errorMessage.value = ''
 
@@ -94,17 +106,31 @@ const handleSubmit = async () => {
   successMessage.value = ''
 
   try {
-    await settingsStore.update({
-      ...form,
-      shipping_fee_standard: Number(form.shipping_fee_standard || 0),
-      shipping_fee_express: Number(form.shipping_fee_express || 0),
-      maintenance_mode: Boolean(form.maintenance_mode),
-    })
-
+    await persistSettings()
     successMessage.value = 'Đã lưu cấu hình hệ thống.'
-    hydrateForm(settingsItem.value)
   } catch (error) {
     errorMessage.value = error.response?.data?.message || 'Không lưu được cấu hình.'
+  }
+}
+
+const handleMaintenanceToggle = async () => {
+  if (!canUpdate.value || saving.value) {
+    return
+  }
+
+  errorMessage.value = ''
+  successMessage.value = ''
+
+  const previousValue = Boolean(settingsItem.value?.maintenance_mode)
+
+  try {
+    await persistSettings()
+    successMessage.value = form.maintenance_mode
+      ? 'Đã bật chế độ bảo trì.'
+      : 'Đã tắt chế độ bảo trì.'
+  } catch (error) {
+    form.maintenance_mode = previousValue
+    errorMessage.value = error.response?.data?.message || 'Không cập nhật được chế độ bảo trì.'
   }
 }
 
@@ -180,7 +206,7 @@ onMounted(loadSettings)
             <div class="form-group form-group--switch">
               <label>Chế độ bảo trì</label>
               <label class="switch">
-                <input v-model="form.maintenance_mode" type="checkbox"/>
+                <input v-model="form.maintenance_mode" type="checkbox" @change="handleMaintenanceToggle"/>
                 <span>Đang bật</span>
               </label>
             </div>

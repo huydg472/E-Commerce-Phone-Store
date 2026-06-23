@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -219,6 +220,14 @@ class ReportController extends Controller
             ->orderBy('id')
             ->get();
 
+        $totalProducts = Product::query()->count();
+        $activeProducts = Product::query()
+            ->where('status', 'active')
+            ->count();
+
+        $totalVariants = ProductVariant::query()->count();
+        $featuredVariants = ProductVariant::query()->where('is_featured', true)->count();
+
         $orders = Order::query()
             ->with(['orderItems.productVariant.product', 'payment', 'user'])
             ->latest()
@@ -229,6 +238,12 @@ class ReportController extends Controller
             'data' => [
                 'products' => $products,
                 'orders' => $orders,
+                'summary' => [
+                    'total_products' => $totalProducts,
+                    'active_products' => $activeProducts,
+                    'featured_variants' => $featuredVariants,
+                    'total_variants' => $totalVariants,
+                ],
             ],
         ]);
     }

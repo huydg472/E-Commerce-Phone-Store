@@ -67,16 +67,11 @@ const {
       </div>
     </div>
 
-    <div v-if="pageLoading || orderLoading" class="loading-card">
-      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-      <p>Đang tải đơn hàng...</p>
-    </div>
-
-    <p v-else-if="errorMessage" class="error-message">
+    <p v-if="errorMessage" class="error-message">
       {{ errorMessage }}
     </p>
 
-    <div v-else class="orders-list">
+    <div class="orders-list">
       <OrderHistoryOrderCard
           v-for="order in paginatedOrders"
           :key="order.id"
@@ -96,7 +91,7 @@ const {
     </div>
 
     <ListPaginationControls
-        v-if="!pageLoading && !orderLoading && filteredOrders.length > 0"
+        v-if="filteredOrders.length > 0"
         :current-page="currentPage"
         :total-pages="totalPages"
         :page-size="pageSize"

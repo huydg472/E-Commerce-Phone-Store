@@ -206,16 +206,11 @@ onMounted(loadOrder)
       </button>
     </div>
 
-    <div v-if="pageLoading" class="state-card">
-      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-      <p>Đang tải chi tiết đơn hàng...</p>
-    </div>
-
-    <p v-else-if="errorMessage" class="error-banner">
+    <p v-if="errorMessage" class="error-banner">
       {{ errorMessage }}
     </p>
 
-    <template v-else-if="order">
+    <template v-if="order">
       <div class="hero-card">
         <div class="hero-main">
           <OrderStatusBadge :status="order.order_status"/>

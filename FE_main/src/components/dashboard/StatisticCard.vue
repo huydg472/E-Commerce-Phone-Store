@@ -24,7 +24,7 @@ defineProps({
 </script>
 
 <template>
-  <article class="stat-card">
+  <article class="stat-card" :class="{ 'stat-card--revenue': title === 'Tổng doanh thu' }">
     <div class="stat-icon" :class="variant">
       <i class="bi" :class="icon"></i>
     </div>
@@ -42,7 +42,7 @@ defineProps({
 
 <style scoped>
 .stat-card {
-  height: 108px;
+  min-height: 108px;
   display: flex;
   align-items: center;
   gap: 18px;
@@ -103,7 +103,8 @@ defineProps({
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: 0.01em;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .stat-card p {

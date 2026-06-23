@@ -233,12 +233,7 @@ onMounted(loadOrders)
       </div>
     </div>
 
-    <div v-if="orderLoading" class="state-card">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p>Đang tải danh sách đơn hàng...</p>
-    </div>
-
-    <div v-else-if="loadingError" class="state-card error-state">
+    <div v-if="loadingError && !filteredOrders.length" class="state-card error-state">
       <i class="bi bi-exclamation-triangle"></i>
       <p>{{ loadingError }}</p>
       <button type="button" class="secondary-action" @click="loadOrders">Thử lại</button>
@@ -252,7 +247,7 @@ onMounted(loadOrders)
     />
 
     <ListPaginationControls
-        v-if="!orderLoading && !loadingError"
+        v-if="!loadingError"
         :current-page="currentPage"
         :total-pages="totalPages"
         :page-size="pageSize"

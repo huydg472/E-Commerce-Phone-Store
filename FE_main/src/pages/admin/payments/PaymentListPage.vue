@@ -192,12 +192,7 @@ onMounted(loadPage)
 
     <p v-if="errorMessage" class="error-banner">{{ errorMessage }}</p>
 
-    <div v-if="pageLoading" class="state-card">
-      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-      <p>Đang tải dữ liệu thanh toán...</p>
-    </div>
-
-    <div v-else class="table-card">
+    <div class="table-card">
       <div v-if="!filteredPayments.length" class="empty-state">
         <i class="bi bi-cash-stack"></i>
         <p>Chưa có thanh toán nào phù hợp bộ lọc.</p>
@@ -275,7 +270,7 @@ onMounted(loadPage)
     </div>
 
     <ListPaginationControls
-        v-if="!pageLoading && !errorMessage"
+        v-if="!errorMessage"
         :current-page="currentPage"
         :total-pages="totalPages"
         :page-size="pageSize"

@@ -509,9 +509,8 @@ watch(selectedDashboardPeriod, (period) => {
   line-height: 1.06;
   font-weight: 900;
   letter-spacing: -0.02em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .stat-content span {
@@ -531,8 +530,9 @@ watch(selectedDashboardPeriod, (period) => {
 }
 
 .stat-card--revenue .stat-content strong {
-  font-size: 26px;
-  letter-spacing: -0.03em;
+  font-size: 23px;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
 }
 
 .dashboard-grid {
@@ -887,7 +887,7 @@ watch(selectedDashboardPeriod, (period) => {
   }
 
   .stat-card--revenue .stat-content strong {
-    font-size: 24px;
+    font-size: 22px;
   }
 
   .stat-icon {

@@ -11,7 +11,7 @@ import {buildProductCards, normalizeText} from '@/utils/productCardHelpers.js'
 const productStore = useProductStore()
 const brandStore = useBrandStore()
 
-const {items: products, loading: productLoading} = storeToRefs(productStore)
+const {items: products} = storeToRefs(productStore)
 const {items: brands} = storeToRefs(brandStore)
 
 const placeholder = {
@@ -19,6 +19,26 @@ const placeholder = {
   product: '/images/home/camera-17762255561921796534711.webp',
   accessories: '/images/home/phu-kien-dien-thoaijpg.jpg',
 }
+
+const fallbackBrandTabs = [
+  {id: 'apple', slug: 'apple', name: 'Apple', type: 'phone'},
+  {id: 'samsung', slug: 'samsung', name: 'Samsung', type: 'phone'},
+  {id: 'oppo', slug: 'oppo', name: 'OPPO', type: 'phone'},
+  {id: 'xiaomi', slug: 'xiaomi', name: 'Xiaomi', type: 'phone'},
+  {id: 'vivo', slug: 'vivo', name: 'Vivo', type: 'phone'},
+  {id: 'realme', slug: 'realme', name: 'Realme', type: 'phone'},
+]
+
+const fallbackHomeCards = [
+  {id: 'fallback-1', productId: null, variantId: null, brandSlug: 'apple', brandName: 'Apple', name: 'iPhone 15 Pro Max', image: placeholder.product, price: '28.990.000đ', oldPrice: '', colors: [], to: '/san-pham', stockQuantity: 0, isFeatured: true},
+  {id: 'fallback-2', productId: null, variantId: null, brandSlug: 'samsung', brandName: 'Samsung', name: 'Samsung Galaxy S24 Ultra', image: placeholder.hero, price: '25.990.000đ', oldPrice: '', colors: [], to: '/san-pham', stockQuantity: 0, isFeatured: true},
+  {id: 'fallback-3', productId: null, variantId: null, brandSlug: 'oppo', brandName: 'OPPO', name: 'OPPO Reno13', image: placeholder.accessories, price: '10.990.000đ', oldPrice: '', colors: [], to: '/san-pham', stockQuantity: 0, isFeatured: true},
+  {id: 'fallback-4', productId: null, variantId: null, brandSlug: 'xiaomi', brandName: 'Xiaomi', name: 'Xiaomi 14T Pro', image: placeholder.product, price: '16.990.000đ', oldPrice: '', colors: [], to: '/san-pham', stockQuantity: 0, isFeatured: true},
+  {id: 'fallback-5', productId: null, variantId: null, brandSlug: 'vivo', brandName: 'Vivo', name: 'Vivo V30', image: placeholder.hero, price: '8.990.000đ', oldPrice: '', colors: [], to: '/san-pham', stockQuantity: 0, isFeatured: false},
+  {id: 'fallback-6', productId: null, variantId: null, brandSlug: 'realme', brandName: 'Realme', name: 'Realme 12 Pro+', image: placeholder.accessories, price: '9.490.000đ', oldPrice: '', colors: [], to: '/san-pham', stockQuantity: 0, isFeatured: false},
+  {id: 'fallback-7', productId: null, variantId: null, brandSlug: 'apple', brandName: 'Apple', name: 'iPhone 14', image: placeholder.hero, price: '18.490.000đ', oldPrice: '', colors: [], to: '/san-pham', stockQuantity: 0, isFeatured: false},
+  {id: 'fallback-8', productId: null, variantId: null, brandSlug: 'samsung', brandName: 'Samsung', name: 'Galaxy A55', image: placeholder.product, price: '9.190.000đ', oldPrice: '', colors: [], to: '/san-pham', stockQuantity: 0, isFeatured: false},
+]
 
 const selectedBrand = ref('')
 const brandPriority = ['Apple', 'Samsung', 'OPPO', 'Xiaomi', 'Vivo', 'Realme']
@@ -46,7 +66,10 @@ const phoneBrands = computed(() => {
   return brandList.value.filter((brand) => String(brand?.type ?? 'phone') === 'phone')
 })
 
-const brandTabs = computed(() => phoneBrands.value.slice(0, 6))
+const brandTabs = computed(() => {
+  const tabs = phoneBrands.value.slice(0, 6)
+  return tabs.length ? tabs : fallbackBrandTabs
+})
 const productCards = computed(() => buildProductCards(productList.value, placeholder.product))
 const showcaseImages = [
   placeholder.product,
@@ -82,11 +105,14 @@ const matchesBrand = (productCard) => {
 
 const featuredProducts = computed(() => {
   const featured = productCards.value.filter((product) => product.isFeatured)
-  return (featured.length ? featured : productCards.value).slice(0, 20)
+  const visibleProducts = featured.length ? featured : productCards.value
+  const fallbackProducts = fallbackHomeCards.filter((product) => product.isFeatured)
+  return (visibleProducts.length ? visibleProducts : fallbackProducts).slice(0, 20)
 })
 
 const brandProducts = computed(() => {
-  return productCards.value
+  const visibleProducts = productCards.value.length ? productCards.value : fallbackHomeCards
+  return visibleProducts
       .filter(matchesBrand)
       .slice(0, 8)
 })
@@ -101,6 +127,16 @@ watch(
       })
 
       if ((!selectedBrand.value || !hasCurrentBrand) && list.length) {
+        selectedBrand.value = getBrandTabValue(list[0])
+      }
+    },
+    {immediate: true}
+)
+
+watch(
+    brandTabs,
+    (list) => {
+      if (!selectedBrand.value && list.length) {
         selectedBrand.value = getBrandTabValue(list[0])
       }
     },
@@ -125,7 +161,6 @@ onMounted(() => {
 
     <HomeFeaturedProducts
         :products="featuredProducts"
-        :loading="productLoading"
         :fallback-images="[placeholder.product, placeholder.accessories, placeholder.hero]"
     />
 
@@ -148,7 +183,7 @@ onMounted(() => {
           <p>Khám phá các mẫu điện thoại nổi bật theo từng thương hiệu</p>
         </div>
 
-        <RouterLink to="/san-pham">
+        <RouterLink :to="{ name: 'products.index', query: { featured: '1', featuredScope: 'all' } }">
           Xem tất cả
           <i class="bi bi-chevron-right"></i>
         </RouterLink>

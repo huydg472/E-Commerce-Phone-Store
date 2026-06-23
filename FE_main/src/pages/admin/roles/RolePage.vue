@@ -244,12 +244,7 @@ onMounted(loadPage)
 
     <p v-if="errorMessage" class="error-banner">{{ errorMessage }}</p>
 
-    <div v-if="pageLoading" class="state-card">
-      <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-      <p>Đang tải dữ liệu vai trò...</p>
-    </div>
-
-    <div v-else class="table-card">
+    <div class="table-card">
       <div v-if="!filteredRoles.length" class="empty-state">
         <i class="bi bi-inboxes"></i>
         <p>Chưa có vai trò nào phù hợp bộ lọc.</p>

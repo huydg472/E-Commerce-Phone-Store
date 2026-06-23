@@ -10,6 +10,12 @@ const loading = ref(true)
 const errorMessage = ref('')
 const products = ref([])
 const orders = ref([])
+const summary = ref({
+  total_products: 0,
+  active_products: 0,
+  featured_variants: 0,
+  total_variants: 0,
+})
 
 const unwrapOrderItems = (order) => {
   const sources = [order?.orderItems, order?.order_items, order?.items]
@@ -143,28 +149,28 @@ const categoryStats = computed(() => {
 const stats = computed(() => [
   {
     label: 'Sản phẩm',
-    value: products.value.length,
+    value: summary.value.total_products || products.value.length,
     desc: 'Tổng danh mục sản phẩm',
     icon: 'bi bi-box-seam',
     tone: 'blue'
   },
   {
     label: 'Đang bán',
-    value: products.value.filter((product) => product.status === 'active').length,
+    value: summary.value.active_products || products.value.filter((product) => product.status === 'active').length,
     desc: 'Sản phẩm hoạt động',
     icon: 'bi bi-check2-circle',
     tone: 'green'
   },
   {
     label: 'Biến thể nổi bật',
-    value: variantRows.value.filter((variant) => Boolean(variant?.is_featured)).length,
+    value: summary.value.featured_variants || variantRows.value.filter((variant) => Boolean(variant?.is_featured)).length,
     desc: 'Biến thể featured',
     icon: 'bi bi-stars',
     tone: 'orange'
   },
   {
     label: 'Biến thể',
-    value: variantRows.value.length,
+    value: summary.value.total_variants || variantRows.value.length,
     desc: 'Tổng biến thể hiện có',
     icon: 'bi bi-layers',
     tone: 'slate'
@@ -181,6 +187,12 @@ const loadReport = async () => {
 
     products.value = Array.isArray(payload.products) ? payload.products : []
     orders.value = Array.isArray(payload.orders) ? payload.orders : []
+    summary.value = {
+      total_products: Number(payload.summary?.total_products ?? 0) || 0,
+      active_products: Number(payload.summary?.active_products ?? 0) || 0,
+      featured_variants: Number(payload.summary?.featured_variants ?? 0) || 0,
+      total_variants: Number(payload.summary?.total_variants ?? 0) || 0,
+    }
   } catch (error) {
     errorMessage.value = error.response?.data?.message || 'Không tải được báo cáo sản phẩm.'
   } finally {

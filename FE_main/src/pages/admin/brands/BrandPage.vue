@@ -254,12 +254,7 @@ onMounted(loadBrands)
       </div>
     </section>
 
-    <div v-if="brandLoading" class="state-card">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p>Đang tải danh sách thương hiệu...</p>
-    </div>
-
-    <div v-else-if="loadingError" class="state-card error-state">
+    <div v-if="loadingError && !paginatedBrands.length" class="state-card error-state">
       <i class="bi bi-exclamation-triangle"></i>
       <p>{{ loadingError }}</p>
       <button type="button" class="secondary-action" @click="loadBrands">Thử lại</button>
@@ -276,7 +271,7 @@ onMounted(loadBrands)
     />
 
     <ListPaginationControls
-        v-if="!brandLoading && !loadingError"
+        v-if="!loadingError"
         :current-page="currentPage"
         :total-pages="totalPages"
         :page-size="pageSize"

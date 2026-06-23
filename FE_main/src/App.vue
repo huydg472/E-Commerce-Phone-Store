@@ -1,9 +1,34 @@
 <script setup>
-import {watch} from 'vue'
+import {computed, onBeforeUnmount, onMounted, watch} from 'vue'
+import {useRoute} from 'vue-router'
+import {useAuthStore} from '@/stores/authStore'
 import ToastStack from '@/components/common/ToastStack.vue'
 import {usePublicSiteSettings} from '@/composables/usePublicSiteSettings'
+import MaintenancePage from '@/pages/error/MaintenancePage.vue'
+import {useSettingsStore} from '@/stores/settingsStore'
 
-const {siteName: siteTitle, faviconUrl} = usePublicSiteSettings()
+const authStore = useAuthStore()
+const settingsStore = useSettingsStore()
+const route = useRoute()
+const {siteName: siteTitle, faviconUrl, maintenanceMode} = usePublicSiteSettings()
+const SETTINGS_SYNC_KEY = 'zinmobile:settings-sync-ts'
+
+const isAdminBypass = computed(() => authStore.isAdminOrStaff)
+const showMaintenancePage = computed(() => {
+  if (!maintenanceMode.value) {
+    return false
+  }
+
+  if (route.meta?.requiresAdmin) {
+    return false
+  }
+
+  if (isAdminBypass.value) {
+    return false
+  }
+
+  return !route.meta?.allowDuringMaintenance
+})
 
 const applyDocumentBranding = () => {
   if (typeof document === 'undefined') {
@@ -23,12 +48,34 @@ const applyDocumentBranding = () => {
   iconLink.href = faviconUrl.value
 }
 
+const refreshSettings = async () => {
+  await settingsStore.fetchPublic(true).catch(() => {
+  })
+}
+
+const handleStorageSync = (event) => {
+  if (event.key !== SETTINGS_SYNC_KEY) {
+    return
+  }
+
+  void refreshSettings()
+}
+
+onMounted(() => {
+  window.addEventListener('storage', handleStorageSync)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('storage', handleStorageSync)
+})
+
 watch([siteTitle, faviconUrl], applyDocumentBranding, {immediate: true})
 </script>
 
 <template>
   <main>
-    <RouterView/>
+    <MaintenancePage v-if="showMaintenancePage"/>
+    <RouterView v-else/>
   </main>
   <ToastStack/>
 </template>

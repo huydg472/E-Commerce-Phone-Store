@@ -225,12 +225,7 @@ watch(pageSize, () => {
       </div>
     </div>
 
-    <div v-if="userStore.loading" class="state-card">
-      <div class="spinner-border text-primary" role="status"></div>
-      <p>Đang tải danh sách người dùng...</p>
-    </div>
-
-    <div v-else-if="loadingError" class="state-card error-state">
+    <div v-if="loadingError && !displayUsers.length" class="state-card error-state">
       <i class="bi bi-exclamation-triangle"></i>
       <p>{{ loadingError }}</p>
       <button type="button" class="secondary-action" @click="fetchUsers(currentPage)">Thử lại</button>
@@ -239,7 +234,7 @@ watch(pageSize, () => {
     <UserTable v-else :users="users" :loading="userStore.loading" @toggle-status="handleStatusToggle"/>
 
     <ListPaginationControls
-        v-if="!userStore.loading && !loadingError"
+        v-if="!loadingError"
         :current-page="currentPage"
         :total-pages="pagination.last_page"
         :page-size="pageSize"

@@ -62,12 +62,7 @@ watch(slug, loadData, {immediate: true})
         </ol>
       </nav>
 
-      <section v-if="loading" class="state-card">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p>Đang tải bài viết...</p>
-      </section>
-
-      <section v-else-if="errorMessage" class="state-card error">
+      <section v-if="errorMessage" class="state-card error">
         <i class="bi bi-exclamation-triangle"></i>
         <p>{{ errorMessage }}</p>
       </section>

@@ -12,6 +12,7 @@ export function usePublicSiteSettings(options = {}) {
     const brandName = computed(() => settings.value?.brand_name || settings.value?.site_name || 'ZinMobile')
     const logoUrl = computed(() => String(settings.value?.logo_url ?? '').trim())
     const faviconUrl = computed(() => settings.value?.favicon_url || settings.value?.logo_url || '/favicon.ico')
+    const maintenanceMode = computed(() => Boolean(settings.value?.maintenance_mode))
     const supportPhone = computed(() => settings.value?.support_phone || '0909 000 000')
     const supportEmail = computed(() => settings.value?.support_email || 'support@zinmobile.vn')
     const contactEmail = computed(() => settings.value?.contact_email || 'contact@zinmobile.vn')
@@ -43,6 +44,7 @@ export function usePublicSiteSettings(options = {}) {
         brandName,
         logoUrl,
         faviconUrl,
+        maintenanceMode,
         supportPhone,
         supportEmail,
         contactEmail,

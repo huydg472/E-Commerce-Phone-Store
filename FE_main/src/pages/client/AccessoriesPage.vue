@@ -126,6 +126,7 @@ const accessoryCards = computed(() => productCards.value.filter(isAccessoryCard)
 
 const sortOptions = [
   {label: 'Sắp xếp: Mới nhất', value: 'newest'},
+  {label: 'Nổi bật', value: 'featured'},
   {label: 'Giá tăng dần', value: 'price-asc'},
   {label: 'Giá giảm dần', value: 'price-desc'},
   {label: 'Tên A-Z', value: 'name-asc'},
@@ -154,6 +155,10 @@ const matchesPriceRange = (price) => {
 
 const filteredAccessories = computed(() => {
   return accessoryCards.value.filter((productCard) => {
+    const featuredOk =
+        selectedSort.value !== 'featured' ||
+        Boolean(productCard.isFeatured)
+
     const brandOk =
         !selectedBrands.value.length ||
         selectedBrands.value.includes(productCard.brandId)
@@ -164,7 +169,7 @@ const filteredAccessories = computed(() => {
           return normalizeText(storage) === normalizeText(getAccessoryCategory(productCard))
         })
 
-    return brandOk && categoryOk && matchesPriceRange(productCard.price)
+    return featuredOk && brandOk && categoryOk && matchesPriceRange(productCard.price)
   })
 })
 
@@ -172,6 +177,14 @@ const sortedAccessories = computed(() => {
   const sortedList = [...filteredAccessories.value]
 
   switch (selectedSort.value) {
+    case 'featured':
+      return sortedList.sort((a, b) => {
+        if (a.isFeatured !== b.isFeatured) {
+          return a.isFeatured ? -1 : 1
+        }
+
+        return b.id - a.id
+      })
     case 'price-asc':
       return sortedList.sort((a, b) => a.price - b.price)
     case 'price-desc':
@@ -208,7 +221,9 @@ watch(totalPages, (nextTotalPages) => {
 })
 
 onMounted(() => {
-  productStore.fetchAll({status: 'active', per_page: 500})
+  if (!productList.value.length) {
+    productStore.fetchAll({status: 'active', per_page: 500})
+  }
 })
 </script>
 
@@ -260,7 +275,11 @@ onMounted(() => {
         />
 
         <div class="product-main">
-          <div v-if="!visibleAccessories.length" class="empty-state">
+          <div v-if="!visibleAccessories.length && !productList.length && productStore.loading" class="empty-state">
+            Đang tải phụ kiện...
+          </div>
+
+          <div v-else-if="!visibleAccessories.length" class="empty-state">
             Không tìm thấy phụ kiện phù hợp.
           </div>
 
