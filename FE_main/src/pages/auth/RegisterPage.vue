@@ -1,28 +1,34 @@
 <script setup>
-import {ref} from 'vue';
+import {ref} from 'vue'
 import {useRouter} from 'vue-router'
 
-import RegisterForm from '@/components/auth/RegisterForm.vue';
-import {authService} from "@/services/authService.js";
+import RegisterForm from '@/components/auth/RegisterForm.vue'
+import {authService} from '@/services/authService.js'
 
-const router = useRouter();
+const router = useRouter()
 
-const loading = ref(false);
-
-const errorMessage = ref('');
+const loading = ref(false)
+const errorMessage = ref('')
 const successMessage = ref('')
 
 const handleRegister = async (formData) => {
-  errorMessage.value = '';
+  errorMessage.value = ''
   successMessage.value = ''
 
-  if (!formData.name || !formData.email || !formData.phone || !formData.username || !formData.password || !formData.password_confirmation) {
-    errorMessage.value = 'Vui lòng nhập đầy đủ thông tin';
+  if (
+      !formData.name ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.username ||
+      !formData.password ||
+      !formData.password_confirmation
+  ) {
+    errorMessage.value = 'Vui lòng nhập đầy đủ thông tin'
     return
   }
 
   if (formData.password !== formData.password_confirmation) {
-    errorMessage.value = 'Mật khẩu xác nhận không đúng';
+    errorMessage.value = 'Mật khẩu xác nhận không đúng'
     return
   }
 
@@ -36,9 +42,9 @@ const handleRegister = async (formData) => {
       username: formData.username,
       password: formData.password,
       password_confirmation: formData.password_confirmation,
-
     })
-    successMessage.value = 'Đăng ký tài khoản thành công'
+
+    successMessage.value = 'Đăng ký thành công. Vui lòng kiểm tra email để xác minh tài khoản trong 5 phút.'
 
     setTimeout(async () => {
       await router.push('/auth/login')

@@ -129,7 +129,8 @@ const handleSubmit = async () => {
             <span>{{ errorMessage }}</span>
           </div>
 
-          <form class="contact-form" @submit.prevent="handleSubmit" @input="clearFeedbackOnInput" @change="clearFeedbackOnInput" novalidate>
+          <form class="contact-form" @submit.prevent="handleSubmit" @input="clearFeedbackOnInput"
+                @change="clearFeedbackOnInput" novalidate>
             <div class="form-grid">
               <div class="form-group">
                 <label>Họ và tên</label>

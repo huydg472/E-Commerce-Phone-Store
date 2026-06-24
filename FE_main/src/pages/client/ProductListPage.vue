@@ -107,7 +107,7 @@ const phoneProductCards = computed(() => {
     return !accessorySignals.some((keyword) => {
       const normalizedKeyword = normalizeText(keyword)
       return values.some((value) => normalizeText(value).includes(normalizedKeyword))
-      })
+    })
   })
 })
 
@@ -124,7 +124,8 @@ const leaveFeaturedScope = () => {
   delete nextQuery.featured
   delete nextQuery.featuredScope
 
-  router.replace({name: 'products.index', query: nextQuery}).catch(() => {})
+  router.replace({name: 'products.index', query: nextQuery}).catch(() => {
+  })
 }
 
 const sortOptions = [

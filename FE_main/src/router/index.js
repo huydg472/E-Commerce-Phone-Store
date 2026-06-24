@@ -56,7 +56,7 @@ router.beforeEach(async (to, from, next) => {
         try {
             await settingsStore.fetchPublic()
         } catch (error) {
-          // If settings cannot be loaded, fall back to normal navigation.
+            // If settings cannot be loaded, fall back to normal navigation.
         }
     }
 

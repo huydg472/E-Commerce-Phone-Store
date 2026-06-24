@@ -74,7 +74,9 @@ export const useUserStore = defineStore('user', {
         async update(id, payload) {
             const response = await userService.update(id, payload)
             await this.fetchAll()
-            useNotificationStore().success('Đã sửa người dùng.')
+            useNotificationStore().success(
+                response.data?.message || 'Đã sửa người dùng.'
+            )
             return response
         },
 

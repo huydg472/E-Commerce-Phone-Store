@@ -49,8 +49,8 @@ class UserController extends Controller
         $user->load('role');
 
         return response()->json([
-            'message' => 'thÃªm thÃ nh cÃ´ng',
-            'data' => $user
+            'message' => 'Thêm thành công',
+            'data' => $user,
         ], 201);
     }
 
@@ -59,24 +59,43 @@ class UserController extends Controller
         $user->load('role');
 
         return response()->json([
-            'data' => $user
+            'data' => $user,
         ]);
     }
 
     public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
         $data = $request->validated();
+        $originalEmail = $user->email;
 
         if (array_key_exists('password', $data) && blank($data['password'])) {
             unset($data['password']);
         }
 
+        $emailChanged = array_key_exists('email', $data)
+            && strcasecmp((string)$data['email'], (string)$originalEmail) !== 0;
+
+        if ($emailChanged) {
+            $data['email_verified_at'] = null;
+        }
+
         $user->update($data);
         $user->refresh()->load('role');
 
+        if ($emailChanged) {
+            $sent = $user->sendEmailVerificationNotification();
+
+            return response()->json([
+                'message' => $sent
+                    ? 'Cập nhật thành công. Đã gửi email xác minh tới địa chỉ mới.'
+                    : 'Cập nhật thành công. Email xác minh gần nhất vẫn còn hiệu lực trong 5 phút.',
+                'data' => $user,
+            ]);
+        }
+
         return response()->json([
-            'message' => 'update thÃ nh cÃ´ng',
-            'data' => $user
+            'message' => 'Cập nhật thành công',
+            'data' => $user,
         ]);
     }
 
@@ -85,7 +104,7 @@ class UserController extends Controller
         $user->delete();
 
         return response()->json([
-            'message' => 'xÃ³a thÃ nh cÃ´ng',
+            'message' => 'Xóa thành công',
         ]);
     }
 }

@@ -18,6 +18,8 @@ export const useAuthStore = defineStore('auth', {
 
         isCustomer: (state) => state.user?.role?.name === 'customer' || state.user?.role_name === 'customer',
 
+        isEmailVerified: (state) => Boolean(state.user?.email_verified_at),
+
         isAdminOrStaff: (state) => {
             const roleName = state.user?.role?.name || state.user?.role_name
             return roleName === 'admin' || roleName === 'staff'

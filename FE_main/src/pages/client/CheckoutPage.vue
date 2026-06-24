@@ -36,6 +36,7 @@ const {
   openAddressPicker,
   closeAddressPicker,
   chooseSavedAddress,
+  openNewAddressModal,
   openNewAddressModalFromPicker,
   closeAddressModal,
   saveNewAddressFromModal,
@@ -70,6 +71,21 @@ const {
                 :selected-address-line="selectedAddressLine"
                 @open-address-picker="openAddressPicker"
             />
+
+            <div v-else class="empty-address-card">
+              <div class="empty-address-card__icon">
+                <i class="bi bi-geo-alt"></i>
+              </div>
+
+              <div class="empty-address-card__content">
+                <strong>Bạn chưa có địa chỉ giao hàng</strong>
+                <p>Hãy thêm địa chỉ mới để tiếp tục thanh toán đơn hàng.</p>
+              </div>
+
+              <button type="button" class="btn btn-primary empty-address-card__btn" @click="openNewAddressModal">
+                Thêm địa chỉ
+              </button>
+            </div>
           </div>
 
           <div class="checkout-card">
@@ -434,6 +450,53 @@ const {
   font-weight: 600;
 }
 
+.empty-address-card {
+  padding: 14px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fbff;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.empty-address-card__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  color: #1d4ed8;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.empty-address-card__content {
+  min-width: 0;
+  flex: 1;
+}
+
+.empty-address-card__content strong {
+  display: block;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.empty-address-card__content p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.empty-address-card__btn {
+  min-width: 148px;
+  white-space: nowrap;
+}
+
 .saved-address-list {
   display: grid;
   gap: 10px;
@@ -648,6 +711,15 @@ const {
 
   .link-btn {
     padding-left: 50px;
+  }
+
+  .empty-address-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .empty-address-card__btn {
+    width: 100%;
   }
 
   .saved-address-item {

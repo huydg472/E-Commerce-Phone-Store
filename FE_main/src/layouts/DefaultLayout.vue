@@ -11,16 +11,22 @@ const brandStore = useBrandStore()
 
 onMounted(() => {
   if (!productStore.items.length) {
-    void productStore.fetchAll({status: 'active', per_page: 500}).catch(() => {})
+    void productStore.fetchAll({status: 'active', per_page: 500}).catch(() => {
+    })
   }
 
-  void brandStore.fetchAll({status: 'active', type: 'phone'}).catch(() => {})
-  void brandStore.fetchAll({status: 'active', type: 'accessory'}).catch(() => {})
+  void brandStore.fetchAll({status: 'active', type: 'phone'}).catch(() => {
+  })
+  void brandStore.fetchAll({status: 'active', type: 'accessory'}).catch(() => {
+  })
 
   const prefetchRoutes = () => {
-    void import('@/pages/client/ProductListPage.vue').catch(() => {})
-    void import('@/pages/client/AccessoriesPage.vue').catch(() => {})
-    void import('@/pages/client/ProductDetailPage.vue').catch(() => {})
+    void import('@/pages/client/ProductListPage.vue').catch(() => {
+    })
+    void import('@/pages/client/AccessoriesPage.vue').catch(() => {
+    })
+    void import('@/pages/client/ProductDetailPage.vue').catch(() => {
+    })
   }
 
   if (typeof window !== 'undefined') {

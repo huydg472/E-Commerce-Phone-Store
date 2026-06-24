@@ -1,10 +1,17 @@
 <script setup>
-import {reactive, ref, watch} from 'vue'
+import {computed, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import {storeToRefs} from 'pinia'
+
 import {useAuthStore} from '@/stores/authStore'
+import {authService} from '@/services/authService'
 import {setUser} from '@/utils/storage'
 
 const authStore = useAuthStore()
+const {user} = storeToRefs(authStore)
+
+const loadingError = ref('')
 const savedMessage = ref('')
+const isSubmitting = ref(false)
 
 const profileFallback = {
   name: 'Nguyễn Văn A',
@@ -20,36 +27,128 @@ const form = reactive({
   gender: 'Nam',
 })
 
-const syncForm = (user = {}) => {
-  form.name = user.name || user.full_name || user.username || profileFallback.name
-  form.email = user.email || profileFallback.email
-  form.phone = user.phone || user.phone_number || profileFallback.phone
-  form.birthday = user.birthday || '15/06/1990'
-  form.gender = user.gender || 'Nam'
+const syncForm = (source = {}) => {
+  form.name = source.name || source.full_name || source.username || profileFallback.name
+  form.email = source.email || profileFallback.email
+  form.phone = source.phone || source.phone_number || profileFallback.phone
+  form.birthday = source.birthday || '15/06/1990'
+  form.gender = source.gender || 'Nam'
 }
 
 watch(
     () => authStore.user,
-    (user) => {
-      syncForm(user ?? {})
+    (currentUser) => {
+      syncForm(currentUser ?? {})
     },
-    {immediate: true, deep: true}
+    {immediate: true, deep: true},
 )
 
-const saveProfile = () => {
-  const nextUser = {
-    ...(authStore.user || {}),
-    name: form.name,
-    email: form.email,
-    phone: form.phone,
-    birthday: form.birthday,
-    gender: form.gender,
+watch(
+    () => authStore.isEmailVerified,
+    (isVerified) => {
+      if (isVerified) {
+        savedMessage.value = ''
+      }
+    },
+)
+
+const saveProfile = async () => {
+  loadingError.value = ''
+  savedMessage.value = ''
+
+  if (!user.value?.id) {
+    loadingError.value = 'Không tìm thấy tài khoản hiện tại.'
+    return
   }
 
-  authStore.user = nextUser
-  setUser(nextUser)
-  savedMessage.value = 'Đã lưu thay đổi hồ sơ.'
+  try {
+    isSubmitting.value = true
+
+    const payload = {
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+    }
+
+    const response = await authService.updateMe({
+      ...payload,
+      birthday: form.birthday,
+      gender: form.gender,
+    })
+    const updatedUser = response.data?.data || response.data?.user || response.data || null
+
+    if (updatedUser) {
+      authStore.user = updatedUser
+      setUser(updatedUser)
+    }
+
+    savedMessage.value =
+        response.data?.message || 'Đã lưu thay đổi hồ sơ.'
+
+    await authStore.fetchMe()
+    syncForm(authStore.user ?? {})
+  } catch (error) {
+    if (error.response?.status === 422) {
+      const errors = error.response.data?.errors
+      if (errors) {
+        const firstKey = Object.keys(errors)[0]
+        loadingError.value = errors[firstKey]?.[0] || 'Dữ liệu không hợp lệ.'
+        return
+      }
+    }
+
+    loadingError.value = error.response?.data?.message || 'Cập nhật hồ sơ thất bại.'
+  } finally {
+    isSubmitting.value = false
+  }
 }
+
+const resetForm = () => {
+  syncForm(authStore.user ?? {})
+  loadingError.value = ''
+  savedMessage.value = ''
+}
+
+const refreshProfile = async () => {
+  if (!authStore.token) {
+    return
+  }
+
+  try {
+    await authStore.fetchMe()
+    syncForm(authStore.user ?? {})
+
+    if (authStore.isEmailVerified) {
+      savedMessage.value = ''
+    }
+  } catch {
+    // Giữ dữ liệu hiện tại nếu refresh thất bại.
+  }
+}
+
+const emailNotice = computed(() => {
+  return !authStore.isEmailVerified && authStore.user?.email
+      ? 'Email hiện tại chưa được xác minh.'
+      : ''
+})
+
+const handleVisibilityChange = () => {
+  if (document.visibilityState === 'visible') {
+    refreshProfile()
+  }
+}
+
+onMounted(async () => {
+  await refreshProfile()
+  syncForm(authStore.user ?? {})
+  window.addEventListener('focus', refreshProfile)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('focus', refreshProfile)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+})
 </script>
 
 <template>
@@ -64,6 +163,11 @@ const saveProfile = () => {
     <div v-if="savedMessage" class="success-banner mb-3">
       <i class="bi bi-check-circle"></i>
       <span>{{ savedMessage }}</span>
+    </div>
+
+    <div v-if="emailNotice" class="warning-banner mb-3">
+      <i class="bi bi-exclamation-triangle"></i>
+      <span>{{ emailNotice }}</span>
     </div>
 
     <div class="row g-3">
@@ -125,16 +229,19 @@ const saveProfile = () => {
             </div>
 
             <div class="form-actions mt-3">
-              <button type="submit" class="btn btn-primary">
-                <i class="bi bi-save"></i>
-                Lưu thay đổi
+              <button type="submit" class="btn btn-primary" :disabled="isSubmitting">
+                <span v-if="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+                <i v-else class="bi bi-save"></i>
+                {{ isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi' }}
               </button>
 
-              <button type="button" class="btn btn-light border" @click="syncForm(authStore.user || {})">
+              <button type="button" class="btn btn-light border" @click="resetForm">
                 Hủy bỏ
               </button>
             </div>
           </form>
+
+          <p v-if="loadingError" class="text-danger mt-3 mb-0">{{ loadingError }}</p>
         </section>
       </div>
     </div>
@@ -161,16 +268,26 @@ const saveProfile = () => {
   color: #64748b;
 }
 
-.success-banner {
+.success-banner,
+.warning-banner {
   padding: 12px 14px;
-  border: 1px solid #bbf7d0;
   border-radius: 12px;
-  background: #f0fdf4;
-  color: #166534;
   display: flex;
   align-items: center;
   gap: 10px;
   font-weight: 600;
+}
+
+.success-banner {
+  border: 1px solid #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.warning-banner {
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  color: #92400e;
 }
 
 .account-card {

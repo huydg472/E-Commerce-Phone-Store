@@ -50,9 +50,8 @@ const title = computed(() => brandName.value || 'ZinMobile')
   padding: 24px;
   display: grid;
   place-items: center;
-  background:
-      radial-gradient(circle at top, rgba(37, 99, 235, 0.16), transparent 32%),
-      linear-gradient(180deg, #eff6ff 0%, #f8fbff 48%, #ffffff 100%);
+  background: radial-gradient(circle at top, rgba(37, 99, 235, 0.16), transparent 32%),
+  linear-gradient(180deg, #eff6ff 0%, #f8fbff 48%, #ffffff 100%);
 }
 
 .maintenance-card {

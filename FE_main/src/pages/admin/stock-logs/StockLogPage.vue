@@ -160,9 +160,9 @@ onMounted(loadPage)
         <p class="subtitle">Theo dõi mọi biến động số lượng theo sản phẩm, đơn hàng và người thao tác.</p>
 
         <div class="hero-actions">
-          <button type="button" class="primary-action" @click="loadPage">
-            <i class="bi bi-arrow-clockwise"></i>
-            Tải lại
+          <button type="button" class="primary-action" :disabled="pageLoading" @click="loadPage">
+            <i :class="pageLoading ? 'bi bi-arrow-repeat spin' : 'bi bi-arrow-clockwise'"></i>
+            {{ pageLoading ? 'Đang tải' : 'Tải lại' }}
           </button>
         </div>
       </div>
@@ -365,6 +365,15 @@ onMounted(loadPage)
   color: #ffffff;
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
   box-shadow: 0 12px 26px rgba(37, 99, 235, 0.2);
+}
+
+.primary-action:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
 }
 
 .hero-stats {
@@ -646,6 +655,12 @@ onMounted(loadPage)
 
 .col-note {
   width: 12%;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 1199.98px) {

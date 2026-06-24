@@ -63,7 +63,7 @@ const syncForm = () => {
   form.slug = category?.slug ?? ''
   form.description = category?.description ?? ''
   form.status = category?.status ?? 'active'
-  manualSlug.value = true
+  manualSlug.value = Boolean(category?.slug) && category.slug !== slugify(category?.name ?? '')
 }
 
 watch(

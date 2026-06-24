@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Str;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SoftDeletes, HasApiTokens;
@@ -97,5 +100,40 @@ class User extends Authenticatable
         return collect($this->role?->permissions ?? [])
             ->pluck('name')
             ->contains(fn($name) => in_array($name, $permissionNames, true));
+    }
+
+    public function sendEmailVerificationNotification()
+    {
+        if ($this->hasVerifiedEmail()) {
+            return false;
+        }
+
+        if ($this->hasRecentEmailVerificationNotification()) {
+            return false;
+        }
+
+        $this->notify(new VerifyEmail);
+
+        Cache::put(
+            $this->emailVerificationThrottleCacheKey(),
+            true,
+            now()->addMinutes((int)config('auth.verification.expire', 5))
+        );
+
+        return true;
+    }
+
+    public function hasRecentEmailVerificationNotification(): bool
+    {
+        return Cache::has($this->emailVerificationThrottleCacheKey());
+    }
+
+    protected function emailVerificationThrottleCacheKey(): string
+    {
+        return sprintf(
+            'email-verification-notification:%s:%s',
+            $this->getKey(),
+            Str::lower((string)$this->email)
+        );
     }
 }

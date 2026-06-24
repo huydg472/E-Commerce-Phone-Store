@@ -69,7 +69,7 @@ const syncForm = () => {
   form.logo_url = brand?.logo_url ?? ''
   form.description = brand?.description ?? ''
   form.status = brand?.status ?? 'active'
-  manualSlug.value = true
+  manualSlug.value = Boolean(brand?.slug) && brand.slug !== slugify(brand?.name ?? '')
 }
 
 watch(

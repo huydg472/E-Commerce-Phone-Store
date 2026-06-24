@@ -185,12 +185,12 @@ const dashboardStats = computed(() => stats.value.map((item) => ({
 
 const dashboardRevenueSeries = computed(() => {
   return Array.isArray(dashboardStore.analytics.revenueSeries)
-    ? dashboardStore.analytics.revenueSeries.map((item) => ({
-      day: item.day || item.label || '',
-      label: item.label || item.day || '',
-      percent: Number(item.percent || 0),
-    }))
-    : []
+      ? dashboardStore.analytics.revenueSeries.map((item) => ({
+        day: item.day || item.label || '',
+        label: item.label || item.day || '',
+        percent: Number(item.percent || 0),
+      }))
+      : []
 })
 
 const dashboardTopProducts = computed(() => {
@@ -241,7 +241,8 @@ onMounted(() => {
 })
 
 watch(selectedDashboardPeriod, (period) => {
-  dashboardStore.fetchAnalytics(period).catch(() => {})
+  dashboardStore.fetchAnalytics(period).catch(() => {
+  })
 })
 </script>
 <template>

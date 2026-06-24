@@ -126,8 +126,8 @@ const handleMaintenanceToggle = async () => {
   try {
     await persistSettings()
     successMessage.value = form.maintenance_mode
-      ? 'Đã bật chế độ bảo trì.'
-      : 'Đã tắt chế độ bảo trì.'
+        ? 'Đã bật chế độ bảo trì.'
+        : 'Đã tắt chế độ bảo trì.'
   } catch (error) {
     form.maintenance_mode = previousValue
     errorMessage.value = error.response?.data?.message || 'Không cập nhật được chế độ bảo trì.'

@@ -17,11 +17,19 @@ export const authService = {
         return api.get('/me')
     },
 
+    updateMe(data) {
+        return api.put('/me', data)
+    },
+
     forgotPassword(data) {
         return api.post('/forgot-password', data)
     },
 
     resetPassword(data) {
         return api.post('/reset-password', data)
+    },
+
+    sendVerificationNotification(data = {}) {
+        return api.post('/email/verification-notification', data)
     },
 }

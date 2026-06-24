@@ -15,7 +15,7 @@ class ReportController extends Controller
 {
     private function resolveDashboardPeriod(Request $request): array
     {
-        $period = strtolower((string) $request->query('period', 'month'));
+        $period = strtolower((string)$request->query('period', 'month'));
 
         if (!in_array($period, ['7d', '30d', 'month'], true)) {
             $period = 'month';
@@ -65,7 +65,7 @@ class ReportController extends Controller
         $buckets = [];
 
         for ($index = 0; $index < $bucketCount; $index++) {
-            $bucketStart = $start->copy()->addSeconds((int) floor($bucketSpan * $index));
+            $bucketStart = $start->copy()->addSeconds((int)floor($bucketSpan * $index));
 
             $buckets[$index] = [
                 'day' => $this->formatRevenueLabel($bucketStart),
@@ -85,19 +85,19 @@ class ReportController extends Controller
 
             $bucketIndex = min(
                 $bucketCount - 1,
-                max(0, (int) floor(($date->timestamp - $start->timestamp) / $bucketSpan))
+                max(0, (int)floor(($date->timestamp - $start->timestamp) / $bucketSpan))
             );
 
-            $buckets[$bucketIndex]['total'] += (float) ($order->total_amount ?? 0);
+            $buckets[$bucketIndex]['total'] += (float)($order->total_amount ?? 0);
         }
 
         $maxTotal = max(
-            array_reduce($buckets, static fn (float $carry, array $bucket) => max($carry, (float) $bucket['total']), 0.0),
+            array_reduce($buckets, static fn(float $carry, array $bucket) => max($carry, (float)$bucket['total']), 0.0),
             1
         );
 
         return array_map(static function (array $bucket) use ($maxTotal): array {
-            $bucket['percent'] = max(16, (int) round(($bucket['total'] / $maxTotal) * 100));
+            $bucket['percent'] = max(16, (int)round(($bucket['total'] / $maxTotal) * 100));
             $bucket['amount'] = $bucket['total'];
 
             return $bucket;
@@ -124,13 +124,13 @@ class ReportController extends Controller
                     ];
                 }
 
-                $productMap[$key]['sold'] += (int) ($item->quantity ?? 0);
-                $productMap[$key]['revenue'] += (float) ($item->total_price ?? 0);
+                $productMap[$key]['sold'] += (int)($item->quantity ?? 0);
+                $productMap[$key]['revenue'] += (float)($item->total_price ?? 0);
             }
         }
 
         $items = array_values($productMap);
-        usort($items, static fn (array $left, array $right) => $right['revenue'] <=> $left['revenue']);
+        usort($items, static fn(array $left, array $right) => $right['revenue'] <=> $left['revenue']);
 
         return array_slice($items, 0, 4);
     }
@@ -138,7 +138,7 @@ class ReportController extends Controller
     private function buildRecentOrders(Collection $orders): array
     {
         return $orders
-            ->sortByDesc(fn (Order $order) => $this->resolveOrderDate($order)?->timestamp ?? 0)
+            ->sortByDesc(fn(Order $order) => $this->resolveOrderDate($order)?->timestamp ?? 0)
             ->take(5)
             ->values()
             ->map(function (Order $order) {
@@ -151,7 +151,7 @@ class ReportController extends Controller
                     'code' => $order->order_code ?? ('#' . $order->id),
                     'customer' => $order->receiver_name ?? $order->user?->name ?? 'Khách hàng',
                     'product' => $productName,
-                    'total' => (float) ($order->total_amount ?? 0),
+                    'total' => (float)($order->total_amount ?? 0),
                     'status' => $order->order_status ?? 'pending',
                     'date' => $this->resolveOrderDate($order)?->toIso8601String(),
                 ];
